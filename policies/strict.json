@@ -1,0 +1,21 @@
+{
+  "name": "strict-permissive-only",
+  "allowed": [
+    "MIT",
+    "BSD-2-CLAUSE",
+    "BSD-3-CLAUSE",
+    "APACHE-2.0",
+    "ISC"
+  ],
+  "denied": [
+    "GPL-2.0",
+    "GPL-3.0",
+    "AGPL-3.0",
+    "LGPL-2.1",
+    "LGPL-3.0",
+    "MPL-2.0",
+    "SSPL-1.0"
+  ],
+  "unknown_action": "fail",
+  "package_exceptions": {}
+}

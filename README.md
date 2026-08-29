@@ -82,6 +82,12 @@ reasons and a download link for the whole evidence folder.
 
 We do not use port 5000 because macOS already uses it for AirPlay.
 
+The website only accepts projects that sit under `examples/`, and run ids are checked
+before we touch the filesystem, so a crafted form value or URL cannot reach a folder
+outside the evidence directory. Set `UPGRADEGUARD_REPO_BASE` to allow one more folder.
+The debugger stays off unless you set `UPGRADEGUARD_DEBUG=1`, and the server binds to
+localhost by default.
+
 ## Use it in CI
 
 `.github/workflows/upgradeguard.yml` runs a check on demand, uploads the evidence as

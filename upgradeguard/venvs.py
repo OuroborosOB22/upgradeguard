@@ -3,6 +3,11 @@ import shutil
 import sys
 import time
 
+COPY_IGNORE = shutil.ignore_patterns(
+    ".git", ".venv", "venv", "env", "__pycache__", "*.pyc",
+    ".pytest_cache", ".tox", ".mypy_cache", "evidence", "work", "node_modules",
+)
+
 from .metadata import read_installed_packages, site_packages_dir
 from .util import run_command, write_text
 
@@ -114,3 +119,10 @@ def resolve_python(preferred):
         if found:
             return found
     return sys.executable
+
+
+def copy_repository(repo_path, destination):
+    if os.path.isdir(destination):
+        shutil.rmtree(destination)
+    shutil.copytree(repo_path, destination, ignore=COPY_IGNORE, symlinks=True)
+    return destination

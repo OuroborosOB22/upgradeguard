@@ -16,7 +16,7 @@ from .verdict import decide
 
 def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
                       allow_network=True, use_cache=True, test_timeout=900,
-                      install_timeout=1800, progress=None):
+                      install_timeout=1800, strict_licences=False, progress=None):
     started = time.time()
     if not spec.run_id:
         spec.run_id = new_run_id(spec)
@@ -99,6 +99,7 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
         "after": sides["after"],
         "diff": difference,
         "evidence_dir": evidence_dir,
+        "options": {"strict_licences": strict_licences, "allow_network": allow_network},
         "started_at": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(started)),
     }
     bundle["verdict"] = decide(bundle)

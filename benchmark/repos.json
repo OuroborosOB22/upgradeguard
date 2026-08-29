@@ -1,0 +1,31 @@
+{
+  "note": "Candidate repositories for the full benchmark. Every one is permissively licensed and ships an automated test suite. Status stays 'candidate' until we have actually built it and run its tests with UpgradeGuard.",
+  "target_count": 25,
+  "repositories": [
+    {"name": "psf/requests", "licence": "Apache-2.0", "runner": "pytest", "status": "candidate"},
+    {"name": "pallets/flask", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"},
+    {"name": "pallets/jinja", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"},
+    {"name": "pallets/click", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"},
+    {"name": "pallets/markupsafe", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"},
+    {"name": "psf/black", "licence": "MIT", "runner": "pytest", "status": "candidate"},
+    {"name": "kennethreitz/records", "licence": "ISC", "runner": "pytest", "status": "candidate"},
+    {"name": "encode/httpx", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"},
+    {"name": "encode/starlette", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"},
+    {"name": "tiangolo/fastapi", "licence": "MIT", "runner": "pytest", "status": "candidate"},
+    {"name": "pydantic/pydantic", "licence": "MIT", "runner": "pytest", "status": "candidate"},
+    {"name": "python-attrs/attrs", "licence": "MIT", "runner": "pytest", "status": "candidate"},
+    {"name": "agronholm/anyio", "licence": "MIT", "runner": "pytest", "status": "candidate"},
+    {"name": "urllib3/urllib3", "licence": "MIT", "runner": "pytest", "status": "candidate"},
+    {"name": "jd/tenacity", "licence": "Apache-2.0", "runner": "pytest", "status": "candidate"},
+    {"name": "theskumar/python-dotenv", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"},
+    {"name": "dateutil/dateutil", "licence": "Apache-2.0", "runner": "pytest", "status": "candidate"},
+    {"name": "Textualize/rich", "licence": "MIT", "runner": "pytest", "status": "candidate"},
+    {"name": "tox-dev/filelock", "licence": "Unlicense", "runner": "pytest", "status": "candidate"},
+    {"name": "platformdirs/platformdirs", "licence": "MIT", "runner": "pytest", "status": "candidate"},
+    {"name": "hynek/structlog", "licence": "MIT", "runner": "pytest", "status": "candidate"},
+    {"name": "marshmallow-code/marshmallow", "licence": "MIT", "runner": "pytest", "status": "candidate"},
+    {"name": "sqlalchemy/alembic", "licence": "MIT", "runner": "pytest", "status": "candidate"},
+    {"name": "pytest-dev/pytest-cov", "licence": "MIT", "runner": "pytest", "status": "candidate"},
+    {"name": "john-kurkowski/tldextract", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"}
+  ]
+}

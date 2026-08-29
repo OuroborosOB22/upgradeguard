@@ -10,7 +10,7 @@ from .report import write_report
 from .spec import declared_names, new_run_id, pin_package, read_requirements
 from .tests_run import diff_test_runs, run_test_suite
 from .util import write_json
-from .venvs import build_environment, resolve_python
+from .venvs import build_environment, copy_repository, resolve_python
 from .verdict import decide
 
 
@@ -43,7 +43,8 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
     for side, lines in (("before", before_lines), ("after", after_lines)):
         announce(progress, "building %s environment" % side)
         side_dir = os.path.join(evidence_dir, side)
-        env_dir = os.path.join(work_dir, side)
+        env_dir = os.path.join(work_dir, side, "env")
+        repo_copy = copy_repository(repo_path, os.path.join(work_dir, side, "repo"))
         build = build_environment(
             side, env_dir, lines, side_dir, python_bin,
             use_cache=use_cache, install_timeout=install_timeout,
@@ -66,9 +67,10 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
             licenses = check_licenses(graph, policy, side_dir)
         if build["ok"]:
             announce(progress, "running tests in %s environment" % side)
-            tests = run_test_suite(env_dir, repo_path, side_dir, timeout=test_timeout)
+            tests = run_test_suite(env_dir, repo_copy, side_dir, timeout=test_timeout)
 
         sides[side] = {
+            "repo_copy": repo_copy,
             "build": strip_packages(build),
             "graph": graph,
             "conflicts": conflicts,

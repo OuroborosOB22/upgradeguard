@@ -1,0 +1,40 @@
+{
+  "note": "Small offline advisory set used only when pip-audit cannot reach the network. Not a replacement for a real advisory database.",
+  "advisories": [
+    {
+      "package": "requests",
+      "id": "PYSEC-2023-74",
+      "aliases": ["CVE-2023-32681"],
+      "fixed_in": "2.31.0",
+      "summary": "Requests leaks the Proxy-Authorization header on redirect"
+    },
+    {
+      "package": "requests",
+      "id": "GHSA-9wx4-h78v-vm56",
+      "aliases": ["CVE-2024-35195"],
+      "fixed_in": "2.32.0",
+      "summary": "Session keeps verification disabled after a first request with verify False"
+    },
+    {
+      "package": "urllib3",
+      "id": "GHSA-v845-jxx5-vc9f",
+      "aliases": ["CVE-2023-43804"],
+      "fixed_in": "2.0.6",
+      "summary": "Cookie header leaks on cross origin redirect"
+    },
+    {
+      "package": "jinja2",
+      "id": "GHSA-h5c8-rqwp-cp95",
+      "aliases": ["CVE-2024-22195"],
+      "fixed_in": "3.1.3",
+      "summary": "HTML attribute injection through the xmlattr filter"
+    },
+    {
+      "package": "jinja2",
+      "id": "GHSA-cpwx-vrp4-4pq7",
+      "aliases": ["CVE-2024-56326"],
+      "fixed_in": "3.1.5",
+      "summary": "Sandbox escape through indirect calls to string format"
+    }
+  ]
+}

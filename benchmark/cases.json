@@ -1,0 +1,62 @@
+{
+  "version": "0.1.0",
+  "note": "Ground truth is written before the case is executed. See GROUND_TRUTH.md for how each expected value was decided.",
+  "cases": [
+    {
+      "id": "demo-requests-safe",
+      "repo": "examples/demo_repo",
+      "package": "requests",
+      "from": "2.28.2",
+      "to": "2.32.5",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "A normal patch and minor upgrade of a well behaved library. Nothing in the demo project touches a removed API, so both environments build and all tests pass."
+    },
+    {
+      "id": "demo-jinja2-removed-api",
+      "repo": "examples/demo_repo",
+      "package": "jinja2",
+      "from": "3.0.3",
+      "to": "3.1.6",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "test-regression",
+      "why": "Jinja2 3.1 removed the jinja2.Markup alias. notesapp/render.py imports it, so the render tests stop working only in the upgraded environment."
+    },
+    {
+      "id": "demo-requests-missing-version",
+      "repo": "examples/demo_repo",
+      "package": "requests",
+      "from": "2.28.2",
+      "to": "2.99.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "build-failure",
+      "why": "There is no requests 2.99.0 on PyPI, so the upgraded environment cannot be built at all. This checks that a failed build is reported as a build failure and not as a test problem."
+    },
+    {
+      "id": "demo-requests-strict-licence",
+      "repo": "examples/demo_repo",
+      "package": "requests",
+      "from": "2.28.2",
+      "to": "2.32.5",
+      "policy": "policies/strict.json",
+      "strict_licences": true,
+      "expected": "Reject",
+      "expected_signal": "licence-violation",
+      "why": "certifi is published under MPL-2.0 and the strict policy does not allow MPL-2.0. Under strict licence mode the resulting environment cannot be distributed under that policy."
+    },
+    {
+      "id": "legacy-requests-drops-lgpl",
+      "repo": "examples/legacy_repo",
+      "package": "requests",
+      "from": "2.25.1",
+      "to": "2.28.2",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "requests 2.26 replaced chardet, which is LGPL, with charset-normalizer, which is MIT. The upgrade should pass and the evidence should show the LGPL package leaving the dependency graph."
+    }
+  ]
+}

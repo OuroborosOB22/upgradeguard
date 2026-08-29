@@ -57,6 +57,8 @@ def decide(bundle):
             ["after/audit.json"],
         ))
 
+    strict_licences = bundle.get("options", {}).get("strict_licences", False)
+    existing_violations = bundle["after"]["licenses"]["violations"]
     licence_violations = bundle["diff"]["licenses"]["introduced"]
     if licence_violations:
         listed = ", ".join("%s (%s)" % (item["package"], item["canonical"]) for item in licence_violations[:3])
@@ -65,6 +67,18 @@ def decide(bundle):
             "The upgrade adds %d package(s) that the licence policy denies: %s" % (len(licence_violations), listed),
             ["after/licenses.json", "policy.json"],
         ))
+
+    carried_over = [item for item in existing_violations
+                    if item["package"] not in {entry["package"] for entry in licence_violations}]
+    if carried_over:
+        listed = ", ".join("%s (%s)" % (item["package"], item["canonical"]) for item in carried_over[:3])
+        message = "%d package(s) already breached the licence policy before the upgrade: %s" % (len(carried_over), listed)
+        if strict_licences:
+            reasons.append(reason("licence-policy-precondition", message + " Strict licence mode treats this as blocking.",
+                                  ["after/licenses.json", "policy.json"]))
+        else:
+            notes.append(reason("licence-policy-precondition", message + " The upgrade did not cause this, so it does not block the verdict.",
+                                ["after/licenses.json", "policy.json"], severity="warning"))
 
     regressions = bundle["diff"]["tests"]["regressions"]
     if regressions:
@@ -90,6 +104,16 @@ def decide(bundle):
             "vulnerabilities-resolved",
             "The upgrade removes %d known vulnerability finding(s)." % len(resolved_vulns),
             ["before/audit.json", "after/audit.json"],
+            severity="info",
+        ))
+
+    resolved_licences = bundle["diff"]["licenses"]["resolved"]
+    if resolved_licences:
+        listed = ", ".join("%s (%s)" % (item["package"], item["canonical"]) for item in resolved_licences[:3])
+        notes.append(reason(
+            "licence-violations-resolved",
+            "The upgrade removes %d package(s) that the licence policy denied: %s" % (len(resolved_licences), listed),
+            ["before/licenses.json", "after/licenses.json"],
             severity="info",
         ))
 

@@ -30,6 +30,7 @@ def build_parser():
     check.add_argument("--offline", action="store_true")
     check.add_argument("--no-cache", dest="no_cache", action="store_true")
     check.add_argument("--test-timeout", type=int, default=900)
+    check.add_argument("--strict-licences", dest="strict_licences", action="store_true")
     check.add_argument("--quiet", action="store_true")
 
     suite = sub.add_parser("benchmark", help="run every case in a benchmark file")
@@ -76,6 +77,7 @@ def command_run(args):
         allow_network=not args.offline,
         use_cache=not args.no_cache,
         test_timeout=args.test_timeout,
+        strict_licences=args.strict_licences,
         progress=reporter,
     )
     print_summary(bundle)

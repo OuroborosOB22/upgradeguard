@@ -116,9 +116,19 @@ def diff_test_runs(before, after):
             fixed.append({"test": identifier, "before": previous["status"], "after": "passed"})
 
     for identifier in sorted(before_results):
-        if identifier not in after_results:
-            removed_tests.append({"test": identifier, "status": before_results[identifier]["status"]})
+        if identifier in after_results:
+            continue
+        previous = before_results[identifier]
+        removed_tests.append({"test": identifier, "status": previous["status"]})
+        if previous["status"] == "passed":
+            regressions.append({
+                "test": identifier,
+                "before": "passed",
+                "after": "not collected",
+                "message": "this test passed before the upgrade and could not be collected after it",
+            })
 
+    regressions.sort(key=lambda item: item["test"])
     return {
         "regressions": regressions,
         "fixed": fixed,

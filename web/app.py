@@ -1,5 +1,6 @@
 import io
 import os
+import re
 import sys
 import threading
 import zipfile
@@ -17,9 +18,41 @@ EVIDENCE_ROOT = os.path.join(PROJECT_ROOT, "evidence")
 WORK_ROOT = os.path.join(PROJECT_ROOT, "work")
 POLICY_DIR = os.path.join(PROJECT_ROOT, "policies")
 
+RUN_ID_PATTERN = re.compile(r"[A-Za-z0-9._-]+")
+
+ALLOWED_REPO_BASES = [os.path.realpath(os.path.join(PROJECT_ROOT, "examples"))]
+if os.environ.get("UPGRADEGUARD_REPO_BASE"):
+    ALLOWED_REPO_BASES.append(os.path.realpath(os.environ["UPGRADEGUARD_REPO_BASE"]))
+
 app = Flask(__name__)
 active_runs = {}
 runs_lock = threading.Lock()
+
+
+def inside(candidate, base):
+    return candidate == base or candidate.startswith(base + os.sep)
+
+
+def safe_repo_path(value):
+    if not value:
+        return ""
+    candidate = os.path.realpath(os.path.join(PROJECT_ROOT, value))
+    if not os.path.isdir(candidate):
+        return ""
+    for base in ALLOWED_REPO_BASES:
+        if inside(candidate, base):
+            return candidate
+    return ""
+
+
+def safe_evidence_dir(run_id):
+    if not run_id or not RUN_ID_PATTERN.fullmatch(run_id):
+        return ""
+    root = os.path.realpath(EVIDENCE_ROOT)
+    candidate = os.path.realpath(os.path.join(root, run_id))
+    if candidate == root or not inside(candidate, root):
+        return ""
+    return candidate
 
 
 def policy_choices():
@@ -116,10 +149,15 @@ def create_run():
         return render_template("index.html", runs=merged_runs(), policies=policy_choices(),
                                error="Fill in the repository, the package and both versions."), 400
 
-    repo_path = repo if os.path.isabs(repo) else os.path.join(PROJECT_ROOT, repo)
-    if not os.path.isdir(repo_path):
+    repo_path = safe_repo_path(repo)
+    if not repo_path:
         return render_template("index.html", runs=merged_runs(), policies=policy_choices(),
-                               error="No folder at %s" % repo_path), 400
+                               error="That folder is not one this site is allowed to check. "
+                                     "Use a project inside examples/."), 400
+
+    policy_name = os.path.basename(policy_name)
+    if policy_name not in policy_choices():
+        policy_name = "default.json"
 
     spec = UpgradeSpec(
         repo_path=repo_path,
@@ -137,7 +175,9 @@ def create_run():
 
 @app.route("/runs/<run_id>")
 def show_run(run_id):
-    directory = os.path.join(EVIDENCE_ROOT, run_id)
+    directory = safe_evidence_dir(run_id)
+    if not directory:
+        abort(404)
     bundle_path = os.path.join(directory, "bundle.json")
     if os.path.isfile(bundle_path):
         return render_template("run.html", run_id=run_id, bundle=read_json(bundle_path), pending=None)
@@ -154,14 +194,18 @@ def run_state(run_id):
         pending = dict(active_runs.get(run_id, {}))
     if pending:
         return pending
-    if os.path.isfile(os.path.join(EVIDENCE_ROOT, run_id, "verdict.json")):
+    directory = safe_evidence_dir(run_id)
+    if directory and os.path.isfile(os.path.join(directory, "verdict.json")):
         return {"run_id": run_id, "state": "finished", "message": "done"}
     return {"run_id": run_id, "state": "unknown", "message": ""}
 
 
 @app.route("/runs/<run_id>/report")
 def run_report(run_id):
-    path = os.path.join(EVIDENCE_ROOT, run_id, "report.html")
+    directory = safe_evidence_dir(run_id)
+    if not directory:
+        abort(404)
+    path = os.path.join(directory, "report.html")
     if not os.path.isfile(path):
         abort(404)
     return send_file(path)
@@ -169,8 +213,8 @@ def run_report(run_id):
 
 @app.route("/runs/<run_id>/evidence.zip")
 def run_evidence(run_id):
-    directory = os.path.join(EVIDENCE_ROOT, run_id)
-    if not os.path.isdir(directory):
+    directory = safe_evidence_dir(run_id)
+    if not directory or not os.path.isdir(directory):
         abort(404)
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
@@ -184,4 +228,8 @@ def run_evidence(run_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=int(os.environ.get("PORT", "5057")))
+    app.run(
+        debug=os.environ.get("UPGRADEGUARD_DEBUG") == "1",
+        host=os.environ.get("HOST", "127.0.0.1"),
+        port=int(os.environ.get("PORT", "5057")),
+    )

@@ -1,0 +1,16 @@
+[project]
+name = "upgradeguard"
+version = "0.1.0"
+description = "Evidence based dependency upgrade and licence policy verifier for Python projects"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+upgradeguard = "upgradeguard.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["upgradeguard", "upgradeguard.checks"]

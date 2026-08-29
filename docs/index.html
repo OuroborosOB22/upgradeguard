@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UpgradeGuard</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128737;</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="progress"><span id="progress"></span></div>
+
+<main id="deck">
+
+<section class="slide title-slide is-active" data-name="Team">
+  <div class="pill">Software Engineering Project | Planning Presentation</div>
+  <h1 class="huge">Upgrade<span class="accent">Guard</span></h1>
+  <p class="tagline">Evidence based dependency upgrade and licence policy verifier for Python projects</p>
+  <div class="team">
+    <div class="member"><strong>Gurman Singh</strong><span>1024030140</span></div>
+    <div class="member"><strong>Madhur Tuteja</strong><span>1024030145</span></div>
+    <div class="member"><strong>Prayag</strong><span>1024030145</span></div>
+  </div>
+  <p class="hint">Use the arrow keys, or click the arrows below</p>
+</section>
+
+<section class="slide" data-name="Problem">
+  <h2>The problem</h2>
+  <p class="lead">Every project is built on packages written by other people. Those packages
+  keep releasing new versions, and somebody has to decide whether to move up.</p>
+
+  <div class="problem-grid">
+    <div class="pcard reveal" style="--d:0ms">
+      <div class="picon">?</div>
+      <h3>Nobody really knows what will break</h3>
+      <p>A version number does not tell you if your code still works. Teams find out after they merge.</p>
+    </div>
+    <div class="pcard reveal" style="--d:120ms">
+      <div class="picon">!</div>
+      <h3>Old versions have known holes</h3>
+      <p>Staying on an old version keeps reported security problems in your project.</p>
+    </div>
+    <div class="pcard reveal" style="--d:240ms">
+      <div class="picon">&sect;</div>
+      <h3>Licences change quietly</h3>
+      <p>An upgrade can drag in a package your company is not allowed to ship.</p>
+    </div>
+    <div class="pcard reveal" style="--d:360ms">
+      <div class="picon">&#8942;</div>
+      <h3>Existing tools only read labels</h3>
+      <p>They read package files and guess. They never actually build the project and run it.</p>
+    </div>
+  </div>
+
+  <p class="punch reveal" style="--d:520ms">So the honest answer today is normally
+  <em>"let us merge it and hope"</em>.</p>
+</section>
+
+<section class="slide" data-name="Solution">
+  <h2>How we solve it</h2>
+  <p class="lead">Do not guess. Actually do the upgrade twice and compare what really happened.</p>
+
+  <div class="split">
+    <div class="side before reveal" style="--d:0ms">
+      <div class="side-tag">Environment A</div>
+      <h3>Today's versions</h3>
+      <p>Build the project clean, install exactly what it uses now, run its own tests, write everything down.</p>
+    </div>
+    <div class="vs reveal" style="--d:200ms">compare</div>
+    <div class="side after reveal" style="--d:400ms">
+      <div class="side-tag">Environment B</div>
+      <h3>The proposed version</h3>
+      <p>Build a second clean copy with the one package changed, run the same tests, write everything down.</p>
+    </div>
+  </div>
+
+  <p class="punch reveal" style="--d:600ms">Anything that is different between A and B was caused by the upgrade.
+  That difference is our evidence.</p>
+
+  <div class="keyline reveal" style="--d:750ms">
+    <span>Our answer is always one of three</span>
+    <div class="verdicts">
+      <span class="v accept">Accept</span>
+      <span class="v reject">Reject</span>
+      <span class="v unsure">Insufficient Evidence</span>
+    </div>
+  </div>
+</section>
+
+<section class="slide flow-slide" data-name="How it works">
+  <h2>How it works</h2>
+  <p class="lead">Pick a case and watch the pipeline run. These are the two real cases from our demo.</p>
+
+  <div class="case-picker">
+    <button class="case-btn is-on" data-case="safe">Safe upgrade</button>
+    <button class="case-btn" data-case="risky">Risky upgrade</button>
+    <button class="replay" id="replay">Replay</button>
+  </div>
+
+  <div class="case-line" id="caseline">
+    upgrade <code>requests</code> from <code>2.28.2</code> to <code>2.32.5</code>
+  </div>
+
+  <div class="flow" id="flow">
+    <div class="fnode n1"><span class="fdot"></span><strong>Input</strong><small>your project and one upgrade</small></div>
+    <div class="farrow a1"></div>
+    <div class="fsplit">
+      <div class="fnode n2 env-a"><span class="fdot"></span><strong>Build A</strong><small>current versions</small></div>
+      <div class="fnode n3 env-b"><span class="fdot"></span><strong>Build B</strong><small>proposed version</small></div>
+    </div>
+    <div class="farrow a2"></div>
+    <div class="fnode n4"><span class="fdot"></span><strong>Check both</strong><small>packages, conflicts, security, licences</small></div>
+    <div class="farrow a3"></div>
+    <div class="fnode n5"><span class="fdot"></span><strong>Run the tests</strong><small>the project's own test suite, in both</small></div>
+    <div class="farrow a4"></div>
+    <div class="fnode n6"><span class="fdot"></span><strong>Compare</strong><small>what changed between A and B</small></div>
+    <div class="farrow a5"></div>
+    <div class="fnode n7 verdict-node" id="verdictNode"><span class="fdot"></span><strong id="verdictText">Verdict</strong><small id="verdictSub">with the evidence attached</small></div>
+  </div>
+
+  <div class="result-strip" id="resultStrip">
+    <div class="rcell"><strong id="rTests">-</strong><span>tests broken</span></div>
+    <div class="rcell"><strong id="rVuln">-</strong><span>security findings fixed</span></div>
+    <div class="rcell"><strong id="rPkg">-</strong><span>packages changed</span></div>
+    <div class="rcell"><strong id="rTime">-</strong><span>seconds to answer</span></div>
+  </div>
+</section>
+
+<section class="slide" data-name="Using it">
+  <h2>How people will use it</h2>
+  <p class="lead">Three ways in, one answer out. Nobody has to change how they already work.</p>
+
+  <div class="use-grid">
+    <div class="ucard reveal" style="--d:0ms">
+      <div class="unum">1</div>
+      <h3>On the website</h3>
+      <p>Type the project folder, the package and the two versions. Press the button and watch it run.</p>
+      <div class="mock">
+        <div class="mock-bar"><span></span><span></span><span></span></div>
+        <div class="mock-row"><label>package</label><div class="mock-input">jinja2</div></div>
+        <div class="mock-row"><label>from</label><div class="mock-input">3.0.3</div><label>to</label><div class="mock-input">3.1.6</div></div>
+        <div class="mock-btn">Run the check</div>
+      </div>
+    </div>
+
+    <div class="ucard reveal" style="--d:150ms">
+      <div class="unum">2</div>
+      <h3>From the terminal</h3>
+      <p>One command. It prints the answer and saves a folder of evidence you can open later.</p>
+      <div class="term">
+        <div class="term-bar"><span></span><span></span><span></span></div>
+<pre><span class="p">$</span> upgradeguard run --package jinja2 \
+    --from 3.0.3 --to 3.1.6
+
+<span class="r">Reject</span>: jinja2 3.0.3 to 3.1.6
+  5 tests passed before and fail after
+  evidence saved</pre>
+      </div>
+    </div>
+
+    <div class="ucard reveal" style="--d:300ms">
+      <div class="unum">3</div>
+      <h3>Inside their pipeline</h3>
+      <p>It runs automatically when someone proposes an upgrade, and blocks it if the evidence is bad.</p>
+      <div class="pipe">
+        <div class="pstep ok">upgrade proposed</div>
+        <div class="pline"></div>
+        <div class="pstep run">UpgradeGuard runs</div>
+        <div class="pline"></div>
+        <div class="pstep bad">blocked, with reasons</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-name="Uses">
+  <h2>Where this helps</h2>
+  <p class="lead">Anywhere somebody has to approve a dependency change and wants a reason, not a feeling.</p>
+
+  <div class="app-grid">
+    <div class="acard reveal" style="--d:0ms"><h3>Software teams</h3><p>Upgrade on purpose instead of avoiding it for months because it feels risky.</p></div>
+    <div class="acard reveal" style="--d:100ms"><h3>Security work</h3><p>Patch a reported hole and prove in the same run that nothing else broke.</p></div>
+    <div class="acard reveal" style="--d:200ms"><h3>Companies with licence rules</h3><p>Write the rule once and have every upgrade checked against it automatically.</p></div>
+    <div class="acard reveal" style="--d:300ms"><h3>Open source maintainers</h3><p>Attach real evidence to an upgrade request instead of asking reviewers to trust it.</p></div>
+    <div class="acard reveal" style="--d:400ms"><h3>Students and small projects</h3><p>Learn what an upgrade actually does, because every step is written down.</p></div>
+    <div class="acard reveal" style="--d:500ms"><h3>Audits</h3><p>Keep a downloadable record of why each upgrade was allowed or refused.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-name="Plan">
+  <h2>Our scope and plan</h2>
+
+  <div class="scope">
+    <div class="scope-col in reveal" style="--d:0ms">
+      <h3>We will do</h3>
+      <ul>
+        <li>Python projects, one packaging style</li>
+        <li>One direct upgrade per run</li>
+        <li>Clean builds, real test runs</li>
+        <li>Conflicts, security and licence rules</li>
+        <li>Website, terminal tool and pipeline step</li>
+        <li>A benchmark of 20 to 25 real projects</li>
+      </ul>
+    </div>
+    <div class="scope-col out reveal" style="--d:150ms">
+      <h3>We will not do</h3>
+      <ul>
+        <li>Fix the broken code for you</li>
+        <li>Other languages</li>
+        <li>Every packaging tool that exists</li>
+        <li>Let a language model decide the answer</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="mini">17 weeks</h3>
+  <div class="timeline">
+    <div class="tphase reveal" style="--d:0ms"><span class="tw">1 to 3</span><p>Set up, study existing tools, pick the projects</p></div>
+    <div class="tphase reveal" style="--d:100ms"><span class="tw">4 to 7</span><p>Clean builds and dependency graphs</p></div>
+    <div class="tphase reveal" style="--d:200ms"><span class="tw">8 to 10</span><p>Tests, comparison and the verdict rules</p></div>
+    <div class="tphase reveal" style="--d:300ms"><span class="tw">11 to 13</span><p>Website, terminal tool and pipeline step</p></div>
+    <div class="tphase reveal" style="--d:400ms"><span class="tw">14 to 16</span><p>Benchmark, measurements and comparison</p></div>
+    <div class="tphase reveal" style="--d:500ms"><span class="tw">17</span><p>Write up and final demo</p></div>
+  </div>
+
+  <div class="work reveal" style="--d:650ms">
+    <div><strong>Gurman</strong><span>environments, dependency graph, verdict rules</span></div>
+    <div><strong>Madhur</strong><span>tests, comparison, website and reports</span></div>
+    <div><strong>Prayag</strong><span>benchmark, ground truth, measurements</span></div>
+  </div>
+</section>
+
+<section class="slide" data-name="Conclusion">
+  <h2>Conclusion</h2>
+  <div class="concl">
+    <p class="big reveal" style="--d:0ms">An upgrade decision should come with proof.</p>
+    <ul class="clist">
+      <li class="reveal" style="--d:150ms">We build the project twice and run its own tests both times.</li>
+      <li class="reveal" style="--d:250ms">Every Accept or Reject points at a build log, a test result or a policy rule.</li>
+      <li class="reveal" style="--d:350ms">No language model decides anything; the evidence decides.</li>
+      <li class="reveal" style="--d:450ms">It already works end to end on our two demo cases.</li>
+    </ul>
+    <div class="numbers reveal" style="--d:600ms">
+      <div><strong>5 / 5</strong><span>first benchmark cases correct</span></div>
+      <div><strong>0</strong><span>wrongly approved upgrades</span></div>
+      <div><strong>~11s</strong><span>average time per check</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide thanks-slide" data-name="Thank you">
+  <h1 class="huge">Thank you</h1>
+  <p class="tagline">Questions are welcome</p>
+  <div class="refs">
+    <h3>References</h3>
+    <ul>
+      <li><a href="https://peps.python.org/pep-0639/" target="_blank" rel="noopener">PEP 639, licence information in package metadata</a></li>
+      <li><a href="https://packaging.python.org/en/latest/specifications/core-metadata/" target="_blank" rel="noopener">Python core metadata specification</a></li>
+      <li><a href="https://pypi.org/project/pip-audit/" target="_blank" rel="noopener">pip-audit, known vulnerability scanning</a></li>
+      <li><a href="https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/about-dependency-review" target="_blank" rel="noopener">GitHub dependency review</a></li>
+      <li><a href="https://docs.pytest.org/" target="_blank" rel="noopener">pytest documentation</a></li>
+      <li><a href="https://spdx.org/licenses/" target="_blank" rel="noopener">SPDX licence list</a></li>
+    </ul>
+  </div>
+  <p class="hint">Gurman Singh | Madhur Tuteja | Prayag</p>
+</section>
+
+</main>
+
+<nav class="controls">
+  <button id="prev" aria-label="previous slide">&#8592;</button>
+  <div class="dots" id="dots"></div>
+  <button id="next" aria-label="next slide">&#8594;</button>
+</nav>
+<div class="slide-name" id="slideName"></div>
+
+<script src="deck.js"></script>
+</body>
+</html>

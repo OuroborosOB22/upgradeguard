@@ -33,12 +33,17 @@ jobs:
       - name: check the proposed upgrade
         id: guard
         continue-on-error: true
+        env:
+          REPO_PATH: ${{ inputs.repo_path }}
+          PACKAGE: ${{ inputs.package }}
+          FROM_VERSION: ${{ inputs.from_version }}
+          TO_VERSION: ${{ inputs.to_version }}
         run: |
           python -m upgradeguard run \
-            --repo "${{ inputs.repo_path }}" \
-            --package "${{ inputs.package }}" \
-            --from "${{ inputs.from_version }}" \
-            --to "${{ inputs.to_version }}" \
+            --repo "$REPO_PATH" \
+            --package "$PACKAGE" \
+            --from "$FROM_VERSION" \
+            --to "$TO_VERSION" \
             --policy policies/default.json \
             --python python3
 

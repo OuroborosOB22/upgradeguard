@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h1>Check an upgrade</h1>
+  <p class="sub">We build the project twice, once on the current version and once on the
+  proposed one, run its tests in both, and tell you what actually changed.</p>
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  <form method="post" action="{{ url_for('create_run') }}">
+    <label>Repository folder
+      <input name="repo" value="examples/demo_repo" required>
+    </label>
+    <div class="row">
+      <label>Package<input name="package" value="jinja2" required></label>
+      <label>Current version<input name="from_version" value="3.0.3" required></label>
+      <label>Proposed version<input name="to_version" value="3.1.6" required></label>
+    </div>
+    <div class="row">
+      <label>Licence policy
+        <select name="policy">
+          {% for name in policies %}<option value="{{ name }}">{{ name }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Python<input name="python" value="python3"></label>
+      <label class="check"><input type="checkbox" name="strict"> Strict licence mode</label>
+    </div>
+    <button type="submit">Run the check</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Runs</h2>
+  {% if runs %}
+  <table>
+    <thead><tr><th>run</th><th>project</th><th>upgrade</th><th>result</th></tr></thead>
+    <tbody>
+    {% for run in runs %}
+      <tr>
+        <td><a href="{{ url_for('show_run', run_id=run.run_id) }}">{{ run.run_id }}</a></td>
+        <td>{{ run.repo }}</td>
+        <td>{{ run.package }} {{ run.from_version }} to {{ run.to_version }}</td>
+        <td>
+          {% if run.decision %}
+            <span class="badge {{ run.decision.split(' ')[0]|lower }}">{{ run.decision }}</span>
+          {% else %}
+            <span class="badge running">{{ run.state|default('running') }}</span>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="sub">No runs yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

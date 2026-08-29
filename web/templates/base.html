@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}UpgradeGuard{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<nav>
+  <a class="brand" href="{{ url_for('index') }}">UpgradeGuard</a>
+  <span class="tag">evidence based upgrade checks</span>
+</nav>
+<main>
+{% block content %}{% endblock %}
+</main>
+<footer>A university software engineering project by Gurman Singh, Madhur Tuteja and Prayag.</footer>
+</body>
+</html>

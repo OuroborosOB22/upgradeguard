@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ run_id }}{% endblock %}
+{% block content %}
+{% if pending %}
+<section class="card">
+  <h1>Working on it</h1>
+  <p class="sub">{{ pending.package }} {{ pending.from_version }} to {{ pending.to_version }}</p>
+  <p class="status" id="status">{{ pending.message }}</p>
+  {% if pending.error %}<pre>{{ pending.error }}</pre>{% endif %}
+  <div class="bar"><span></span></div>
+</section>
+<script>
+const poll = setInterval(async () => {
+  const response = await fetch("{{ url_for('run_state', run_id=run_id) }}");
+  const data = await response.json();
+  document.getElementById("status").textContent = data.message || data.state;
+  if (data.state === "finished") { clearInterval(poll); location.reload(); }
+}, 1500);
+</script>
+{% else %}
+<section class="card">
+  <span class="badge {{ bundle.verdict.decision.split(' ')[0]|lower }}">{{ bundle.verdict.decision }}</span>
+  <h1>{{ bundle.spec.package }} {{ bundle.spec.from_version }} to {{ bundle.spec.to_version }}</h1>
+  <p class="sub">{{ bundle.run_id }} | finished in {{ bundle.total_seconds }}s</p>
+  <div class="actions">
+    <a class="button" href="{{ url_for('run_report', run_id=run_id) }}">Open full report</a>
+    <a class="button ghost" href="{{ url_for('run_evidence', run_id=run_id) }}">Download evidence</a>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Why</h2>
+  <ul class="reasons">
+    {% for item in bundle.verdict.reasons + bundle.verdict.notes %}
+    <li class="{{ item.severity }}"><code>{{ item.code }}</code><p>{{ item.message }}</p></li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="card">
+  <h2>At a glance</h2>
+  <div class="stats">
+    <div><strong>{{ bundle.diff.tests.regressions|length }}</strong><span>test regressions</span></div>
+    <div><strong>{{ bundle.diff.graph.changed|length }}</strong><span>version changes</span></div>
+    <div><strong>{{ bundle.diff.graph.added|length }}</strong><span>packages added</span></div>
+    <div><strong>{{ bundle.diff.graph.removed|length }}</strong><span>packages removed</span></div>
+    <div><strong>{{ bundle.diff.vulnerabilities.introduced|length }}</strong><span>new advisories</span></div>
+    <div><strong>{{ bundle.diff.licenses.introduced|length }}</strong><span>new licence issues</span></div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

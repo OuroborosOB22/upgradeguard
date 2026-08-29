@@ -1,0 +1,106 @@
+{
+  "benchmark_version": "0.1.0",
+  "results": [
+    {
+      "actual": "Accept",
+      "codes": [
+        "no-blocking-evidence"
+      ],
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260830-041835-demo-requests-safe",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "from": "2.28.2",
+      "id": "demo-requests-safe",
+      "package": "requests",
+      "regressions": 0,
+      "repo": "examples/demo_repo",
+      "seconds": 12.23,
+      "signal_detected": true,
+      "to": "2.32.5",
+      "verdict_correct": true
+    },
+    {
+      "actual": "Reject",
+      "codes": [
+        "test-regression"
+      ],
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260830-041848-demo-jinja2-removed-api",
+      "expected": "Reject",
+      "expected_signal": "test-regression",
+      "from": "3.0.3",
+      "id": "demo-jinja2-removed-api",
+      "package": "jinja2",
+      "regressions": 5,
+      "repo": "examples/demo_repo",
+      "seconds": 12.38,
+      "signal_detected": true,
+      "to": "3.1.6",
+      "verdict_correct": true
+    },
+    {
+      "actual": "Reject",
+      "codes": [
+        "upgrade-build-failed"
+      ],
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260830-041900-demo-requests-missing-version",
+      "expected": "Reject",
+      "expected_signal": "build-failure",
+      "from": "2.28.2",
+      "id": "demo-requests-missing-version",
+      "package": "requests",
+      "regressions": 10,
+      "repo": "examples/demo_repo",
+      "seconds": 8.06,
+      "signal_detected": true,
+      "to": "2.99.0",
+      "verdict_correct": true
+    },
+    {
+      "actual": "Reject",
+      "codes": [
+        "licence-policy-precondition"
+      ],
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260830-041908-demo-requests-strict-licence",
+      "expected": "Reject",
+      "expected_signal": "licence-violation",
+      "from": "2.28.2",
+      "id": "demo-requests-strict-licence",
+      "package": "requests",
+      "regressions": 0,
+      "repo": "examples/demo_repo",
+      "seconds": 12.19,
+      "signal_detected": true,
+      "to": "2.32.5",
+      "verdict_correct": true
+    },
+    {
+      "actual": "Accept",
+      "codes": [
+        "no-blocking-evidence"
+      ],
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260830-041920-legacy-requests-drops-lgpl",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "from": "2.25.1",
+      "id": "legacy-requests-drops-lgpl",
+      "package": "requests",
+      "regressions": 0,
+      "repo": "examples/legacy_repo",
+      "seconds": 10.02,
+      "signal_detected": true,
+      "to": "2.28.2",
+      "verdict_correct": true
+    }
+  ],
+  "summary": {
+    "cases": 5,
+    "false_approvals": 0,
+    "false_rejections": 0,
+    "mean_seconds": 10.98,
+    "reject_precision": 1.0,
+    "reject_recall": 1.0,
+    "signal_detection": 1.0,
+    "total_seconds": 54.88,
+    "verdict_accuracy": 1.0
+  }
+}

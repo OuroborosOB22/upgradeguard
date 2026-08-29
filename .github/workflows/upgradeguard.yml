@@ -1,0 +1,55 @@
+name: upgrade check
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: package to upgrade
+        required: true
+      from_version:
+        description: version in use today
+        required: true
+      to_version:
+        description: version you want to move to
+        required: true
+      repo_path:
+        description: folder holding requirements.txt
+        required: false
+        default: examples/demo_repo
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: install upgradeguard
+        run: pip install -r requirements.txt
+
+      - name: check the proposed upgrade
+        id: guard
+        continue-on-error: true
+        run: |
+          python -m upgradeguard run \
+            --repo "${{ inputs.repo_path }}" \
+            --package "${{ inputs.package }}" \
+            --from "${{ inputs.from_version }}" \
+            --to "${{ inputs.to_version }}" \
+            --policy policies/default.json \
+            --python python3
+
+      - name: keep the evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: upgradeguard-evidence
+          path: evidence/
+
+      - name: fail the job when the upgrade was rejected
+        if: steps.guard.outcome == 'failure'
+        run: |
+          echo "UpgradeGuard did not accept this upgrade. Download the evidence artifact to see why."
+          exit 1

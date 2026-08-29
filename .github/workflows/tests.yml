@@ -1,0 +1,23 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  demo-projects:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: install
+        run: pip install -r requirements.txt pytest
+      - name: check the tool imports
+        run: python -c "import upgradeguard.cli, upgradeguard.runner, upgradeguard.verdict"
+      - name: run the demo project tests
+        run: |
+          pip install -r examples/demo_repo/requirements.txt
+          cd examples/demo_repo && python -m pytest -q

@@ -12,7 +12,9 @@ def run_test_suite(env_dir, repo_path, output_dir, timeout=900):
         [
             interpreter_path(env_dir), "-m", "pytest",
             "--junitxml", junit_path,
-            "-q", "--maxfail", "0", "-p", "no:cacheprovider",
+            "-q", "-p", "no:cacheprovider",
+            "--continue-on-collection-errors",
+            "--rootdir", repo_path,
         ],
         cwd=repo_path,
         log_path=log_path,

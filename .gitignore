@@ -3,6 +3,8 @@ notes-private/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.coverage
+htmlcov/
 *.egg-info/
 build/
 dist/
@@ -10,6 +12,7 @@ dist/
 .venv/
 venv/
 env/
+.env
 
 evidence/
 runs/
@@ -19,5 +22,7 @@ work/
 .DS_Store
 .idea/
 .vscode/
+*.swp
 
 Dependency Health & License Checker.pdf
+SWE missed lab work/

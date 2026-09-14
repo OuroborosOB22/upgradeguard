@@ -188,4 +188,4 @@ docs/             the planning presentation
 
 ## Team
 
-Gurman Singh (1024030140), Madhur Tuteja (1024030145), Prayag (1024030145).
+Gurman Singh (1024030140), Madhur Tuteja (1024030145), Paryag (1024030125).

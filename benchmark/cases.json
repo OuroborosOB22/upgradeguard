@@ -535,7 +535,7 @@
       "policy": "policies/default.json",
       "expected": "Reject",
       "expected_signal": "test-regression",
-      "why": "Flask 2.2.5 imports url_quote from werkzeug.urls, which Werkzeug 3.0 removed. Flask fails to import and its tests must stop passing. This is a widely reported break from the Werkzeug 3.0 release notes."
+      "why": "Flask 2.2.3 imports url_quote from werkzeug.urls (src/flask/app.py line 30), which Werkzeug 3.0 removed, so Flask fails to import and its tests must stop passing. Correction: the first version of this case used Flask 2.2.5, which had already dropped that import, so the first benchmark run showed no break; the case now uses 2.2.3."
     },
     {
       "id": "flask-click-patch-safe",

@@ -49,6 +49,7 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
         build = build_environment(
             side, env_dir, lines, side_dir, python_bin,
             use_cache=use_cache, install_timeout=install_timeout,
+            project_dir=repo_copy if spec.install_project else None, build_env=spec.build_env,
         )
 
         # builds dependency graph and writes graph.json.
@@ -70,7 +71,7 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
             licenses = check_licenses(graph, policy, side_dir)
         if build["ok"]:
             announce(progress, "running tests in %s environment" % side)
-            tests = run_test_suite(env_dir, repo_copy, side_dir, timeout=test_timeout)
+            tests = run_test_suite(env_dir, repo_copy, side_dir, timeout=test_timeout, extra_args=spec.pytest_args)
 
         sides[side] = {
             "repo_copy": repo_copy,

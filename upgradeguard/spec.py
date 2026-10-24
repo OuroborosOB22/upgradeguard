@@ -22,6 +22,9 @@ class UpgradeSpec:
     policy_path: str = ""
     requirements_file: str = "requirements.txt"
     test_command: str = "pytest"
+    install_project: bool = False
+    pytest_args: list = field(default_factory=list)
+    build_env: dict = field(default_factory=dict)
     run_id: str = ""
     label: str = ""
 

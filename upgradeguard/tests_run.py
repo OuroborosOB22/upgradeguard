@@ -6,7 +6,7 @@ from .util import run_command
 
 # runs pytest in the sandbox + parses the machine-readable junit XML output + diffs the test results to detect test regressions
 
-def run_test_suite(env_dir, repo_path, output_dir, timeout=900):
+def run_test_suite(env_dir, repo_path, output_dir, timeout=900, extra_args=None):
     junit_path = os.path.join(output_dir, "junit.xml")
     log_path = os.path.join(output_dir, "pytest.log")
     result = run_command(
@@ -17,10 +17,11 @@ def run_test_suite(env_dir, repo_path, output_dir, timeout=900):
             "--continue-on-collection-errors", # -flag forces pytest to continue running the rest of the test suite
             # if one test file has a broken import pytest aborts tests and skips all other test files
             "--rootdir", repo_path,
-        ],
+        ] + list(extra_args or []),
         cwd=repo_path,
         log_path=log_path,
         timeout=timeout,
+        env=environment_for(env_dir),
     )
 
     parsed = parse_junit(junit_path)
@@ -36,6 +37,11 @@ def run_test_suite(env_dir, repo_path, output_dir, timeout=900):
         "counts": count_statuses(parsed or {}),
         "tail": tail_lines(result["output"]),
     }
+
+
+def environment_for(env_dir):
+    scripts = os.path.dirname(interpreter_path(env_dir))
+    return {"VIRTUAL_ENV": env_dir, "PATH": scripts + os.pathsep + os.environ.get("PATH", "")}
 
 
 def parse_junit(path): # usual junit tagging recog

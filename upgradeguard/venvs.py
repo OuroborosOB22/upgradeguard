@@ -26,12 +26,12 @@ def create_environment(python_bin, env_dir, log_path):
     return run_command([python_bin, "-m", "venv", env_dir], log_path=log_path, timeout=300)
 
 
-def pip_install(env_dir, arguments, log_path, use_cache=True, timeout=1800):
+def pip_install(env_dir, arguments, log_path, use_cache=True, timeout=1800, cwd=None, env=None):
     command = [interpreter_path(env_dir), "-m", "pip", "install", "--disable-pip-version-check", "--no-input"] # calls pip insall from env
     if not use_cache:
         command.append("--no-cache-dir")
     command.extend(arguments)
-    return run_command(command, log_path=log_path, timeout=timeout)
+    return run_command(command, cwd=cwd, log_path=log_path, timeout=timeout, env=env)
 
 
 def pip_freeze(env_dir, log_path): # exxports log with packages exact version for evidence
@@ -43,7 +43,7 @@ def pip_freeze(env_dir, log_path): # exxports log with packages exact version fo
 
 
 def build_environment(side, env_dir, requirement_lines, output_dir, python_bin,
-                      test_runner="pytest", use_cache=True, install_timeout=1800):
+                      test_runner="pytest", use_cache=True, install_timeout=1800, project_dir=None, build_env=None):
     started = time.time()
     os.makedirs(output_dir, exist_ok=True)
     install_log = os.path.join(output_dir, "install.log")
@@ -78,13 +78,22 @@ def build_environment(side, env_dir, requirement_lines, output_dir, python_bin,
     result["created"] = True
 
     # runs pip_install with -r requirements.used.txt and sets dependency-install and returns
-    install = pip_install(env_dir, ["-r", requirements_path], install_log, use_cache, install_timeout)
+    install = pip_install(env_dir, ["-r", requirements_path], install_log, use_cache, install_timeout, env=build_env)
     if install["returncode"] != 0:
         result["failure_stage"] = "dependency-install"
         result["failure_output"] = tail(install["output"])
         result["duration"] = round(time.time() - started, 2)
         return result
     result["installed"] = True
+
+    if project_dir:
+        own = pip_install(env_dir, ["--no-deps", "-e", "."], install_log, use_cache, install_timeout, cwd=project_dir, env=build_env)
+        if own["returncode"] != 0:
+            result["installed"] = False
+            result["failure_stage"] = "project-install"
+            result["failure_output"] = tail(own["output"])
+            result["duration"] = round(time.time() - started, 2)
+            return result
 
     # installs pytest so the test suite can be run
     if test_runner:

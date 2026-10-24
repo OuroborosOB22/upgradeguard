@@ -16,6 +16,8 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_ROOT)
 
 from web import security
+from upgradeguard import health, remote
+from upgradeguard.history import History
 from upgradeguard.runner import run_upgrade_check
 from upgradeguard.spec import UpgradeSpec, load_policy, new_run_id, validate_python_name, validate_spec
 from upgradeguard.util import read_json
@@ -48,6 +50,11 @@ class Settings:
     requests_per_minute: int = 120
     logins_per_minute: int = 8
     run_check: object = run_upgrade_check
+    run_remote: object = remote.run_remote
+    history_path: str = os.path.join(PROJECT_ROOT, "data", "history.db")
+    remote_profiles_path: str = os.environ.get("UPGRADEGUARD_REMOTE_PROFILES", "")
+    lookup_metadata: object = health.fetch_pypi
+    checks_per_hour: int = 20
 
 
 def inside(candidate, base):
@@ -70,6 +77,10 @@ def create_app(settings=None):
     active_runs = {}
     runs_lock = threading.Lock()
     audit = build_audit_log(settings.log_path)
+    history = History(settings.history_path)
+    profiles = remote.load_profiles(settings.remote_profiles_path)
+    health_limiter = security.RateLimiter(settings.checks_per_hour, 3600)
+    cancel_flags = {}
 
     def safe_repo_path(value):
         if not value:
@@ -124,7 +135,15 @@ def create_app(settings=None):
         with runs_lock:
             return len([item for item in active_runs.values() if item["state"] in ("queued", "running")])
 
-    def start_run(spec, policy, strict_licences):
+    def backfill_history():
+        for item in stored_runs():
+            if not history.has_run(item["run_id"]):
+                history.add("upgrade", "%s %s to %s" % (item["package"], item["from_version"], item["to_version"]), item["decision"], item, run_id=item["run_id"])
+
+    backfill_history()
+
+    def start_run(spec, policy, strict_licences, location="local"):
+        cancel_flags[spec.run_id] = threading.Event()
         with runs_lock:
             active_runs[spec.run_id] = {
                 "run_id": spec.run_id,
@@ -136,34 +155,54 @@ def create_app(settings=None):
                 "to_version": spec.to_version,
                 "repo": os.path.basename(spec.repo_path.rstrip("/")),
                 "error": "",
+                "location": location,
+                "log": [],
             }
 
         def report(message):
             with runs_lock:
                 active_runs[spec.run_id]["state"] = "running"
                 active_runs[spec.run_id]["message"] = message
+                log = active_runs[spec.run_id]["log"]
+                if not log or log[-1] != message:
+                    log.append(message)
+                    del log[:-60]
 
         def work():
             try:
-                bundle = settings.run_check(
-                    spec, policy,
-                    evidence_root=settings.evidence_root,
-                    work_root=settings.work_root,
-                    strict_licences=strict_licences,
-                    progress=report,
-                )
+                if location == "local":
+                    bundle = settings.run_check(
+                        spec, policy,
+                        evidence_root=settings.evidence_root,
+                        work_root=settings.work_root,
+                        strict_licences=strict_licences,
+                        progress=report,
+                    )
+                else:
+                    bundle, _ = settings.run_remote(spec, policy, profiles[location], settings.evidence_root, progress=report,
+                                                    cancelled=cancel_flags[spec.run_id].is_set, options={"strict_licences": strict_licences})
                 with runs_lock:
                     active_runs[spec.run_id]["state"] = "finished"
                     active_runs[spec.run_id]["decision"] = bundle["verdict"]["decision"]
                     active_runs[spec.run_id]["message"] = "done"
+                history.add("upgrade", "%s %s to %s" % (spec.package, spec.from_version, spec.to_version), bundle["verdict"]["decision"],
+                            {"run_id": spec.run_id, "location": location}, run_id=spec.run_id)
             except Exception as failure:
                 audit.error("run %s failed: %r", spec.run_id, failure)
+                kind = getattr(failure, "kind", "")
                 with runs_lock:
                     active_runs[spec.run_id]["state"] = "failed"
                     active_runs[spec.run_id]["message"] = "could not finish"
-                    active_runs[spec.run_id]["error"] = "The check could not finish. The details are in the server log."
+                    active_runs[spec.run_id]["kind"] = kind
+                    active_runs[spec.run_id]["error"] = (
+                        "The server could not be used (%s): %s. This says nothing about the upgrade." % (kind, str(failure)[:200])
+                        if kind in ("connection", "preflight", "timeout", "cancelled", "output", "worker")
+                        else "The check could not finish. The details are in the server log.")
+                history.add("upgrade", "%s %s to %s" % (spec.package, spec.from_version, spec.to_version), "Not finished",
+                            {"run_id": spec.run_id, "location": location, "kind": kind}, run_id=None)
             finally:
                 shutil.rmtree(os.path.join(settings.work_root, spec.run_id), ignore_errors=True)
+                cancel_flags.pop(spec.run_id, None)
 
         threading.Thread(target=work, daemon=True).start()
 
@@ -185,11 +224,13 @@ def create_app(settings=None):
 
     def index_page(status=200, **values):
         runs = merged_runs() if authenticated() else []
-        return page("index.html", status, runs=runs, policies=policy_choices(), pythons=PYTHON_CHOICES,
+        return page("index.html", status, runs=runs, policies=policy_choices(), pythons=PYTHON_CHOICES, locations=sorted(profiles),
                     login_needed=not authenticated(), **values)
 
     @app.before_request
     def guard():
+        if request.endpoint == "health_check":
+            request.max_content_length = health.MAX_BYTES + 20 * 1024
         if not page_limiter.allow(client()):
             audit.warning("%s rate limited", client())
             abort(429)
@@ -233,6 +274,9 @@ def create_app(settings=None):
         python_name = request.form.get("python", "python3").strip()
         policy_name = os.path.basename(request.form.get("policy", "default.json"))
         strict = request.form.get("strict") == "on"
+        location = request.form.get("location", "local")
+        if location != "local" and location not in profiles:
+            return index_page(400, error="That server is not set up here.")
 
         if not repo or not package or not from_version or not to_version:
             return index_page(400, error="Fill in the repository, the package and both versions.")
@@ -259,7 +303,7 @@ def create_app(settings=None):
         spec.run_id = new_run_id(spec)
         policy = load_policy(spec.policy_path if os.path.isfile(spec.policy_path) else "")
         audit.info("%s started %s", client(), spec.run_id)
-        start_run(spec, policy, strict)
+        start_run(spec, policy, strict, location)
         return redirect(url_for("show_run", run_id=spec.run_id))
 
     @app.route("/runs/<run_id>")
@@ -283,7 +327,7 @@ def create_app(settings=None):
         with runs_lock:
             pending = dict(active_runs.get(run_id, {}))
         if pending:
-            return {"run_id": run_id, "state": pending["state"], "message": pending["message"]}
+            return {"run_id": run_id, "state": pending["state"], "message": pending["message"], "log": pending.get("log", []), "error": pending.get("error", "")}
         directory = safe_evidence_dir(run_id)
         if directory and os.path.isfile(os.path.join(directory, "verdict.json")):
             return {"run_id": run_id, "state": "finished", "message": "done"}
@@ -313,6 +357,79 @@ def create_app(settings=None):
                                      without_host_paths(full, settings.project_root))
         buffer.seek(0)
         return send_file(buffer, mimetype="application/zip", as_attachment=True, download_name="%s-evidence.zip" % run_id)
+
+    @app.route("/health", methods=["POST"])
+    def health_check():
+        if not health_limiter.allow(client()):
+            audit.warning("%s health quota used up", client())
+            return index_page(429, error="That is the limit of dependency checks per hour. Try again later.", tab="health")
+        upload = request.files.get("file")
+        text = request.form.get("text", "")
+        if upload and upload.filename:
+            raw = upload.read(health.MAX_BYTES + 1)
+        else:
+            raw = text.encode("utf8", "replace")
+        if not raw.strip():
+            return index_page(400, error="Choose a requirements.txt file or paste its text.", tab="health")
+        try:
+            decoded = raw.decode("utf8")
+            policy_name = os.path.basename(request.form.get("policy", "default.json"))
+            if policy_name not in policy_choices():
+                policy_name = "default.json"
+            policy_path = os.path.join(settings.policy_dir, policy_name)
+            report = health.analyse(decoded, load_policy(policy_path if os.path.isfile(policy_path) else ""), settings.lookup_metadata)
+        except UnicodeDecodeError:
+            return index_page(400, error="That file is not plain text.", tab="health")
+        except health.BadFile as problem:
+            return index_page(400, error="That file cannot be checked: %s." % problem, tab="health")
+        label = (upload.filename if upload and upload.filename else "pasted text")[:80]
+        record_id = history.add("health", label, "%d/100 %s" % (report["score"], report["status"]), report)
+        audit.info("%s health check %d", client(), record_id)
+        return redirect(url_for("show_health", record_id=record_id))
+
+    @app.route("/health/<int:record_id>")
+    def show_health(record_id):
+        record = history.get(record_id)
+        if not record or record["kind"] != "health":
+            abort(404)
+        return page("health.html", record=record, report=record["payload"])
+
+    @app.route("/history")
+    def history_page():
+        return page("history.html", rows=history.recent(100))
+
+    @app.route("/settings")
+    def settings_page():
+        shown = [{"name": item.name, "host": item.host, "user": item.user, "port": item.port, "timeout": item.timeout_seconds} for item in profiles.values()]
+        return page("settings.html", profiles=sorted(shown, key=lambda item: item["name"]), tested=request.args.get("tested", ""), outcome=request.args.get("outcome", ""))
+
+    @app.route("/settings/test", methods=["POST"])
+    def settings_test():
+        name = request.form.get("profile", "")
+        if name not in profiles:
+            abort(404)
+        if not run_limiter.allow(client()):
+            abort(429)
+        try:
+            caps = remote.test_connection(profiles[name])
+            outcome = "Connected. Python %s, %d MB free." % (caps["python"], caps["disk_free_mb"])
+        except remote.RemoteError as problem:
+            outcome = "Not usable (%s): %s" % (problem.kind, str(problem)[:160])
+        audit.info("%s tested profile %s", client(), name)
+        return redirect(url_for("settings_page", tested=name, outcome=outcome))
+
+    @app.route("/runs/<run_id>/cancel", methods=["POST"])
+    def cancel_run(run_id):
+        if not RUN_ID_PATTERN.fullmatch(run_id):
+            abort(404)
+        flag = cancel_flags.get(run_id)
+        with runs_lock:
+            known = run_id in active_runs and active_runs[run_id].get("location", "local") != "local"
+        if not flag or not known:
+            abort(404)
+        flag.set()
+        audit.info("%s cancelled %s", client(), run_id)
+        return redirect(url_for("show_run", run_id=run_id))
 
     @app.errorhandler(Exception)
     def any_problem(problem):

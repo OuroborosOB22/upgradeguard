@@ -320,3 +320,100 @@ def test_a_deployment_that_requires_a_token_refuses_to_start_without_one(world, 
     with pytest.raises(RuntimeError):
         make_app(world)
     assert make_app(world, access_token="set") is not None
+
+
+def fake_lookup(name):
+    return {"status": "found", "latest": "9.9", "summary": "demo", "licence": "MIT", "requires_python": ""}
+
+
+def test_health_check_reads_pasted_text_and_saves_it_in_the_history(world):
+    client = make_app(world, history_path=str(world / "h.db"), lookup_metadata=fake_lookup).test_client()
+    token = csrf_pair(client)
+    response = client.post("/health", data={"csrf": token, "text": "flask==3.0.0\nnumpy>=1.24\nnumpy==1.26.4\n", "policy": "default.json"})
+    assert response.status_code == 302
+    page = client.get(response.headers["Location"]).get_data(as_text=True)
+    assert "Dependency health report" in page and "numpy" in page and "92" in page
+    assert "Dependency health" in client.get("/history").get_data(as_text=True)
+
+
+def test_health_check_accepts_a_file_upload_and_refuses_oversized_or_empty_input(world):
+    client = make_app(world, history_path=str(world / "h.db"), lookup_metadata=fake_lookup).test_client()
+    token = csrf_pair(client)
+    upload = client.post("/health", data={"csrf": token, "file": (io.BytesIO(b"requests==2.0\n"), "requirements.txt")}, content_type="multipart/form-data")
+    assert upload.status_code == 302
+    assert client.post("/health", data={"csrf": token, "text": ""}).status_code == 400
+    assert client.post("/health", data={"csrf": token, "text": "x" * 250_000}).status_code == 413
+
+
+def test_health_pages_escape_hostile_package_text(world):
+    client = make_app(world, history_path=str(world / "h.db"), lookup_metadata=fake_lookup).test_client()
+    token = csrf_pair(client)
+    response = client.post("/health", data={"csrf": token, "text": "<script>alert(1)</script>==1\n"})
+    body = client.get(response.headers["Location"]).get_data(as_text=True)
+    assert "<script>alert(1)" not in body
+
+
+def test_health_check_needs_the_csrf_token(world):
+    client = make_app(world, history_path=str(world / "h.db")).test_client()
+    csrf_pair(client)
+    assert client.post("/health", data={"text": "flask"}).status_code == 403
+
+
+def test_finished_runs_are_listed_in_the_history_after_a_restart(world):
+    path = str(world / "h.db")
+    client = make_app(world, history_path=path).test_client()
+    token = csrf_pair(client)
+    run_id = client.post("/runs", data=good_form(token)).headers["Location"].rsplit("/", 1)[1]
+    for _ in range(100):
+        if client.get("/runs/%s/state" % run_id).get_json()["state"] != "queued" and "finished" in client.get("/runs/%s/state" % run_id).get_json()["state"]:
+            break
+        time.sleep(0.05)
+    assert "requests 2.28.2 to 2.32.5" in make_app(world, history_path=path).test_client().get("/history").get_data(as_text=True)
+
+
+def test_settings_lists_servers_without_secrets_and_cannot_add_one(world):
+    profiles = world / "profiles.json"
+    profiles.write_text(json.dumps({"profiles": {"demo": {"host": "build.example.org", "user": "azureuser", "identity_file": "/keys/secret-id", "known_hosts_file": "/keys/known",
+                                                          "worker_dir": "/srv/ug", "jobs_dir": "/srv/jobs"}}}))
+    client = make_app(world, remote_profiles_path=str(profiles), history_path=str(world / "h.db")).test_client()
+    page = client.get("/settings").get_data(as_text=True)
+    assert "build.example.org" in page and "secret-id" not in page
+    token = csrf_pair(client)
+    assert client.post("/settings/test", data={"csrf": token, "profile": "not-a-profile"}).status_code == 404
+    assert "Server: demo" in client.get("/").get_data(as_text=True)
+
+
+def test_a_remote_run_only_accepts_a_server_that_is_configured(world):
+    client = make_app(world, history_path=str(world / "h.db")).test_client()
+    token = csrf_pair(client)
+    assert client.post("/runs", data=good_form(token, location="evil.example.org")).status_code == 400
+
+
+def test_a_server_problem_is_shown_as_not_an_upgrade_verdict(world):
+    from upgradeguard.remote import RemoteError
+
+    def broken(spec, policy, profile, evidence_root, progress=None, cancelled=None, options=None):
+        raise RemoteError("connection", "could not reach the server")
+
+    profiles = world / "profiles.json"
+    profiles.write_text(json.dumps({"profiles": {"demo": {"host": "build.example.org", "user": "azureuser", "identity_file": "/keys/id", "known_hosts_file": "/keys/known",
+                                                          "worker_dir": "/srv/ug", "jobs_dir": "/srv/jobs"}}}))
+    client = make_app(world, remote_profiles_path=str(profiles), run_remote=broken, history_path=str(world / "h.db")).test_client()
+    token = csrf_pair(client)
+    run_id = client.post("/runs", data=good_form(token, location="demo")).headers["Location"].rsplit("/", 1)[1]
+    for _ in range(100):
+        state = client.get("/runs/%s/state" % run_id).get_json()
+        if state["state"] == "failed":
+            break
+        time.sleep(0.05)
+    assert "says nothing about the upgrade" in state["error"] and "could not reach the server" in state["error"]
+
+
+def test_a_browser_form_post_with_a_null_origin_is_accepted_but_cross_site_is_not(world):
+    client = make_app(world, history_path=str(world / "h.db")).test_client()
+    token = csrf_pair(client)
+    same = {"Origin": "null", "Sec-Fetch-Site": "same-origin"}
+    assert client.post("/runs", data=good_form(token), headers=same).status_code == 302
+    cross = {"Origin": "https://evil.example", "Sec-Fetch-Site": "cross-site"}
+    assert client.post("/runs", data=good_form(token), headers=cross).status_code == 403
+    assert client.post("/runs", data=good_form(token), headers={"Origin": "https://evil.example"}).status_code == 403

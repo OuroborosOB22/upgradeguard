@@ -1,10 +1,21 @@
-const status = document.getElementById("status");
-const poll = setInterval(async () => {
-  const response = await fetch(status.dataset.stateUrl);
-  const data = await response.json();
-  status.textContent = data.message || data.state;
-  if (data.state === "finished" || data.state === "failed") {
-    clearInterval(poll);
-    location.reload();
-  }
-}, 1500);
+"use strict";
+(function () {
+  var status = document.getElementById("status");
+  var log = document.getElementById("log");
+  var lines = 0;
+  var timer = setInterval(function () {
+    fetch(status.dataset.stateUrl).then(function (response) { return response.json(); }).then(function (data) {
+      status.textContent = data.message || data.state;
+      (data.log || []).slice(lines).forEach(function (line) {
+        var item = document.createElement("li");
+        item.textContent = line;
+        log.appendChild(item);
+      });
+      lines = (data.log || []).length;
+      if (data.state === "finished" || data.state === "failed") {
+        clearInterval(timer);
+        location.reload();
+      }
+    });
+  }, 1500);
+})();

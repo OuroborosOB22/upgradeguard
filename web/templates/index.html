@@ -1,73 +1,84 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="card">
-  <h1>Check an upgrade</h1>
-  <p class="sub">We build the project twice, once on the current version and once on the
-  proposed one, run its tests in both, and tell you what actually changed.</p>
-  {% if error %}<p class="error">{{ error }}</p>{% endif %}
-  {% if login_needed %}
+<section class="hero">
+  <h1>Prove it before you ship.</h1>
+  <p class="lede">Build the project twice, once on the current version and once on the proposed one, run its own tests in both, and see what really changed. Or check a requirements file for problems.</p>
+</section>
+
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+
+{% if login_needed %}
+<section class="panel narrow">
+  <h2>Log in</h2>
   <form method="post" action="{{ url_for('login') }}">
     <input type="hidden" name="csrf" value="{{ csrf }}">
-    <label>Access token
-      <input name="token" type="password" autocomplete="off" required>
-    </label>
-    <button type="submit">Log in</button>
+    <label>Access token<input name="token" type="password" autocomplete="off" required></label>
+    <button class="primary" type="submit">Log in</button>
   </form>
-  {% else %}
+</section>
+{% else %}
+<div class="tabs" role="tablist">
+  <button type="button" role="tab" data-tab="upgrade" aria-selected="{{ 'false' if tab == 'health' else 'true' }}">Upgrade check</button>
+  <button type="button" role="tab" data-tab="health" aria-selected="{{ 'true' if tab == 'health' else 'false' }}">Dependency health</button>
+</div>
+
+<section class="panel" id="tab-upgrade" {% if tab == 'health' %}hidden{% endif %}>
   <form method="post" action="{{ url_for('create_run') }}">
     <input type="hidden" name="csrf" value="{{ csrf }}">
-    <label>Repository folder
-      <input name="repo" value="examples/demo_repo" required maxlength="200">
-    </label>
-    <div class="row">
+    <label>Project folder<input name="repo" value="examples/demo_repo" required maxlength="200"></label>
+    <div class="row3">
       <label>Package<input name="package" value="jinja2" required maxlength="100"></label>
       <label>Current version<input name="from_version" value="3.0.3" required maxlength="64"></label>
       <label>Proposed version<input name="to_version" value="3.1.6" required maxlength="64"></label>
     </div>
-    <div class="row">
-      <label>Licence policy
-        <select name="policy">
-          {% for name in policies %}<option value="{{ name }}">{{ name }}</option>{% endfor %}
+    <div class="row3">
+      <label>Where to run
+        <select name="location">
+          <option value="local">This computer</option>
+          {% for name in locations %}<option value="{{ name }}">Server: {{ name }}</option>{% endfor %}
         </select>
+      </label>
+      <label>Licence policy
+        <select name="policy">{% for name in policies %}<option value="{{ name }}">{{ name }}</option>{% endfor %}</select>
       </label>
       <label>Python
-        <select name="python">
-          {% for name in pythons %}<option value="{{ name }}">{{ name }}</option>{% endfor %}
-        </select>
+        <select name="python">{% for name in pythons %}<option value="{{ name }}">{{ name }}</option>{% endfor %}</select>
       </label>
-      <label class="check"><input type="checkbox" name="strict"> Strict licence mode</label>
     </div>
-    <button type="submit">Run the check</button>
+    <label class="check"><input type="checkbox" name="strict"> Strict licence mode</label>
+    <button class="primary" type="submit">Run the check</button>
   </form>
-  {% endif %}
 </section>
 
-{% if not login_needed %}
-<section class="card">
-  <h2>Runs</h2>
-  {% if runs %}
-  <table>
-    <thead><tr><th>run</th><th>project</th><th>upgrade</th><th>result</th></tr></thead>
+<section class="panel" id="tab-health" {% if tab != 'health' %}hidden{% endif %}>
+  <form method="post" action="{{ url_for('health_check') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>requirements.txt file<input name="file" type="file" accept=".txt,text/plain"></label>
+    <label>Or paste the text<textarea name="text" rows="7" maxlength="200000" spellcheck="false"></textarea></label>
+    <label>Licence policy
+      <select name="policy">{% for name in policies %}<option value="{{ name }}">{{ name }}</option>{% endfor %}</select>
+    </label>
+    <p class="note">The file is only read, never installed or run. Package details come from the public PyPI index.</p>
+    <button class="primary" type="submit">Check the file</button>
+  </form>
+</section>
+
+{% if runs %}
+<section class="panel">
+  <h2>Recent upgrade checks</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Run</th><th>Upgrade</th><th>Result</th></tr></thead>
     <tbody>
-    {% for run in runs %}
+    {% for run in runs[:6] %}
       <tr>
         <td><a href="{{ url_for('show_run', run_id=run.run_id) }}">{{ run.run_id }}</a></td>
-        <td>{{ run.repo }}</td>
         <td>{{ run.package }} {{ run.from_version }} to {{ run.to_version }}</td>
-        <td>
-          {% if run.decision %}
-            <span class="badge {{ run.decision.split(' ')[0]|lower }}">{{ run.decision }}</span>
-          {% else %}
-            <span class="badge running">{{ run.state|default('running') }}</span>
-          {% endif %}
-        </td>
+        <td>{% if run.decision %}<span class="badge {{ run.decision.split(' ')[0]|lower }}">{{ run.decision }}</span>{% else %}{{ run.state }}{% endif %}</td>
       </tr>
     {% endfor %}
     </tbody>
-  </table>
-  {% else %}
-  <p class="sub">No runs yet.</p>
-  {% endif %}
+  </table></div>
 </section>
+{% endif %}
 {% endif %}
 {% endblock %}

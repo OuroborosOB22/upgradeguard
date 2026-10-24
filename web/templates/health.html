@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Dependency health{% endblock %}
+{% block content %}
+<section class="panel">
+  <p class="eyebrow">Dependency health report</p>
+  <div class="score-line">
+    <div class="score"><b>{{ report.score }}</b><span>/ 100</span></div>
+    <span class="badge {{ report.status|lower }}">{{ report.status }}</span>
+  </div>
+  <p class="note">{{ record.title }}. {{ record.created_at }}. Licence policy: {{ report.policy }}.</p>
+  <p class="note">{{ report.score_note }} {{ report.metadata_note }}</p>
+</section>
+
+<div class="stats">
+  <div class="stat"><b>{{ report.total_specifications }}</b><span>total specifications</span></div>
+  <div class="stat"><b>{{ report.valid_specifications }}</b><span>valid</span></div>
+  <div class="stat"><b>{{ report.invalid|length }}</b><span>invalid</span></div>
+  <div class="stat"><b>{{ report.duplicates|length }}</b><span>duplicated packages</span></div>
+  <div class="stat"><b>{{ report.conflicts|length }}</b><span>version conflicts</span></div>
+  <div class="stat"><b>{{ report.unique_packages }}</b><span>unique packages</span></div>
+</div>
+
+{% if report.deductions %}
+<section class="panel">
+  <h2>How the score was reached</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Issue</th><th class="num">Count</th><th class="num">Points each</th><th class="num">Points</th></tr></thead>
+    <tbody>{% for item in report.deductions %}<tr><td>{{ item.issue }}</td><td class="num">{{ item.count }}</td><td class="num">{{ item.points_each }}</td><td class="num">-{{ item.points }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endif %}
+
+{% for title, items in (('Invalid specifications', report.invalid), ('Duplicate declarations', report.duplicates), ('Version conflicts', report.conflicts)) %}
+{% if items %}
+<section class="panel">
+  <h2>{{ title }}</h2>
+  <ul class="reasons">
+    {% for item in items %}
+    <li class="blocking"><code>{{ item.package or ('line ' ~ item.line) }}</code>
+      <p>{% if item.problem %}{{ item.text }}: {{ item.problem }}{% elif item.requirements %}{{ item.requirements|join(' and ') }} cannot both be met (lines {{ item.lines|join(', ') }}){% else %}declared {{ item.declarations }} times (lines {{ item.lines|join(', ') }}){% endif %}</p></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endfor %}
+
+<section class="panel">
+  <h2>Packages</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Package</th><th>Declared</th><th>Latest</th><th>Licence</th><th>About</th></tr></thead>
+    <tbody>
+    {% for row in report.packages %}
+      <tr>
+        <td><code>{{ row.package }}</code></td>
+        <td>{{ row.declared|join(', ') }}</td>
+        <td>{{ row.latest or '' }}{% if row.metadata == 'not_found' %}<span class="badge reject">not on PyPI</span>{% elif row.metadata == 'unavailable' %}<span class="badge insufficient">unavailable</span>{% endif %}</td>
+        <td>{% if row.licence_status %}{{ row.licence }} <span class="badge {{ 'reject' if row.licence_status == 'denied' else ('accept' if row.licence_status == 'allowed' else 'insufficient') }}">{{ row.licence_status }}</span>{% endif %}</td>
+        <td>{{ row.summary or '' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  <p class="note">An unknown licence stays unknown. It is listed, not guessed.</p>
+</section>
+{% endblock %}

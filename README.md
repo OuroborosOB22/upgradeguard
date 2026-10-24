@@ -133,6 +133,22 @@ docker run -p 8000:8000 -e UPGRADEGUARD_ACCESS_TOKEN=<choose a long random token
 The image refuses to start without the token. Put it behind HTTPS before exposing it.
 We have built and started this image locally, we have not deployed it anywhere public.
 
+## Check a requirements file
+
+The site has a second form, "Dependency health", that reads a `requirements.txt` without installing anything. It reports total and valid specifications, invalid lines, duplicate declarations, version conflicts, package details and licences from the public PyPI index, and a health score out of 100.
+
+The score starts at 100 and loses points for what was found: 15 for each invalid line, 8 for each duplicated package, 20 for each version conflict, 10 for each package whose licence the policy denies and 10 for each package that is not on PyPI. An unknown licence or package details that could not be fetched are listed but not deducted, because not knowing is not the same as a problem. 90 and above is Good, 70 to 89 is Fair, anything lower is Poor. The score is a summary of what was checked, not a measure of safety.
+
+Every analysis, this one and the upgrade checks, is stored in `data/history.db` (SQLite) and listed on the History page, so earlier results survive a restart.
+
+## Run a check on your own server
+
+A check can run on a Linux server you control over SSH. Servers are set up in a file on the machine that runs the site, never from the browser. See `REMOTE.md`. Only servers that have actually been tested are claimed to work, and the notes say which those are.
+
+## Explain the changes
+
+On a finished result, "Explain changes" builds a short summary and a change diagram from the recorded evidence. You choose between the report only and the report plus up to three project files that import the changed package, see exactly what would be shared and where it would go, and confirm. Without a model set up, the diagram is built from the report on the server and nothing leaves it. With one (`UPGRADEGUARD_EXPLAIN_URL`, `UPGRADEGUARD_EXPLAIN_MODEL`, and the key in an environment variable), the model must answer in a fixed JSON shape, every claim must cite evidence that was provided, and anything else is thrown away. An explanation never changes the verdict.
+
 ## Use it in CI
 
 `.github/workflows/upgradeguard.yml` runs a check on demand, uploads the evidence as
@@ -221,6 +237,8 @@ decide it and what the first run taught us. Results are in `benchmark/results.md
 | pip check only | 71% | 14 | 0 |
 | pip-audit only | 56% | 23 | 0 |
 | static file check only | 68% | 11 | 5 |
+
+These are the stored results of the last benchmark run. Changes made after it, such as the stricter reading of licence expressions that use AND, the health report and the server runner, have not been benchmarked again.
 
 Three of the 59 cases are meant to end as Insufficient Evidence and they did. The first
 run scored 88 percent and found real faults in our own tool; both runs are kept.

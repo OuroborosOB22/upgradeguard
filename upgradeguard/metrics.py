@@ -40,7 +40,7 @@ def signal_metrics(rows):
 def build_metrics(rows):
     measured = [row for row in rows if "before_built" in row]
     baseline_ok = [row for row in measured if row["before_built"]]
-    upgrade_expected = [row for row in baseline_ok if row["expected_signal"] != "build-failure"]
+    upgrade_expected = [row for row in baseline_ok if row["expected_signal"] not in ("build-failure", "dependency-conflict")]
     upgrade_ok = [row for row in upgrade_expected if row["after_built"]]
     build_failures = [row for row in baseline_ok if row["expected_signal"] == "build-failure"]
     build_failures_found = [row for row in build_failures if not row["after_built"]]

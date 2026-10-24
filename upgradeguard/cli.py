@@ -79,6 +79,11 @@ def build_parser():
     suite.add_argument("--test-timeout", type=int, default=900)
     suite.add_argument("--only", nargs="*")
 
+    rescore = sub.add_parser("benchmark-rescore", help="recompute the metrics from an existing results file without running anything")
+    rescore.add_argument("--input", default="benchmark/results.json")
+    rescore.add_argument("--output", default="benchmark/results.json")
+    rescore.add_argument("--note", action="append")
+
     snap = sub.add_parser("snapshot-run", help="run the tests once and record the result as a snapshot")
     add_project_flags(snap)
     snap.add_argument("--store", default="snapshots")
@@ -133,6 +138,9 @@ def main(argv=None):
     if args.command == "benchmark":
         from .benchmark import command_benchmark
         return command_benchmark(args)
+    if args.command == "benchmark-rescore":
+        from .benchmark import command_rescore
+        return command_rescore(args)
     if args.command == "snapshot-run":
         from .commands import command_snapshot_run
         return command_snapshot_run(args)

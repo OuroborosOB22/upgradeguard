@@ -61,3 +61,23 @@ We separate the two on purpose.
 - Modern pip refuses to install an inconsistent set at all, so most conflicts show up
   as a build failure rather than as a `pip check` complaint. We kept the `pip check`
   stage because it still catches sets that were installed in separate steps.
+
+## What the first run taught us
+
+Run 1 (59 cases, ground truth committed first) got 52 verdicts right. The seven misses
+were all useful, and each one was fixed in the tool or corrected in the case, in
+separate commits:
+
+| miss | what it really was | fix |
+| --- | --- | --- |
+| five vulnerability cases approved | pip-audit exits with a summary line after its JSON when it finds something, and we failed to parse that, so we silently fell back to the tiny offline list | read the first JSON value and ignore what follows |
+| httpx cryptography case said Insufficient Evidence | the upgraded tests timed out, and the tool let that outrank a known new advisory | blocking evidence now outranks unfinished tests |
+| jinja markupsafe case said Insufficient Evidence | after the upgrade pytest cannot even import the project, so no results exist | a suite that ran before and cannot start after is a rejection |
+| flask werkzeug case approved | our expectation was wrong: Flask 2.2.5 had already dropped the url_quote import, Flask 2.2.3 still has it | the case now uses Flask 2.2.3 and the correction is written in its `why` |
+
+Run 2 is the committed `results.json`. Run 1 is kept as `results.run1.json` so the
+history stays visible. Nothing else in `cases.json` changed between the runs.
+
+Two things the benchmark does not show: a 100 percent score on 59 cases we wrote
+ourselves is not a claim about all projects, and the cases are mostly small, fast
+libraries, not big applications.

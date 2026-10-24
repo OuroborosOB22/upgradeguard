@@ -151,8 +151,17 @@ def command_benchmark(args):
             rows.append(future.result())
             print("[%d/%d] %s: expected %s, got %s" % (index, len(cases), case["id"], rows[-1]["expected"], rows[-1]["actual"]))
 
-    report = {
+    report = build_report(version, rows, {"jobs": str(args.jobs), "test_timeout": str(args.test_timeout)})
+    write_json(args.output, report)
+    write_results_markdown(report, os.path.splitext(args.output)[0] + ".md")
+    print_table(report)
+    return 0 if report["summary"]["false_approvals"] == 0 else 1
+
+
+def build_report(version, rows, provenance=None):
+    return {
         "benchmark_version": version,
+        "provenance": provenance or {},
         "summary": summarise(rows),
         "methods": all_methods(scorable(rows), BASELINE_NAMES),
         "signals": signal_metrics(scorable(rows)),
@@ -160,10 +169,19 @@ def command_benchmark(args):
         "timing": time_metrics(scorable(rows)),
         "results": rows,
     }
+
+
+def command_rescore(args):
+    old = read_json(args.input)
+    provenance = dict(old.get("provenance", {}))
+    for item in args.note or []:
+        key, _, value = item.partition("=")
+        provenance[key] = value
+    report = build_report(old["benchmark_version"], old["results"], provenance)
     write_json(args.output, report)
     write_results_markdown(report, os.path.splitext(args.output)[0] + ".md")
     print_table(report)
-    return 0 if report["summary"]["false_approvals"] == 0 else 1
+    return 0
 
 
 def print_table(report):

@@ -41,9 +41,11 @@ def cases_table(results):
 def render_results(report):
     builds = report["builds"]
     timing = report["timing"]
+    notes = report.get("provenance", {})
+    provenance = ["Run details: " + ", ".join("%s %s" % (key.replace("_", " "), value) for key, value in sorted(notes.items())), ""] if notes else []
     lines = ["# Benchmark results", "",
              "Cases: %d. Positive class is Reject. Ground truth was committed before these results." % report["summary"]["cases"],
-             "", "## Verdicts against the baselines", ""]
+             ""] + provenance + ["## Verdicts against the baselines", ""]
     lines += methods_table(report["methods"])
     lines += ["", "## Detection by signal", ""] + signals_table(report["signals"])
     lines += ["", "## Environment builds", "",

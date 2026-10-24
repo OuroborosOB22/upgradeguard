@@ -60,3 +60,8 @@ def test_all_methods_scores_baselines_with_the_same_rules():
     methods = all_methods(rows, ["pip-check"])
     assert methods["upgradeguard"]["recall"] == 1.0
     assert methods["pip-check"]["false_approvals"] == 1
+
+
+def test_conflict_cases_do_not_count_against_the_upgraded_build_rate():
+    rows = [row("Reject", "Reject", "dependency-conflict", after=False), row("Accept", "Accept", after=True)]
+    assert build_metrics(rows)["upgrade_build_success"] == 1.0

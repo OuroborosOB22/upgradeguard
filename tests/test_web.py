@@ -44,6 +44,7 @@ def make_app(world, **changes):
         secret="test-secret",
         run_check=fake_check,
         requests_per_minute=10_000,
+        history_path=str(world / "history.db"),
     )
     values.update(changes)
     return create_app(Settings(**values))

@@ -2,7 +2,7 @@
 (function () {
   var status = document.getElementById("status");
   var log = document.getElementById("log");
-  var lines = 0;
+  var lines = log.children.length;
   var timer = setInterval(function () {
     fetch(status.dataset.stateUrl).then(function (response) { return response.json(); }).then(function (data) {
       status.textContent = data.message || data.state;

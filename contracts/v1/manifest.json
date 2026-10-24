@@ -1,0 +1,10 @@
+{
+  "contract_version": "1.0.0",
+  "status": "draft",
+  "files": {
+    "request.schema.json": "b350bfad8665f6f5100f8902cd6f8ec8d8d458a26360c09be1b573fbaad1feaa",
+    "evidence.schema.json": "f0b4af321d4ba1825f70c69f41df9281cea122827939a2d9d1c67ba9d63324e9",
+    "prediction_request.schema.json": "a7cd6d4450a6a73f9ebe0e083f09479fa0e3f914c2d722dd4743e3ac609194e3",
+    "prediction_response.schema.json": "6c23c9627890cd90388bd2125464b79dd43bf6af8b421ca5ce7a49d8a395a5b2"
+  }
+}

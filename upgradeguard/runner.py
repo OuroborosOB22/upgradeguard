@@ -7,6 +7,8 @@ from .checks.vulns import audit_environment, diff_vulnerabilities
 from .graph import build_graph, diff_graphs
 from .metadata import packages_as_map
 from .report import write_report
+from .contract import write_contract_evidence
+from .source import describe_source
 from .spec import declared_names, new_run_id, pin_package, read_requirements, validate_spec
 from .tests_run import diff_test_runs, run_test_suite
 from .util import write_json
@@ -16,7 +18,8 @@ from .verdict import decide
 
 def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
                       allow_network=True, use_cache=True, test_timeout=900,
-                      install_timeout=1800, strict_licences=False, progress=None):
+                      install_timeout=1800, strict_licences=False, progress=None,
+                      operation="REHEARSE_UPGRADE", execution_provider="LOCAL", image_digest=None):
     started = time.time()
     validate_spec(spec)
     if not spec.run_id:
@@ -32,6 +35,7 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
     os.makedirs(evidence_dir, exist_ok=True)
     os.makedirs(work_dir, exist_ok=True)
 
+    source = describe_source(repo_path)
     python_bin = resolve_python(spec.python_bin) # returns absolute path to python executable
     base_lines = read_requirements(requirements_path) # req.txt
     direct = set(declared_names(base_lines))
@@ -100,6 +104,7 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
         "spec": spec.to_dict(),
         "policy": policy.to_dict(),
         "python_bin": python_bin,
+        "source": source,
         "package_was_declared": before_found and after_found,
         "before": sides["before"],
         "after": sides["after"],
@@ -118,6 +123,7 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
     write_json(os.path.join(evidence_dir, "verdict.json"), bundle["verdict"])
     write_json(os.path.join(evidence_dir, "bundle.json"), bundle)
     write_report(bundle, os.path.join(evidence_dir, "report.html"))
+    write_contract_evidence(bundle, evidence_dir, operation, execution_provider, image_digest)
     announce(progress, "done")
     return bundle
 

@@ -62,6 +62,8 @@ def build_environment(side, env_dir, requirement_lines, output_dir, python_bin,
         "ok": False,
         "failure_stage": "",
         "failure_output": "",
+        "install_returncode": None,
+        "python_version": "",
         "freeze": [],
         "packages": [],
         "site_packages": "",
@@ -76,9 +78,12 @@ def build_environment(side, env_dir, requirement_lines, output_dir, python_bin,
         result["duration"] = round(time.time() - started, 2)
         return result
     result["created"] = True
+    version = run_command([interpreter_path(env_dir), "-c", "import platform; print(platform.python_version())"], timeout=60)
+    result["python_version"] = version["output"].strip() if version["returncode"] == 0 else ""
 
     # runs pip_install with -r requirements.used.txt and sets dependency-install and returns
     install = pip_install(env_dir, ["-r", requirements_path], install_log, use_cache, install_timeout, env=build_env)
+    result["install_returncode"] = install["returncode"]
     if install["returncode"] != 0:
         result["failure_stage"] = "dependency-install"
         result["failure_output"] = tail(install["output"])

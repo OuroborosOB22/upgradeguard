@@ -7,7 +7,7 @@ from .checks.vulns import audit_environment, diff_vulnerabilities
 from .graph import build_graph, diff_graphs
 from .metadata import packages_as_map
 from .report import write_report
-from .spec import declared_names, new_run_id, pin_package, read_requirements
+from .spec import declared_names, new_run_id, pin_package, read_requirements, validate_spec
 from .tests_run import diff_test_runs, run_test_suite
 from .util import write_json
 from .venvs import build_environment, copy_repository, resolve_python
@@ -18,6 +18,7 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
                       allow_network=True, use_cache=True, test_timeout=900,
                       install_timeout=1800, strict_licences=False, progress=None):
     started = time.time()
+    validate_spec(spec)
     if not spec.run_id:
         spec.run_id = new_run_id(spec) # responsible for creating unique run folders names
 

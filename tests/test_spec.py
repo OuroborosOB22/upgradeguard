@@ -65,3 +65,51 @@ def test_policy_file_is_loaded_and_upper_cased(tmp_path):
     assert policy.allowed == ["MIT"]
     assert policy.denied == ["GPL-3.0"]
     assert policy.package_exceptions == {"some-pkg": "MIT"}
+
+
+import pytest
+
+from upgradeguard.spec import validate_python_name, validate_spec
+
+
+def spec_with(package="requests", from_version="2.28.2", to_version="2.32.5"):
+    return UpgradeSpec(repo_path=".", package=package, from_version=from_version, to_version=to_version)
+
+
+def test_ordinary_names_and_versions_pass_validation():
+    assert validate_spec(spec_with("zope.interface", "6.4.post2", "7.0")) is not None
+    assert validate_spec(spec_with("a", "1!2.0+local", "2.0rc1")) is not None
+
+
+@pytest.mark.parametrize("package", ["", "x y", "x==1", "x\n-r other.txt", "--index-url=http://evil", "x;rm", "-e git+https://x", "a" * 101])
+def test_hostile_package_names_are_refused(package):
+    with pytest.raises(ValueError):
+        validate_spec(spec_with(package=package))
+
+
+@pytest.mark.parametrize("version", ["", "1.0\n--extra-index-url http://evil", "1.0 ; python_version", "../1.0", "1.0 --hash=sha256:x", "$(id)", "v" * 65])
+def test_hostile_versions_are_refused(version):
+    with pytest.raises(ValueError):
+        validate_spec(spec_with(from_version=version))
+    with pytest.raises(ValueError):
+        validate_spec(spec_with(to_version=version))
+
+
+@pytest.mark.parametrize("name", ["python3", "python3.13", "python3.9"])
+def test_plain_interpreter_names_are_allowed(name):
+    assert validate_python_name(name) == name
+
+
+@pytest.mark.parametrize("name", ["", "/bin/sh", "python", "python3; ls", "../python3", "python3.13 -c x", "python2.7"])
+def test_other_interpreters_are_refused(name):
+    with pytest.raises(ValueError):
+        validate_python_name(name)
+
+
+def test_the_runner_refuses_a_hostile_spec_before_doing_anything(tmp_path):
+    from upgradeguard.runner import run_upgrade_check
+    (tmp_path / "requirements.txt").write_text("requests==1\n")
+    bad = UpgradeSpec(repo_path=str(tmp_path), package="requests", from_version="1", to_version="2\n-r evil.txt")
+    with pytest.raises(ValueError):
+        run_upgrade_check(bad, load_policy(""), evidence_root=str(tmp_path / "e"), work_root=str(tmp_path / "w"))
+    assert not (tmp_path / "e").exists()

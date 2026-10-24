@@ -5,6 +5,10 @@ from dataclasses import dataclass, field, asdict
 
 from .util import read_json
 
+PACKAGE_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,99}")
+VERSION_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._+!-]{0,63}")
+PYTHON_PATTERN = re.compile(r"python3(\.[0-9]{1,2})?")
+
 REQUIREMENT_LINE = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)\s*(\[[^\]]*\])?\s*(.*)$")
 
 
@@ -45,6 +49,21 @@ class LicencePolicy:
 
     def to_dict(self):
         return asdict(self)
+
+
+def validate_spec(spec):
+    if not PACKAGE_PATTERN.fullmatch(spec.package or ""):
+        raise ValueError("the package name may only use letters, digits, dots, dashes and underscores")
+    for label, value in (("current", spec.from_version), ("proposed", spec.to_version)):
+        if not VERSION_PATTERN.fullmatch(value or ""):
+            raise ValueError("the %s version is not a plain version number" % label)
+    return spec
+
+
+def validate_python_name(name):
+    if not PYTHON_PATTERN.fullmatch(name or ""):
+        raise ValueError("the interpreter must be python3 or python3.<minor>")
+    return name
 
 
 def new_run_id(spec):

@@ -6,6 +6,7 @@ from .util import run_command
 
 # runs pytest in the sandbox + parses the machine-readable junit XML output + diffs the test results to detect test regressions
 
+STATUS_RANK = {"passed": 0, "skipped": 1, "failed": 2, "error": 2}
 STARTUP_MARKERS = ("ImportError", "ModuleNotFoundError", "ConftestImportFailure")
 
 
@@ -73,7 +74,9 @@ def parse_junit(path, path_aliases=None): # usual junit tagging recog
                 continue
             message = (child.get("message") or "").strip().split("\n")[0][:300]
             break
-        results[identifier] = {"status": status, "message": message, "time": case.get("time", "0")}
+        previous = results.get(identifier)
+        if previous is None or STATUS_RANK[status] > STATUS_RANK[previous["status"]]:
+            results[identifier] = {"status": status, "message": message, "time": case.get("time", "0")}
     return results
 
 

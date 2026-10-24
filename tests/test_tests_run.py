@@ -158,3 +158,13 @@ def test_tool_driven_test_runs_are_marked_so_the_recorder_stays_quiet(tmp_path):
     assert environment_for(environment)["UPGRADEGUARD_ACTIVE"] == "1"
     result = run_test_suite(environment, project, str(tmp_path / "out"))
     assert result["counts"]["passed"] == 1
+
+
+def test_a_later_passing_duplicate_cannot_hide_a_failure(tmp_path):
+    path = tmp_path / "junit.xml"
+    path.write_text('<testsuites><testcase classname="t" name="x" file="a.py"><failure message="boom"/></testcase>'
+                    '<testcase classname="t" name="x" file="a.py"/><testcase classname="t" name="y" file="a.py"/>'
+                    '<testcase classname="t" name="y" file="a.py"><skipped/></testcase></testsuites>')
+    parsed = parse_junit(str(path))
+    assert parsed["a.py::x"]["status"] == "failed"
+    assert parsed["a.py::y"]["status"] == "skipped"

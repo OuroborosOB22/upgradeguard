@@ -68,3 +68,24 @@ def test_an_and_expression_needs_every_part_to_be_allowed():
     assert evaluate_package("x", "BSD-3-Clause AND 0BSD", policy)["status"] == "unknown"
     assert evaluate_package("x", "MIT AND GPL-3.0", policy)["status"] == "denied"
     assert evaluate_package("x", "GPL-3.0 OR MIT", policy)["status"] == "allowed"
+
+
+def test_mixed_expressions_use_normal_precedence_and_brackets():
+    from upgradeguard.checks.licenses import evaluate_package
+    from upgradeguard.spec import load_policy
+    policy = load_policy("")
+    assert evaluate_package("x", "MIT AND GPL-3.0 OR Apache-2.0", policy)["status"] == "allowed"
+    assert evaluate_package("x", "MIT AND (GPL-3.0 OR Apache-2.0)", policy)["status"] == "allowed"
+    assert evaluate_package("x", "GPL-3.0 AND (MIT OR Apache-2.0)", policy)["status"] == "denied"
+    assert evaluate_package("x", "(MIT OR GPL-3.0) AND CC0-1.0", policy)["status"] == "unknown"
+    assert evaluate_package("x", "MIT AND GPL-3.0", policy)["status"] == "denied"
+
+
+def test_a_licence_expression_that_cannot_be_read_stays_unknown():
+    from upgradeguard.checks.licenses import evaluate_package
+    from upgradeguard.spec import load_policy
+    policy = load_policy("")
+    assert evaluate_package("x", "MIT) AND (Apache-2.0", policy)["status"] == "unknown"
+    assert evaluate_package("x", "MIT OR OR GPL-3.0", policy)["status"] in ("unknown", "denied")
+    assert evaluate_package("x", "GNU General Public License v3 (GPLv3)", policy)["status"] == "denied"
+    assert evaluate_package("x", "BSD License (BSD-3-Clause)", policy)["status"] == "allowed"

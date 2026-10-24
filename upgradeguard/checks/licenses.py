@@ -47,42 +47,92 @@ def split_expression(raw):
     return [part.strip(" ()") for part in parts if part.strip(" ()")]
 
 
-AND_SPLIT = re.compile(r"\s+AND\s+", re.IGNORECASE)
-OR_SPLIT = re.compile(r"\s+OR\s+", re.IGNORECASE)
+TOKENS = re.compile(r"(\(|\)|\s+AND\s+|\s+OR\s+)", re.IGNORECASE)
 
 
-def evaluate_all_of(package_name, raw, policy):
-    outcomes = [evaluate_package(package_name, part.strip(" ()"), policy) for part in AND_SPLIT.split(raw)]
-    statuses = {item["status"] for item in outcomes}
-    canonical = " AND ".join(sorted({item["canonical"] for item in outcomes}))
-    if "denied" in statuses:
-        return {"status": "denied", "canonical": canonical, "rule": "one part of an AND expression is denied"}
-    if statuses == {"allowed"}:
-        return {"status": "allowed", "canonical": canonical, "rule": "every part of an AND expression is allowed"}
-    return {"status": "unknown", "canonical": canonical, "rule": "an AND expression needs every part to be allowed"}
+def tokenize(raw):
+    pieces = [piece.strip() for piece in TOKENS.split(raw)]
+    return [piece.upper() if piece.upper() in ("AND", "OR") else piece for piece in pieces if piece]
+
+
+def parse_expression(tokens):
+    def either(position):
+        node, position = both(position)
+        parts = [node]
+        while position < len(tokens) and tokens[position] == "OR":
+            node, position = both(position + 1)
+            parts.append(node)
+        return (("OR", parts) if len(parts) > 1 else parts[0]), position
+
+    def both(position):
+        node, position = single(position)
+        parts = [node]
+        while position < len(tokens) and tokens[position] == "AND":
+            node, position = single(position + 1)
+            parts.append(node)
+        return (("AND", parts) if len(parts) > 1 else parts[0]), position
+
+    def single(position):
+        if position >= len(tokens) or tokens[position] in ("AND", "OR", ")"):
+            raise ValueError("unexpected token")
+        if tokens[position] == "(":
+            node, position = either(position + 1)
+            if position >= len(tokens) or tokens[position] != ")":
+                raise ValueError("missing parenthesis")
+            return node, position + 1
+        return tokens[position], position + 1
+
+    tree, position = either(0)
+    if position != len(tokens):
+        raise ValueError("trailing tokens")
+    return tree
+
+
+OPERATOR_WORD = re.compile(r"(^|\s)(AND|OR)(\s|$)", re.IGNORECASE)
+OPERATOR_BETWEEN = re.compile(r"\s(AND|OR)\s", re.IGNORECASE)
+
+
+def judge_leaf(raw, policy, inside_expression=False):
+    if inside_expression and OPERATOR_WORD.search(raw):
+        raise ValueError("misplaced operator")
+    canonical = normalise_license(raw)
+    if canonical in policy.allowed:
+        return {"status": "allowed", "canonical": canonical, "rule": "in allowed list"}
+    if canonical in policy.denied:
+        return {"status": "denied", "canonical": canonical, "rule": "in denied list"}
+    if canonical == UNKNOWN:
+        return {"status": "denied" if policy.unknown_action == "fail" else "unknown", "canonical": UNKNOWN, "rule": "licence could not be identified"}
+    return {"status": "unknown", "canonical": canonical, "rule": "not listed in policy"}
+
+
+def judge_tree(node, policy):
+    if isinstance(node, str):
+        return judge_leaf(node, policy, inside_expression=True)
+    kind, parts = node
+    outcomes = [judge_tree(part, policy) for part in parts]
+    statuses = [item["status"] for item in outcomes]
+    canonical = (" AND " if kind == "AND" else " OR ").join(dict.fromkeys(item["canonical"] for item in outcomes))
+    if kind == "AND":
+        status = "denied" if "denied" in statuses else ("allowed" if set(statuses) == {"allowed"} else "unknown")
+        rule = "every part of an AND expression must be allowed"
+    else:
+        status = "allowed" if "allowed" in statuses else ("denied" if "denied" in statuses else "unknown")
+        rule = "one allowed choice in an OR expression is enough"
+    return {"status": status, "canonical": canonical, "rule": rule}
 
 
 def evaluate_package(package_name, raw, policy):
     exception = policy.package_exceptions.get(package_name)
     if exception:
         return {"status": "allowed", "canonical": exception.upper(), "rule": "package exception"}
-    if raw and AND_SPLIT.search(raw) and not OR_SPLIT.search(raw):
-        return evaluate_all_of(package_name, raw, policy)
-
-    alternatives = split_expression(raw) or [raw]
-    canonicals = [normalise_license(item) for item in alternatives]
-    canonicals = sorted(set(canonicals))
-
-    for canonical in canonicals:
-        if canonical in policy.allowed:
-            return {"status": "allowed", "canonical": canonical, "rule": "in allowed list"}
-    for canonical in canonicals:
-        if canonical in policy.denied:
-            return {"status": "denied", "canonical": canonical, "rule": "in denied list"}
-    if canonicals == [UNKNOWN] or not canonicals:
-        status = "denied" if policy.unknown_action == "fail" else "unknown"
-        return {"status": status, "canonical": UNKNOWN, "rule": "licence could not be identified"}
-    return {"status": "unknown", "canonical": canonicals[0], "rule": "not listed in policy"}
+    if not raw or not OPERATOR_BETWEEN.search(raw):
+        return judge_leaf(raw or "", policy)
+    try:
+        return judge_tree(parse_expression(tokenize(raw)), policy)
+    except ValueError:
+        parts = [piece for piece in tokenize(raw) if piece not in ("AND", "OR", "(", ")")]
+        denied = any(judge_leaf(part, policy)["status"] == "denied" for part in parts)
+        return {"status": "denied" if denied else "unknown", "canonical": UNKNOWN, "rule": "the licence expression could not be read, so it is never treated as allowed"}
 
 
 def check_licenses(graph, policy, output_dir):

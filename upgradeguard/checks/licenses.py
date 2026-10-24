@@ -47,10 +47,27 @@ def split_expression(raw):
     return [part.strip(" ()") for part in parts if part.strip(" ()")]
 
 
+AND_SPLIT = re.compile(r"\s+AND\s+", re.IGNORECASE)
+OR_SPLIT = re.compile(r"\s+OR\s+", re.IGNORECASE)
+
+
+def evaluate_all_of(package_name, raw, policy):
+    outcomes = [evaluate_package(package_name, part.strip(" ()"), policy) for part in AND_SPLIT.split(raw)]
+    statuses = {item["status"] for item in outcomes}
+    canonical = " AND ".join(sorted({item["canonical"] for item in outcomes}))
+    if "denied" in statuses:
+        return {"status": "denied", "canonical": canonical, "rule": "one part of an AND expression is denied"}
+    if statuses == {"allowed"}:
+        return {"status": "allowed", "canonical": canonical, "rule": "every part of an AND expression is allowed"}
+    return {"status": "unknown", "canonical": canonical, "rule": "an AND expression needs every part to be allowed"}
+
+
 def evaluate_package(package_name, raw, policy):
     exception = policy.package_exceptions.get(package_name)
     if exception:
         return {"status": "allowed", "canonical": exception.upper(), "rule": "package exception"}
+    if raw and AND_SPLIT.search(raw) and not OR_SPLIT.search(raw):
+        return evaluate_all_of(package_name, raw, policy)
 
     alternatives = split_expression(raw) or [raw]
     canonicals = [normalise_license(item) for item in alternatives]

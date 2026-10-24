@@ -58,3 +58,13 @@ def test_diff_separates_new_old_and_resolved_violations(tmp_path):
     assert [item["package"] for item in diff["introduced"]] == ["new"]
     assert [item["package"] for item in diff["resolved"]] == ["gone"]
     assert [item["package"] for item in diff["remaining"]] == ["old"]
+
+
+def test_an_and_expression_needs_every_part_to_be_allowed():
+    from upgradeguard.checks.licenses import evaluate_package
+    from upgradeguard.spec import load_policy
+    policy = load_policy("")
+    assert evaluate_package("x", "MIT AND Apache-2.0", policy)["status"] == "allowed"
+    assert evaluate_package("x", "BSD-3-Clause AND 0BSD", policy)["status"] == "unknown"
+    assert evaluate_package("x", "MIT AND GPL-3.0", policy)["status"] == "denied"
+    assert evaluate_package("x", "GPL-3.0 OR MIT", policy)["status"] == "allowed"

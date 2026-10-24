@@ -1,12 +1,14 @@
 import json
 import os
 import shutil
+import stat
 import tempfile
 
 from . import schemas
 from .contract import file_sha256, request_from_parts
 from .source import describe_source
-from .spec import validate_python_name
+from .spec import canonical_name
+from .spec import canonical_name, validate_python_name
 from .util import run_command, read_json
 
 DEFAULT_IMAGE = "upgradeguard-runner:local"
@@ -45,6 +47,46 @@ def docker_command(image, repo_path, request_dir, out_dir, digest, user, offline
 
 class UntrustedOutput(Exception):
     pass
+
+
+def stop_container(name):
+    run_command(["docker", "rm", "-f", name], timeout=120)
+
+
+def copy_output(source, destination):
+    for current, folders, names in os.walk(source, followlinks=False):
+        for entry in folders + names:
+            if os.path.islink(os.path.join(current, entry)):
+                raise UntrustedOutput("the container left a link at %s" % os.path.relpath(os.path.join(current, entry), source))
+        target = os.path.join(destination, os.path.relpath(current, source))
+        os.makedirs(target, exist_ok=True)
+        for name in names:
+            if not stat.S_ISREG(os.lstat(os.path.join(current, name)).st_mode):
+                raise UntrustedOutput("the container left a file that is not a regular file")
+            descriptor = os.open(os.path.join(current, name), os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+            try:
+                if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+                    raise UntrustedOutput("the container left a file that is not a regular file")
+                with os.fdopen(descriptor, "rb") as handle, open(os.path.join(target, name), "wb") as sink:
+                    shutil.copyfileobj(handle, sink)
+            except BaseException:
+                try:
+                    os.close(descriptor)
+                except OSError:
+                    pass
+                raise
+
+
+def check_bundle_matches(bundle, evidence, request):
+    wanted = {"ACCEPT": "Accept", "REJECT": "Reject", "INSUFFICIENT_EVIDENCE": "Insufficient Evidence"}
+    change = request["change"]
+    if bundle["verdict"]["decision"] != wanted[evidence["verdict"]["decision"]]:
+        raise UntrustedOutput("the bundle and the evidence disagree about the verdict")
+    spec = bundle["spec"]
+    if (canonical_name(spec["package"]), spec["from_version"], spec["to_version"]) != (change["package"], change["from_version"], change["to_version"]):
+        raise UntrustedOutput("the bundle describes a different change from the one requested")
+    if evidence["request"]["change"] != change or evidence["request"]["operation"] != request["operation"]:
+        raise UntrustedOutput("the evidence describes a different job from the one requested")
 
 
 def verify_output(directory, request):
@@ -108,23 +150,31 @@ def run_in_container(spec, policy, evidence_root, image=DEFAULT_IMAGE, offline=F
             extra.append("--strict-licences")
         if policy_file:
             extra += ["--policy", "/input/request/policy.json"]
-        finished = run_command(docker_command(image, repo_path, request_dir, out_dir, digest, user, offline, extra=extra), timeout=7200)
+        name = "ug-%s" % request["run_id"]
+        finished = run_command(docker_command(image, repo_path, request_dir, out_dir, digest, user, offline, name=name, extra=extra), timeout=7200)
+        stop_container(name)
+        if finished["timed_out"]:
+            raise RuntimeError("the container job timed out and was stopped")
         result_path = os.path.join(out_dir, "result.json")
         if not os.path.isfile(result_path):
             raise RuntimeError("the container finished without a result: %s" % finished["output"].strip()[-300:])
-        if os.path.islink(result_path):
-            raise UntrustedOutput("the container left a link instead of a result")
-        result = schemas.require_valid("worker_result", read_json(result_path))
-        if result["job_state"] != "SUCCEEDED":
-            raise RuntimeError("the container job failed: %s" % result["error"])
-        produced = os.path.join(out_dir, request["run_id"])
-        verify_output(produced, request)
-        final = os.path.join(os.path.abspath(evidence_root), request["run_id"])
-        shutil.rmtree(final, ignore_errors=True)
-        os.replace(produced, final)
-        bundle = read_json(os.path.join(final, "bundle.json"))
-        bundle["evidence_dir"] = final
-        return bundle, request
+        trusted = tempfile.mkdtemp(prefix="ug-output-")
+        try:
+            copy_output(out_dir, trusted)
+            result = schemas.require_valid("worker_result", read_json(os.path.join(trusted, "result.json")))
+            if result["job_state"] != "SUCCEEDED":
+                raise RuntimeError("the container job failed: %s" % result["error"])
+            produced = os.path.join(trusted, request["run_id"])
+            evidence = verify_output(produced, request)
+            bundle = read_json(os.path.join(produced, "bundle.json"))
+            check_bundle_matches(bundle, evidence, request)
+            final = os.path.join(os.path.abspath(evidence_root), request["run_id"])
+            shutil.rmtree(final, ignore_errors=True)
+            shutil.move(produced, final)
+            bundle["evidence_dir"] = final
+            return bundle, request
+        finally:
+            shutil.rmtree(trusted, ignore_errors=True)
     finally:
         shutil.rmtree(request_dir, ignore_errors=True)
         shutil.rmtree(out_dir, ignore_errors=True)

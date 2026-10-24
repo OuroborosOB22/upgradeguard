@@ -207,3 +207,47 @@ def test_publish_copies_regular_files_only_and_replaces_old_content(tmp_path):
     assert (target / "run" / "after" / "a.log").read_text() == "log"
     assert (target / "result.json").exists()
     assert not (target / "run" / "link").exists() and not (target / "stale").exists()
+
+
+def test_copy_output_copies_regular_files(tmp_path):
+    source = tmp_path / "src"
+    (source / "a").mkdir(parents=True)
+    (source / "a" / "f.txt").write_text("data")
+    container.copy_output(str(source), str(tmp_path / "dst"))
+    assert (tmp_path / "dst" / "a" / "f.txt").read_text() == "data"
+
+
+def test_copy_output_refuses_links_to_files_and_folders(tmp_path):
+    source = tmp_path / "src"
+    source.mkdir()
+    os.symlink("/etc/passwd", str(source / "file-link"))
+    with pytest.raises(container.UntrustedOutput):
+        container.copy_output(str(source), str(tmp_path / "dst"))
+    (source / "file-link").unlink()
+    os.symlink("/etc", str(source / "folder-link"))
+    with pytest.raises(container.UntrustedOutput):
+        container.copy_output(str(source), str(tmp_path / "dst2"))
+
+
+def test_copy_output_refuses_pipes(tmp_path):
+    source = tmp_path / "src"
+    source.mkdir()
+    os.mkfifo(str(source / "pipe"))
+    with pytest.raises(container.UntrustedOutput, match="regular"):
+        container.copy_output(str(source), str(tmp_path / "dst"))
+
+
+def bundle_for(request, decision="Reject", package="six", from_version="1.16.0", to_version="1.17.0"):
+    return {"verdict": {"decision": decision}, "spec": {"package": package, "from_version": from_version, "to_version": to_version}}
+
+
+def test_bundle_must_agree_with_the_verified_evidence_and_the_request(tmp_path):
+    directory, request = sample_output(tmp_path)
+    evidence = json.loads((directory / "evidence.json").read_text())
+    container.check_bundle_matches(bundle_for(request), evidence, request)
+    with pytest.raises(container.UntrustedOutput, match="verdict"):
+        container.check_bundle_matches(bundle_for(request, decision="Accept"), evidence, request)
+    with pytest.raises(container.UntrustedOutput, match="different change"):
+        container.check_bundle_matches(bundle_for(request, to_version="9.9"), evidence, request)
+    with pytest.raises(container.UntrustedOutput, match="different change"):
+        container.check_bundle_matches(bundle_for(request, package="other"), evidence, request)

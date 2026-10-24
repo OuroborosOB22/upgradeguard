@@ -5,7 +5,7 @@ from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
 
 CONTRACT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "contracts", "v1")
-SCHEMA_NAMES = ["request", "evidence", "prediction_request", "prediction_response", "snapshot", "comparison", "worker_result"]
+SCHEMA_NAMES = ["request", "evidence", "prediction_request", "prediction_response", "snapshot", "comparison", "worker_result", "explanation_graph"]
 
 
 def load_schema(name):

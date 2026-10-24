@@ -32,6 +32,8 @@ def build_parser():
     check.add_argument("--test-timeout", type=int, default=900)
     check.add_argument("--strict-licences", dest="strict_licences", action="store_true")
     check.add_argument("--quiet", action="store_true")
+    check.add_argument("--install-project", dest="install_project", action="store_true")
+    check.add_argument("--pytest-arg", dest="pytest_args", action="append", default=[])
 
     suite = sub.add_parser("benchmark", help="run every case in a benchmark file")
     suite.add_argument("--cases", default="benchmark/cases.json")
@@ -40,6 +42,12 @@ def build_parser():
     suite.add_argument("--python", dest="python_bin", default="python3")
     suite.add_argument("--offline", action="store_true")
     suite.add_argument("--output", default="benchmark/results.json")
+
+    fetch = sub.add_parser("fetch-repos", help="clone the benchmark repositories at their pinned versions")
+    fetch.add_argument("--repos", default="benchmark/repos.json")
+    fetch.add_argument("--dest", default="benchmark/repos")
+    fetch.add_argument("--requirements-dir", dest="requirements_dir", default="benchmark/requirements")
+    fetch.add_argument("--only", nargs="*")
     return parser
 
 
@@ -51,6 +59,9 @@ def main(argv=None):
     if args.command == "benchmark":
         from .benchmark import command_benchmark
         return command_benchmark(args)
+    if args.command == "fetch-repos":
+        from .repos import command_fetch_repos
+        return command_fetch_repos(args)
     parser.print_help()
     return 2
 
@@ -65,6 +76,8 @@ def command_run(args):
         policy_path=args.policy,
         requirements_file=args.requirements,
         label=args.label,
+        install_project=args.install_project,
+        pytest_args=args.pytest_args,
     )
     policy = load_policy(args.policy if os.path.isfile(args.policy) else "")
     reporter = None if args.quiet else progress_line

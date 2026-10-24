@@ -85,7 +85,7 @@ def test_snapshot_compare_and_recovery_flow(tmp_path):
     done, first = snapshot(project, store)
     assert done.returncode == 0 and first["eligibility"] == "PASSING"
     assert schemas.problems("snapshot", first) == []
-    assert [item["id"] for item in first["tests"]["results"]] == ["test_app.py::test_ok"]
+    assert [item["id"] for item in first["tests"]["results"]] == ["test_app::test_ok"]
 
     _, again = snapshot(project, store)
     assert again["snapshot_id"] == first["snapshot_id"]
@@ -100,7 +100,7 @@ def test_snapshot_compare_and_recovery_flow(tmp_path):
     assert compared.returncode == 0
     comparison = json.loads(compared.stdout)
     assert schemas.problems("comparison", comparison) == []
-    assert comparison["changes"]["tests"]["newly_failing"] == ["test_app.py::test_ok"]
+    assert comparison["changes"]["tests"]["newly_failing"] == ["test_app::test_ok"]
     assert comparison["changes"]["code"]["changed"] == ["app.py", "test_app.py"]
     assert any("lead, not proof" in text for text in comparison["warnings"])
 

@@ -1,31 +1,577 @@
 {
-  "note": "Candidate repositories for the full benchmark. Every one is permissively licensed and ships an automated test suite. Status stays 'candidate' until we have actually built it and run its tests with UpgradeGuard.",
+  "note": "Benchmark repositories. Every one is permissively licensed and ships a pytest suite. Status moves from candidate to screened only after the unchanged baseline passes in a clean environment (see screening.json).",
   "target_count": 25,
   "repositories": [
-    {"name": "psf/requests", "licence": "Apache-2.0", "runner": "pytest", "status": "candidate"},
-    {"name": "pallets/flask", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"},
-    {"name": "pallets/jinja", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"},
-    {"name": "pallets/click", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"},
-    {"name": "pallets/markupsafe", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"},
-    {"name": "psf/black", "licence": "MIT", "runner": "pytest", "status": "candidate"},
-    {"name": "kennethreitz/records", "licence": "ISC", "runner": "pytest", "status": "candidate"},
-    {"name": "encode/httpx", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"},
-    {"name": "encode/starlette", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"},
-    {"name": "tiangolo/fastapi", "licence": "MIT", "runner": "pytest", "status": "candidate"},
-    {"name": "pydantic/pydantic", "licence": "MIT", "runner": "pytest", "status": "candidate"},
-    {"name": "python-attrs/attrs", "licence": "MIT", "runner": "pytest", "status": "candidate"},
-    {"name": "agronholm/anyio", "licence": "MIT", "runner": "pytest", "status": "candidate"},
-    {"name": "urllib3/urllib3", "licence": "MIT", "runner": "pytest", "status": "candidate"},
-    {"name": "jd/tenacity", "licence": "Apache-2.0", "runner": "pytest", "status": "candidate"},
-    {"name": "theskumar/python-dotenv", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"},
-    {"name": "dateutil/dateutil", "licence": "Apache-2.0", "runner": "pytest", "status": "candidate"},
-    {"name": "Textualize/rich", "licence": "MIT", "runner": "pytest", "status": "candidate"},
-    {"name": "tox-dev/filelock", "licence": "Unlicense", "runner": "pytest", "status": "candidate"},
-    {"name": "platformdirs/platformdirs", "licence": "MIT", "runner": "pytest", "status": "candidate"},
-    {"name": "hynek/structlog", "licence": "MIT", "runner": "pytest", "status": "candidate"},
-    {"name": "marshmallow-code/marshmallow", "licence": "MIT", "runner": "pytest", "status": "candidate"},
-    {"name": "sqlalchemy/alembic", "licence": "MIT", "runner": "pytest", "status": "candidate"},
-    {"name": "pytest-dev/pytest-cov", "licence": "MIT", "runner": "pytest", "status": "candidate"},
-    {"name": "john-kurkowski/tldextract", "licence": "BSD-3-Clause", "runner": "pytest", "status": "candidate"}
+    {
+      "name": "pallets/click",
+      "url": "https://github.com/pallets/click",
+      "ref": "8.1.7",
+      "licence": "BSD-3-Clause",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "probe": "pytest==7.4.4",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 588,
+        "skipped": 23,
+        "total": 611
+      }
+    },
+    {
+      "name": "pallets/markupsafe",
+      "url": "https://github.com/pallets/markupsafe",
+      "ref": "2.1.5",
+      "licence": "BSD-3-Clause",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "probe": "pytest==7.4.4",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 53,
+        "skipped": 0,
+        "total": 53
+      }
+    },
+    {
+      "name": "pallets/itsdangerous",
+      "url": "https://github.com/pallets/itsdangerous",
+      "ref": "2.1.2",
+      "licence": "BSD-3-Clause",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "probe": "pytest==7.4.4",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 297,
+        "skipped": 0,
+        "total": 297
+      }
+    },
+    {
+      "name": "platformdirs/platformdirs",
+      "url": "https://github.com/platformdirs/platformdirs",
+      "ref": "4.2.2",
+      "licence": "MIT",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "4.2.2"
+      },
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 433,
+        "skipped": 36,
+        "total": 469
+      }
+    },
+    {
+      "name": "tox-dev/filelock",
+      "url": "https://github.com/tox-dev/filelock",
+      "ref": "3.15.4",
+      "licence": "Unlicense",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "3.15.4"
+      },
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 135,
+        "skipped": 20,
+        "total": 155
+      }
+    },
+    {
+      "name": "theskumar/python-dotenv",
+      "url": "https://github.com/theskumar/python-dotenv",
+      "ref": "v1.0.1",
+      "licence": "BSD-3-Clause",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 149,
+        "skipped": 1,
+        "total": 150
+      }
+    },
+    {
+      "name": "jd/tenacity",
+      "url": "https://github.com/jd/tenacity",
+      "ref": "8.5.0",
+      "licence": "Apache-2.0",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "8.5.0"
+      },
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 123,
+        "skipped": 1,
+        "total": 124
+      }
+    },
+    {
+      "name": "dateutil/dateutil",
+      "url": "https://github.com/dateutil/dateutil",
+      "ref": "2.9.0",
+      "licence": "Apache-2.0",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "2.9.0"
+      },
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 27,
+        "passed": 2005,
+        "skipped": 64,
+        "total": 2096
+      }
+    },
+    {
+      "name": "marshmallow-code/marshmallow",
+      "url": "https://github.com/marshmallow-code/marshmallow",
+      "ref": "3.21.3",
+      "licence": "MIT",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore",
+        "-k",
+        "not test_invalid_datetime_deserialization"
+      ],
+      "env": {},
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 1218,
+        "skipped": 0,
+        "total": 1218
+      }
+    },
+    {
+      "name": "kennethreitz/records",
+      "url": "https://github.com/kennethreitz/records",
+      "ref": "v0.5.3",
+      "licence": "ISC",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 6,
+        "failed": 0,
+        "passed": 33,
+        "skipped": 0,
+        "total": 39
+      }
+    },
+    {
+      "name": "pallets/jinja",
+      "url": "https://github.com/pallets/jinja",
+      "ref": "2.11.3",
+      "licence": "BSD-3-Clause",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "probe": "pytest==7.4.4",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 3,
+        "failed": 2,
+        "passed": 742,
+        "skipped": 3,
+        "total": 750
+      }
+    },
+    {
+      "name": "pallets/flask",
+      "url": "https://github.com/pallets/flask",
+      "ref": "2.2.5",
+      "licence": "BSD-3-Clause",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "probe": "pytest==7.4.4",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 2,
+        "passed": 479,
+        "skipped": 2,
+        "total": 483
+      }
+    },
+    {
+      "name": "psf/requests",
+      "url": "https://github.com/psf/requests",
+      "ref": "v2.32.3",
+      "licence": "Apache-2.0",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore",
+        "--timeout=30"
+      ],
+      "env": {},
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 10,
+        "passed": 581,
+        "skipped": 15,
+        "total": 606
+      }
+    },
+    {
+      "name": "encode/httpx",
+      "url": "https://github.com/encode/httpx",
+      "ref": "0.27.0",
+      "licence": "BSD-3-Clause",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 856,
+        "skipped": 1,
+        "total": 857
+      }
+    },
+    {
+      "name": "encode/starlette",
+      "url": "https://github.com/encode/starlette",
+      "ref": "0.37.2",
+      "licence": "BSD-3-Clause",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 793,
+        "skipped": 2,
+        "total": 795
+      }
+    },
+    {
+      "name": "python-attrs/attrs",
+      "url": "https://github.com/python-attrs/attrs",
+      "ref": "23.2.0",
+      "licence": "MIT",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "23.2.0"
+      },
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 4,
+        "passed": 1318,
+        "skipped": 5,
+        "total": 1327
+      }
+    },
+    {
+      "name": "Textualize/rich",
+      "url": "https://github.com/Textualize/rich",
+      "ref": "v13.7.1",
+      "licence": "MIT",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 1,
+        "failed": 9,
+        "passed": 775,
+        "skipped": 19,
+        "total": 804
+      }
+    },
+    {
+      "name": "hynek/structlog",
+      "url": "https://github.com/hynek/structlog",
+      "ref": "24.2.0",
+      "licence": "MIT",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "24.2.0"
+      },
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 1,
+        "passed": 793,
+        "skipped": 17,
+        "total": 811
+      }
+    },
+    {
+      "name": "agronholm/anyio",
+      "url": "https://github.com/agronholm/anyio",
+      "ref": "4.4.0",
+      "licence": "MIT",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "4.4.0"
+      },
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 1,
+        "failed": 3,
+        "passed": 1233,
+        "skipped": 15,
+        "total": 1252
+      }
+    },
+    {
+      "name": "hukkin/tomli",
+      "url": "https://github.com/hukkin/tomli",
+      "ref": "2.0.1",
+      "licence": "MIT",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 14,
+        "skipped": 0,
+        "total": 14
+      }
+    },
+    {
+      "name": "astanin/python-tabulate",
+      "url": "https://github.com/astanin/python-tabulate",
+      "ref": "v0.9.0",
+      "licence": "MIT",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "0.9.0"
+      },
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 2,
+        "passed": 267,
+        "skipped": 15,
+        "total": 284
+      }
+    },
+    {
+      "name": "tkem/cachetools",
+      "url": "https://github.com/tkem/cachetools",
+      "ref": "v5.3.3",
+      "licence": "MIT",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 214,
+        "skipped": 0,
+        "total": 214
+      }
+    },
+    {
+      "name": "python-humanize/humanize",
+      "url": "https://github.com/python-humanize/humanize",
+      "ref": "4.9.0",
+      "licence": "MIT",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "4.9.0"
+      },
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 527,
+        "skipped": 23,
+        "total": 550
+      }
+    },
+    {
+      "name": "more-itertools/more-itertools",
+      "url": "https://github.com/more-itertools/more-itertools",
+      "ref": "v10.3.0",
+      "licence": "MIT",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 647,
+        "skipped": 1,
+        "total": 648
+      }
+    },
+    {
+      "name": "pallets-eco/blinker",
+      "url": "https://github.com/pallets-eco/blinker",
+      "ref": "1.8.2",
+      "licence": "MIT",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "probe": "pytest==8.2.2",
+      "status": "screened",
+      "baseline_tests": {
+        "error": 0,
+        "failed": 0,
+        "passed": 25,
+        "skipped": 0,
+        "total": 25
+      }
+    }
   ]
 }

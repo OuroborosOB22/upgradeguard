@@ -1,0 +1,402 @@
+{
+  "Textualize/rich": {
+    "built": true,
+    "counts": {
+      "error": 1,
+      "failed": 9,
+      "passed": 775,
+      "skipped": 19,
+      "total": 804
+    },
+    "evidence_dir": "evidence/screening/screen-Textualize__rich",
+    "failure_stage": "",
+    "name": "Textualize/rich",
+    "seconds": 18.7,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "agronholm/anyio": {
+    "built": true,
+    "counts": {
+      "error": 1,
+      "failed": 3,
+      "passed": 1233,
+      "skipped": 15,
+      "total": 1252
+    },
+    "evidence_dir": "evidence/screening/screen-agronholm__anyio",
+    "failure_stage": "",
+    "name": "agronholm/anyio",
+    "seconds": 62.6,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "astanin/python-tabulate": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 2,
+      "passed": 267,
+      "skipped": 15,
+      "total": 284
+    },
+    "evidence_dir": "evidence/screening/screen-astanin__python-tabulate",
+    "failure_stage": "",
+    "name": "astanin/python-tabulate",
+    "seconds": 13.2,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "dateutil/dateutil": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 27,
+      "passed": 2005,
+      "skipped": 64,
+      "total": 2096
+    },
+    "evidence_dir": "evidence/screening/screen-dateutil__dateutil",
+    "failure_stage": "",
+    "name": "dateutil/dateutil",
+    "seconds": 19.9,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "encode/httpx": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 856,
+      "skipped": 1,
+      "total": 857
+    },
+    "evidence_dir": "evidence/screening/screen-encode__httpx",
+    "failure_stage": "",
+    "name": "encode/httpx",
+    "seconds": 30.9,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "encode/starlette": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 793,
+      "skipped": 2,
+      "total": 795
+    },
+    "evidence_dir": "evidence/screening/screen-encode__starlette",
+    "failure_stage": "",
+    "name": "encode/starlette",
+    "seconds": 22.2,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "hukkin/tomli": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 14,
+      "skipped": 0,
+      "total": 14
+    },
+    "evidence_dir": "evidence/screening/screen-hukkin__tomli",
+    "failure_stage": "",
+    "name": "hukkin/tomli",
+    "seconds": 9.9,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "hynek/structlog": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 1,
+      "passed": 793,
+      "skipped": 17,
+      "total": 811
+    },
+    "evidence_dir": "evidence/screening/screen-hynek__structlog",
+    "failure_stage": "",
+    "name": "hynek/structlog",
+    "seconds": 16.9,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "jd/tenacity": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 123,
+      "skipped": 1,
+      "total": 124
+    },
+    "evidence_dir": "evidence/screening/screen-jd__tenacity",
+    "failure_stage": "",
+    "name": "jd/tenacity",
+    "seconds": 17.1,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "kennethreitz/records": {
+    "built": true,
+    "counts": {
+      "error": 6,
+      "failed": 0,
+      "passed": 33,
+      "skipped": 0,
+      "total": 39
+    },
+    "evidence_dir": "evidence/screening/screen-kennethreitz__records",
+    "failure_stage": "",
+    "name": "kennethreitz/records",
+    "seconds": 80.1,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "marshmallow-code/marshmallow": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 1218,
+      "skipped": 0,
+      "total": 1218
+    },
+    "evidence_dir": "evidence/screening/screen-marshmallow-code__marshmallow",
+    "failure_stage": "",
+    "name": "marshmallow-code/marshmallow",
+    "seconds": 11.6,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "more-itertools/more-itertools": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 647,
+      "skipped": 1,
+      "total": 648
+    },
+    "evidence_dir": "evidence/screening/screen-more-itertools__more-itertools",
+    "failure_stage": "",
+    "name": "more-itertools/more-itertools",
+    "seconds": 12.3,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "pallets-eco/blinker": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 25,
+      "skipped": 0,
+      "total": 25
+    },
+    "evidence_dir": "evidence/screening/screen-pallets-eco__blinker",
+    "failure_stage": "",
+    "name": "pallets-eco/blinker",
+    "seconds": 8.7,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "pallets/click": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 588,
+      "skipped": 23,
+      "total": 611
+    },
+    "evidence_dir": "evidence/screening/screen-pallets__click",
+    "failure_stage": "",
+    "name": "pallets/click",
+    "seconds": 12.1,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "pallets/flask": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 2,
+      "passed": 479,
+      "skipped": 2,
+      "total": 483
+    },
+    "evidence_dir": "evidence/screening/screen-pallets__flask",
+    "failure_stage": "",
+    "name": "pallets/flask",
+    "seconds": 14.4,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "pallets/itsdangerous": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 297,
+      "skipped": 0,
+      "total": 297
+    },
+    "evidence_dir": "evidence/screening/screen-pallets__itsdangerous",
+    "failure_stage": "",
+    "name": "pallets/itsdangerous",
+    "seconds": 11.7,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "pallets/jinja": {
+    "built": true,
+    "counts": {
+      "error": 3,
+      "failed": 2,
+      "passed": 742,
+      "skipped": 3,
+      "total": 750
+    },
+    "evidence_dir": "evidence/screening/screen-pallets__jinja",
+    "failure_stage": "",
+    "name": "pallets/jinja",
+    "seconds": 13.0,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "pallets/markupsafe": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 53,
+      "skipped": 0,
+      "total": 53
+    },
+    "evidence_dir": "evidence/screening/screen-pallets__markupsafe",
+    "failure_stage": "",
+    "name": "pallets/markupsafe",
+    "seconds": 11.5,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "platformdirs/platformdirs": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 433,
+      "skipped": 36,
+      "total": 469
+    },
+    "evidence_dir": "evidence/screening/screen-platformdirs__platformdirs",
+    "failure_stage": "",
+    "name": "platformdirs/platformdirs",
+    "seconds": 15.2,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "psf/requests": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 10,
+      "passed": 581,
+      "skipped": 15,
+      "total": 606
+    },
+    "evidence_dir": "evidence/screening/screen-psf__requests",
+    "failure_stage": "",
+    "name": "psf/requests",
+    "seconds": 218.1,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "python-attrs/attrs": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 4,
+      "passed": 1318,
+      "skipped": 5,
+      "total": 1327
+    },
+    "evidence_dir": "evidence/screening/screen-python-attrs__attrs",
+    "failure_stage": "",
+    "name": "python-attrs/attrs",
+    "seconds": 41.0,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "python-humanize/humanize": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 527,
+      "skipped": 23,
+      "total": 550
+    },
+    "evidence_dir": "evidence/screening/screen-python-humanize__humanize",
+    "failure_stage": "",
+    "name": "python-humanize/humanize",
+    "seconds": 14.5,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "theskumar/python-dotenv": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 149,
+      "skipped": 1,
+      "total": 150
+    },
+    "evidence_dir": "evidence/screening/screen-theskumar__python-dotenv",
+    "failure_stage": "",
+    "name": "theskumar/python-dotenv",
+    "seconds": 14.3,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "tkem/cachetools": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 214,
+      "skipped": 0,
+      "total": 214
+    },
+    "evidence_dir": "evidence/screening/screen-tkem__cachetools",
+    "failure_stage": "",
+    "name": "tkem/cachetools",
+    "seconds": 10.1,
+    "tests_ran": true,
+    "verdict": "Accept"
+  },
+  "tox-dev/filelock": {
+    "built": true,
+    "counts": {
+      "error": 0,
+      "failed": 0,
+      "passed": 135,
+      "skipped": 20,
+      "total": 155
+    },
+    "evidence_dir": "evidence/screening/screen-tox-dev__filelock",
+    "failure_stage": "",
+    "name": "tox-dev/filelock",
+    "seconds": 34.1,
+    "tests_ran": true,
+    "verdict": "Accept"
+  }
+}

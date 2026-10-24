@@ -240,3 +240,39 @@ def run_remote(spec, policy, profile, evidence_root, progress=None, cancelled=No
 
 def test_connection(profile, run=run_command):
     return preflight(Remote(profile, run))
+
+
+BOOTSTRAP_FILES = ("upgradeguard", "contracts/v1", "requirements.txt")
+
+
+def bootstrap_archive(source_root, target):
+    import tarfile
+    with tarfile.open(target, "w:gz") as archive:
+        for name in BOOTSTRAP_FILES:
+            archive.add(os.path.join(source_root, name), arcname=name, filter=lambda info: None if "__pycache__" in info.name else info)
+    return target
+
+
+def bootstrap(profile, source_root, run=run_command):
+    """Installs the worker on the server. Only runs when someone asks for it, never as part of a check."""
+    staging = tempfile.mkdtemp(prefix="ug-bootstrap-")
+    try:
+        remote = Remote(profile, run)
+        archive = bootstrap_archive(source_root, os.path.join(staging, "worker.tar.gz"))
+        steps = [
+            "mkdir -p %s %s" % (shlex.quote(profile.worker_dir), shlex.quote(profile.jobs_dir)),
+        ]
+        for command in steps:
+            finished = run(["ssh", "-p", str(profile.port)] + remote.options() + ["--", remote.target(), command], timeout=120)
+            if finished["returncode"] != 0:
+                raise RemoteError("connection", "could not prepare the server: %s" % finished["output"].strip()[-200:])
+        copied = run(remote.scp_args(archive, "%s:%s/worker.tar.gz" % (remote.target(), profile.worker_dir)), timeout=600)
+        if copied["returncode"] != 0:
+            raise RemoteError("connection", "could not send the worker: %s" % copied["output"].strip()[-200:])
+        install = "cd %s && tar -xzf worker.tar.gz && rm worker.tar.gz && python3 -m venv venv && ./venv/bin/pip install -q -r requirements.txt" % shlex.quote(profile.worker_dir)
+        finished = run(["ssh", "-p", str(profile.port)] + remote.options() + ["--", remote.target(), install], timeout=1800)
+        if finished["returncode"] != 0:
+            raise RemoteError("worker", "installing the worker failed: %s" % finished["output"].strip()[-300:])
+        return preflight(remote)
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)

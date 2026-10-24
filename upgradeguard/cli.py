@@ -35,8 +35,10 @@ def add_check_flags(command):
     command.add_argument("--install-project", dest="install_project", action="store_true")
     command.add_argument("--pytest-arg", dest="pytest_args", action="append", default=[])
     command.add_argument("--json", action="store_true")
-    command.add_argument("--runner", choices=["local", "container"], default="local")
+    command.add_argument("--runner", choices=["local", "container", "remote"], default="local")
     command.add_argument("--image", default="upgradeguard-runner:local")
+    command.add_argument("--profiles", default=os.environ.get("UPGRADEGUARD_REMOTE_PROFILES", ""))
+    command.add_argument("--server", default="")
 
 
 def build_parser():
@@ -65,8 +67,15 @@ def build_parser():
     check.add_argument("--install-project", dest="install_project", action="store_true")
     check.add_argument("--pytest-arg", dest="pytest_args", action="append", default=[])
     check.add_argument("--json", action="store_true")
-    check.add_argument("--runner", choices=["local", "container"], default="local")
+    check.add_argument("--runner", choices=["local", "container", "remote"], default="local")
     check.add_argument("--image", default="upgradeguard-runner:local")
+    check.add_argument("--profiles", default=os.environ.get("UPGRADEGUARD_REMOTE_PROFILES", ""), help="file with the named servers, used by --runner remote")
+    check.add_argument("--server", default="", help="name of the server in the profiles file")
+
+    for name, text in (("remote-check", "test the connection to a named server"), ("remote-bootstrap", "install the worker on a named server")):
+        remote_command = sub.add_parser(name, help=text)
+        remote_command.add_argument("--profiles", default=os.environ.get("UPGRADEGUARD_REMOTE_PROFILES", ""))
+        remote_command.add_argument("--server", required=True)
 
     suite = sub.add_parser("benchmark", help="run every case in a benchmark file")
     suite.add_argument("--cases", default="benchmark/cases.json")
@@ -150,6 +159,9 @@ def main(argv=None):
     if args.command == "recover":
         from .commands import command_recover
         return command_recover(args, print_summary)
+    if args.command in ("remote-check", "remote-bootstrap"):
+        from .commands import command_remote
+        return command_remote(args)
     if args.command == "worker":
         from .commands import command_worker
         return command_worker(args)

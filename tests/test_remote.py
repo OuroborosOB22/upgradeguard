@@ -297,3 +297,31 @@ def test_real_worker_through_a_fake_ssh_on_this_machine(tmp_path, monkeypatch):
     assert bundle["verdict"]["decision"] == "Accept"
     assert (tmp_path / "evidence" / "remote-real-test" / "remote.json").is_file()
     assert not (jobs / "remote-real-test").exists()
+
+
+def test_bootstrap_sends_a_fixed_set_of_commands_and_never_a_free_form_one(tmp_path):
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    calls = []
+
+    def run(args, timeout=0, **_):
+        calls.append(args)
+        if args[0] == "ssh" and "capabilities" in args[-1]:
+            return {"returncode": 0, "output": json.dumps({"worker_version": "1", "python": "3.12.3", "platform": "linux", "disk_free_mb": 9000}), "timed_out": False}
+        return {"returncode": 0, "output": "", "timed_out": False}
+
+    caps = remote.bootstrap(profile(), root, run=run)
+    assert caps["worker_version"] == "1"
+    commands = [call[-1] for call in calls if call[0] == "ssh"]
+    assert commands[0] == "mkdir -p /srv/ug /srv/ug-jobs"
+    assert "venv/bin/pip install -q -r requirements.txt" in commands[1]
+    assert all("--" in call for call in calls)
+    assert all(call[call.index("--") + 1] == "azureuser@build.example.org" for call in calls if call[0] == "ssh")
+    assert any(call[0] == "scp" and call[-1] == "azureuser@build.example.org:/srv/ug/worker.tar.gz" for call in calls)
+
+
+def test_the_cli_refuses_an_unknown_server_name(tmp_path, capsys):
+    from upgradeguard import cli
+    path = tmp_path / "profiles.json"
+    path.write_text(json.dumps({"profiles": {"demo": PROFILE}}))
+    assert cli.main(["remote-check", "--profiles", str(path), "--server", "other"]) == 3
+    assert "demo" in capsys.readouterr().err

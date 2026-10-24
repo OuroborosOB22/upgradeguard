@@ -2,7 +2,7 @@ import json
 import os
 import sys
 
-from . import schemas
+from . import remote, schemas
 from .container import DEFAULT_IMAGE, run_in_container
 from .contract import utc_now
 from .runner import run_upgrade_check
@@ -42,6 +42,12 @@ def execute_run(spec, args, operation):
     policy = load_policy(args.policy if os.path.isfile(args.policy) else "")
     reporter = None if args.quiet else progress_line
     spec.run_id = spec.run_id or new_run_id(spec)
+    if args.runner == "remote":
+        profiles = remote.load_profiles(args.profiles)
+        if args.server not in profiles:
+            raise ValueError("--server must name a server in the profiles file (%s)" % (", ".join(sorted(profiles)) or "none found"))
+        bundle, _ = remote.run_remote(spec, policy, profiles[args.server], args.evidence, progress=reporter, options={"strict_licences": args.strict_licences})
+        return bundle
     if args.runner == "container":
         bundle, _ = run_in_container(spec, policy, args.evidence, image=args.image, offline=args.offline, operation=operation,
                                      progress=reporter, strict_licences=args.strict_licences)
@@ -158,3 +164,20 @@ def command_worker(args):
     result = run_worker(args.request, args.source, args.out, python_bin=args.python_bin, offline=args.offline, work_dir=args.work,
                         progress=progress_line, options=options, publish_dir=args.publish)
     return 0 if result["job_state"] == "SUCCEEDED" else FAILURE_EXIT
+
+
+def command_remote(args):
+    profiles = remote.load_profiles(args.profiles)
+    if args.server not in profiles:
+        print("error: --server must name a server in the profiles file (%s)" % (", ".join(sorted(profiles)) or "none found"), file=sys.stderr)
+        return FAILURE_EXIT
+    try:
+        if args.command == "remote-bootstrap":
+            caps = remote.bootstrap(profiles[args.server], os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        else:
+            caps = remote.test_connection(profiles[args.server])
+    except remote.RemoteError as problem:
+        print("%s: %s" % (problem.kind, problem), file=sys.stderr)
+        return FAILURE_EXIT
+    print("server %s: python %s, %d MB free, worker version %s" % (args.server, caps["python"], caps["disk_free_mb"], caps["worker_version"]))
+    return 0

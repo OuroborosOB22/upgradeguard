@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "prediction_response.schema.json",
+  "$id": "https://schemas.upgradeguard.invalid/v1/prediction_response.schema.json",
   "title": "Prediction response",
   "type": "object",
   "additionalProperties": false,

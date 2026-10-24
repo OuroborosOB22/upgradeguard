@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "worker_result.schema.json",
+  "$id": "https://schemas.upgradeguard.invalid/v1/worker_result.schema.json",
   "title": "Worker result",
   "type": "object",
   "additionalProperties": false,

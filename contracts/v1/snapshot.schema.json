@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "snapshot.schema.json",
+  "$id": "https://schemas.upgradeguard.invalid/v1/snapshot.schema.json",
   "title": "Snapshot",
   "type": "object",
   "additionalProperties": false,

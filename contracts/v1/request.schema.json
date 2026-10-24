@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "request.schema.json",
+  "$id": "https://schemas.upgradeguard.invalid/v1/request.schema.json",
   "title": "Request",
   "type": "object",
   "additionalProperties": false,

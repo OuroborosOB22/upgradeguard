@@ -63,3 +63,15 @@ def test_audit_falls_back_when_network_is_not_allowed(tmp_path):
     result = vulns.audit_environment("", str(tmp_path), allow_network=False)
     assert result["source"] == "bundled-advisories"
     assert result["available"] is False
+
+
+def test_pip_audit_json_is_read_even_when_it_is_followed_by_a_summary_line():
+    output = '{"dependencies": [{"name": "urllib3", "version": "2.0.5", "vulns": [{"id": "GHSA-1"}]}], "fixes": []}\nFound 1 known vulnerability in 1 package\n\nexit code 1 after 0.9s\n'
+    parsed = safe_parse(output)
+    assert parsed["dependencies"][0]["vulns"][0]["id"] == "GHSA-1"
+    assert [item["id"] for item in normalise_pip_audit(parsed)] == ["GHSA-1"]
+
+
+def test_text_that_is_not_a_json_object_is_ignored():
+    assert safe_parse("[1, 2, 3]") is None
+    assert safe_parse("Found 1 known vulnerability") is None

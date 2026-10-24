@@ -1,13 +1,16 @@
 import os
 import time
 
+from .baselines import BASELINE_NAMES, baseline_verdicts
+from .metrics import all_methods, build_metrics, signal_metrics, time_metrics
+from .report_benchmark import write_results_markdown
 from .runner import run_upgrade_check
 from .spec import UpgradeSpec, load_policy
 from .util import read_json, write_json
 
 SIGNAL_CODES = {
     "test-regression": {"test-regression"},
-    "dependency-conflict": {"new-dependency-conflict"},
+    "dependency-conflict": {"new-dependency-conflict", "upgrade-dependency-conflict"},
     "vulnerability": {"new-vulnerability"},
     "licence-violation": {"licence-policy-violation", "licence-policy-precondition"},
     "build-failure": {"upgrade-build-failed", "baseline-build-failed"},
@@ -26,9 +29,12 @@ def run_case(case, args, base_dir):
         package=case["package"],
         from_version=case["from"],
         to_version=case["to"],
-        python_bin=args.python_bin,
+        python_bin=case.get("python", args.python_bin),
         policy_path=case.get("policy", ""),
         requirements_file=case.get("requirements", "requirements.txt"),
+        install_project=case.get("install_project", False),
+        pytest_args=case.get("pytest_args", []),
+        build_env=case.get("env", {}),
         run_id="%s-%s" % (time.strftime("%Y%m%d-%H%M%S"), case["id"]),
         label=case["id"],
     )
@@ -71,6 +77,9 @@ def score_case(case, bundle):
         "seconds": bundle["total_seconds"],
         "evidence_dir": bundle["evidence_dir"],
         "regressions": len(bundle["diff"]["tests"]["regressions"]),
+        "before_built": bundle["before"]["build"]["ok"],
+        "after_built": bundle["after"]["build"]["ok"],
+        "baselines": baseline_verdicts(bundle),
     }
 
 
@@ -97,6 +106,10 @@ def summarise(rows):
         "mean_seconds": round(sum(row["seconds"] for row in rows) / total, 2) if total else 0.0,
         "total_seconds": round(sum(row["seconds"] for row in rows), 2),
     }
+
+
+def scorable(rows):
+    return [row for row in rows if "baselines" in row]
 
 
 def command_benchmark(args):
@@ -129,8 +142,17 @@ def command_benchmark(args):
             })
         print("      expected %s, got %s" % (rows[-1]["expected"], rows[-1]["actual"]))
 
-    report = {"benchmark_version": version, "summary": summarise(rows), "results": rows}
+    report = {
+        "benchmark_version": version,
+        "summary": summarise(rows),
+        "methods": all_methods(scorable(rows), BASELINE_NAMES),
+        "signals": signal_metrics(scorable(rows)),
+        "builds": build_metrics(scorable(rows)),
+        "timing": time_metrics(scorable(rows)),
+        "results": rows,
+    }
     write_json(args.output, report)
+    write_results_markdown(report, os.path.splitext(args.output)[0] + ".md")
     print_table(report)
     return 0 if report["summary"]["false_approvals"] == 0 else 1
 

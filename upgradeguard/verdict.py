@@ -3,6 +3,13 @@ REJECT = "Reject"
 INSUFFICIENT = "Insufficient Evidence"
 
 
+CONFLICT_MARKERS = ("ResolutionImpossible", "conflicting dependencies")
+
+
+def install_conflict(build):
+    return any(marker in build.get("failure_output", "") for marker in CONFLICT_MARKERS)
+
+
 def reason(code, message, evidence, severity="blocking"):
     return {"code": code, "message": message, "evidence": evidence, "severity": severity}
 
@@ -25,9 +32,11 @@ def decide(bundle):
         return finalise(INSUFFICIENT, reasons, notes, bundle)
 
     if not after_build["ok"]:
+        conflict = install_conflict(after_build)
         reasons.append(reason(
-            "upgrade-build-failed",
-            "The environment for the proposed version could not be built. Stage that failed: %s." % after_build["failure_stage"],
+            "upgrade-dependency-conflict" if conflict else "upgrade-build-failed",
+            "pip could not install the proposed versions together because their requirements conflict." if conflict
+            else "The environment for the proposed version could not be built. Stage that failed: %s." % after_build["failure_stage"],
             ["after/install.log", "after/requirements.used.txt"],
         ))
         return finalise(REJECT, reasons, notes, bundle)

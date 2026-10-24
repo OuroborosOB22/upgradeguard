@@ -39,7 +39,7 @@ def screen_one(entry, evidence_root, work_root):
             "counts": counts,
             "verdict": bundle["verdict"]["decision"],
             "seconds": round(time.time() - started, 1),
-            "evidence_dir": bundle["evidence_dir"],
+            "evidence_dir": os.path.relpath(bundle["evidence_dir"], ROOT),
         }
     except Exception as failure:
         return {"name": entry["name"], "error": str(failure)[:300], "seconds": round(time.time() - started, 1)}

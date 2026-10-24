@@ -235,7 +235,7 @@
     "evidence_dir": "evidence/screening/screen-pallets__flask",
     "failure_stage": "",
     "name": "pallets/flask",
-    "seconds": 14.4,
+    "seconds": 18.4,
     "tests_ran": true,
     "verdict": "Accept"
   },

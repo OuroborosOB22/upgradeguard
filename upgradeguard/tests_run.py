@@ -24,7 +24,7 @@ def run_test_suite(env_dir, repo_path, output_dir, timeout=900, extra_args=None)
         env=environment_for(env_dir),
     )
 
-    parsed = parse_junit(junit_path)
+    parsed = parse_junit(junit_path, {repo_path: "<repo>", env_dir: "<env>"})
     collected = bool(parsed)
     return {
         "ran": collected,
@@ -44,7 +44,7 @@ def environment_for(env_dir):
     return {"VIRTUAL_ENV": env_dir, "PATH": scripts + os.pathsep + os.environ.get("PATH", "")}
 
 
-def parse_junit(path): # usual junit tagging recog
+def parse_junit(path, path_aliases=None): # usual junit tagging recog
     if not os.path.isfile(path):
         return None
     try:
@@ -54,7 +54,7 @@ def parse_junit(path): # usual junit tagging recog
 
     results = {}
     for case in tree.getroot().iter("testcase"):
-        identifier = build_identifier(case)
+        identifier = stable_identifier(build_identifier(case), path_aliases or {})
         status = "passed"
         message = ""
         for child in case:
@@ -71,6 +71,13 @@ def parse_junit(path): # usual junit tagging recog
             break
         results[identifier] = {"status": status, "message": message, "time": case.get("time", "0")}
     return results
+
+
+def stable_identifier(identifier, path_aliases):
+    for prefix, alias in sorted(path_aliases.items(), key=lambda item: -len(item[0])):
+        if prefix:
+            identifier = identifier.replace(prefix, alias)
+    return identifier
 
 
 def build_identifier(case):

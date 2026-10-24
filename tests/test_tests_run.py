@@ -127,3 +127,16 @@ def test_a_broken_test_module_does_not_hide_the_good_ones(tmp_path):
     assert result["ran"] is True
     assert result["counts"]["passed"] == 1
     assert result["counts"]["error"] == 1
+
+
+def test_paths_of_the_two_copies_are_made_comparable(tmp_path):
+    path = tmp_path / "junit.xml"
+    path.write_text('<testsuites><testcase classname="t" name="test_x[/work/before/repo/tests/a.py]" file="tests/a.py"/></testsuites>')
+    before = parse_junit(str(path), {"/work/before/repo": "<repo>"})
+    assert list(before) == ["tests/a.py::test_x[<repo>/tests/a.py]"]
+
+
+def test_longer_prefixes_are_replaced_first(tmp_path):
+    from upgradeguard.tests_run import stable_identifier
+    aliases = {"/work/env": "<env>", "/work/env/lib": "<lib>"}
+    assert stable_identifier("x[/work/env/lib/a]", aliases) == "x[<lib>/a]"

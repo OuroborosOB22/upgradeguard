@@ -42,12 +42,15 @@ def build_parser():
     suite.add_argument("--python", dest="python_bin", default="python3")
     suite.add_argument("--offline", action="store_true")
     suite.add_argument("--output", default="benchmark/results.json")
+    suite.add_argument("--jobs", type=int, default=1)
+    suite.add_argument("--only", nargs="*")
 
     fetch = sub.add_parser("fetch-repos", help="clone the benchmark repositories at their pinned versions")
     fetch.add_argument("--repos", default="benchmark/repos.json")
     fetch.add_argument("--dest", default="benchmark/repos")
     fetch.add_argument("--requirements-dir", dest="requirements_dir", default="benchmark/requirements")
     fetch.add_argument("--only", nargs="*")
+    fetch.add_argument("--reclone", action="store_true")
     return parser
 
 

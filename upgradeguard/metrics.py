@@ -2,7 +2,7 @@ import statistics
 
 from .verdict import ACCEPT, INSUFFICIENT, REJECT
 
-SIGNALS = ["test-regression", "dependency-conflict", "vulnerability", "licence-violation", "build-failure"]
+SIGNALS = ["test-regression", "dependency-conflict", "vulnerability", "licence-violation", "build-failure", "no-tests"]
 
 
 def ratio(numerator, denominator):

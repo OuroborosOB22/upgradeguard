@@ -1,5 +1,6 @@
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 from .baselines import BASELINE_NAMES, baseline_verdicts
 from .metrics import all_methods, build_metrics, signal_metrics, time_metrics
@@ -14,6 +15,7 @@ SIGNAL_CODES = {
     "vulnerability": {"new-vulnerability"},
     "licence-violation": {"licence-policy-violation", "licence-policy-precondition"},
     "build-failure": {"upgrade-build-failed", "baseline-build-failed"},
+    "no-tests": {"tests-did-not-run"},
     "none": set(),
 }
 
@@ -108,6 +110,29 @@ def summarise(rows):
     }
 
 
+def execute_case(case, args, base_dir):
+    try:
+        return score_case(case, run_case(case, args, base_dir))
+    except Exception as failure:
+        return {
+            "id": case["id"],
+            "repo": case.get("repo", ""),
+            "package": case.get("package", ""),
+            "from": case.get("from", ""),
+            "to": case.get("to", ""),
+            "expected": case.get("expected", ""),
+            "actual": "Run Error",
+            "verdict_correct": False,
+            "expected_signal": case.get("expected_signal", "none"),
+            "signal_detected": False,
+            "codes": [],
+            "seconds": 0.0,
+            "evidence_dir": "",
+            "regressions": 0,
+            "error": str(failure),
+        }
+
+
 def scorable(rows):
     return [row for row in rows if "baselines" in row]
 
@@ -116,31 +141,14 @@ def command_benchmark(args):
     base_dir = os.path.dirname(os.path.abspath(args.cases))
     base_dir = os.path.dirname(base_dir) if os.path.basename(base_dir) == "benchmark" else base_dir
     version, cases = load_cases(args.cases)
+    if args.only:
+        cases = [case for case in cases if case["id"] in set(args.only)]
     rows = []
-    for index, case in enumerate(cases, start=1):
-        print("[%d/%d] %s" % (index, len(cases), case["id"]))
-        try:
-            bundle = run_case(case, args, base_dir)
-            rows.append(score_case(case, bundle))
-        except Exception as failure:
-            rows.append({
-                "id": case["id"],
-                "repo": case.get("repo", ""),
-                "package": case.get("package", ""),
-                "from": case.get("from", ""),
-                "to": case.get("to", ""),
-                "expected": case.get("expected", ""),
-                "actual": "Run Error",
-                "verdict_correct": False,
-                "expected_signal": case.get("expected_signal", "none"),
-                "signal_detected": False,
-                "codes": [],
-                "seconds": 0.0,
-                "evidence_dir": "",
-                "regressions": 0,
-                "error": str(failure),
-            })
-        print("      expected %s, got %s" % (rows[-1]["expected"], rows[-1]["actual"]))
+    with ThreadPoolExecutor(max_workers=max(1, args.jobs)) as pool:
+        futures = [pool.submit(execute_case, case, args, base_dir) for case in cases]
+        for index, (case, future) in enumerate(zip(cases, futures), start=1):
+            rows.append(future.result())
+            print("[%d/%d] %s: expected %s, got %s" % (index, len(cases), case["id"], rows[-1]["expected"], rows[-1]["actual"]))
 
     report = {
         "benchmark_version": version,

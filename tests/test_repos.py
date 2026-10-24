@@ -73,3 +73,21 @@ def test_only_filter_limits_what_is_cloned(tmp_path, source_repo):
     repos, requirements = write_setup(tmp_path, source_repo)
     locked = fetch_repos(str(repos), str(tmp_path / "out"), str(requirements), only={"nobody/else"})
     assert locked == {}
+
+
+def test_second_fetch_keeps_the_clone_and_refreshes_requirements(tmp_path, source_repo):
+    repos, requirements = write_setup(tmp_path, source_repo)
+    out = tmp_path / "out"
+    fetch_repos(str(repos), str(out), str(requirements))
+    marker = out / "someone__thing" / "marker.txt"
+    marker.write_text("kept")
+    (requirements / "someone__thing.txt").write_text("pytest==8.3.5\n")
+    import json as _json
+    (tmp_path / "repos.lock.json").write_text(_json.dumps({"someone/thing": {"ref": "v1", "commit": _commit(out / "someone__thing")}}))
+    fetch_repos(str(repos), str(out), str(requirements))
+    assert marker.exists()
+    assert (out / "someone__thing" / REQUIREMENTS_NAME).read_text() == "pytest==8.3.5\n"
+
+
+def _commit(path):
+    return subprocess.run(["git", "rev-parse", "HEAD"], cwd=path, capture_output=True, text=True).stdout.strip()

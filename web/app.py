@@ -56,6 +56,8 @@ def inside(candidate, base):
 
 def create_app(settings=None):
     settings = settings or Settings()
+    if os.environ.get("UPGRADEGUARD_REQUIRE_TOKEN") == "1" and not settings.access_token:
+        raise RuntimeError("UPGRADEGUARD_ACCESS_TOKEN must be set for this deployment")
     app = Flask(__name__)
     app.config["MAX_CONTENT_LENGTH"] = 8 * 1024
     app.config["DEBUG"] = False

@@ -313,3 +313,10 @@ def test_rate_limiter_window_slides():
 @pytest.mark.parametrize("run_id", ["a b", "a/b", "a\nb", "a;b", "run\x00x", ""])
 def test_run_id_pattern_rejects_odd_characters(run_id):
     assert web_app.RUN_ID_PATTERN.fullmatch(run_id) is None
+
+
+def test_a_deployment_that_requires_a_token_refuses_to_start_without_one(world, monkeypatch):
+    monkeypatch.setenv("UPGRADEGUARD_REQUIRE_TOKEN", "1")
+    with pytest.raises(RuntimeError):
+        make_app(world)
+    assert make_app(world, access_token="set") is not None

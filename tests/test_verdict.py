@@ -177,3 +177,35 @@ def test_missing_tests_are_not_called_regressions_when_a_run_did_not_finish():
     verdict = decide(make_bundle(diff=diff, after=unfinished(timed_out=True)))
     assert verdict["decision"] == INSUFFICIENT
     assert "test-regression" not in reason_codes(verdict)
+
+
+def with_resolved(before, after):
+    bundle = make_bundle()
+    bundle["resolved"] = {"before": before, "after": after}
+    return bundle
+
+
+def test_matching_resolved_versions_are_accepted():
+    assert decide(with_resolved("2.28.2", "2.32.5"))["decision"] == ACCEPT
+
+
+def test_equivalent_version_spellings_match():
+    assert decide(with_resolved("2.28.2", "2.32.5.0"))["decision"] == ACCEPT
+
+
+def test_a_baseline_that_resolved_something_else_is_insufficient_evidence():
+    verdict = decide(with_resolved("2.31.0", "2.32.5"))
+    assert verdict["decision"] == INSUFFICIENT
+    assert reason_codes(verdict) == ["baseline-version-mismatch"]
+
+
+def test_a_target_that_did_not_win_resolution_is_insufficient_evidence():
+    verdict = decide(with_resolved("2.28.2", "2.31.0"))
+    assert verdict["decision"] == INSUFFICIENT
+    assert reason_codes(verdict) == ["target-version-not-resolved"]
+
+
+def test_a_package_missing_from_the_environment_is_reported_as_such():
+    verdict = decide(with_resolved("", "2.32.5"))
+    assert verdict["decision"] == INSUFFICIENT
+    assert "(not installed)" in verdict["reasons"][0]["message"]

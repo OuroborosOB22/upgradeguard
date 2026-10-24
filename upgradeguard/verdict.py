@@ -41,6 +41,10 @@ def decide(bundle):
         ))
         return finalise(REJECT, reasons, notes, bundle)
 
+    mismatch = version_mismatch(bundle)
+    if mismatch:
+        return finalise(INSUFFICIENT, [mismatch], notes, bundle)
+
     conflicts = bundle["diff"]["conflicts"]["introduced"]
     if conflicts:
         reasons.append(reason(
@@ -87,7 +91,7 @@ def decide(bundle):
         listed = ", ".join(item["test"] for item in regressions[:3])
         reasons.append(reason(
             "test-regression",
-            "%d test(s) passed before the upgrade and fail after it: %s" % (len(regressions), listed),
+            "%d test(s) passed before the upgrade and fail, error, are skipped or are missing after it: %s" % (len(regressions), listed),
             ["before/junit.xml", "after/junit.xml", "after/pytest.log"],
         ))
 
@@ -147,6 +151,29 @@ def decide(bundle):
         severity="info",
     ))
     return finalise(ACCEPT, reasons, notes, bundle)
+
+
+def same_version(left, right):
+    try:
+        from packaging.version import Version
+        return Version(left) == Version(right)
+    except Exception:
+        return left == right
+
+
+def version_mismatch(bundle):
+    resolved = bundle.get("resolved")
+    if not resolved:
+        return None
+    spec = bundle["spec"]
+    for side, wanted, code, text in (
+        ("before", spec["from_version"], "baseline-version-mismatch", "The current environment resolved %s %s, not the %s you said is in use, so the comparison would be about something else."),
+        ("after", spec["to_version"], "target-version-not-resolved", "The upgraded environment resolved %s %s, not the %s you asked to try, so the experiment did not test the proposed change."),
+    ):
+        found = resolved.get(side)
+        if not found or not same_version(found, wanted):
+            return reason(code, text % (spec["package"], found or "(not installed)", wanted), ["%s/freeze.txt" % side])
+    return None
 
 
 def test_run_problem(before_tests, after_tests):

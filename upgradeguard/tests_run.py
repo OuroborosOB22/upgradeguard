@@ -131,7 +131,7 @@ def diff_test_runs(before, after):
             })
             continue
         previous = before_results[identifier]
-        if previous["status"] == "passed" and current["status"] in broken:
+        if previous["status"] == "passed" and (current["status"] in broken or current["status"] == "skipped"):
             regressions.append({
                 "test": identifier,
                 "before": previous["status"],

@@ -166,7 +166,7 @@ def diff_block(diff):
             "changed": [{"name": item["name"], "from": item["from_version"], "to": item["to_version"]} for item in diff["graph"]["changed"]],
         },
         "tests": {
-            "regressions": [item["test"] for item in changed if item["after"] in ("failed", "error", "not collected")],
+            "regressions": [item["test"] for item in changed],
             "new_failing": [item["test"] for item in tests["new_failing_tests"]],
             "missing_or_skipped": [item["test"] for item in changed if item["after"] in ("not collected", "skipped")],
         },

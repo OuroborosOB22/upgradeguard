@@ -140,3 +140,12 @@ def test_longer_prefixes_are_replaced_first(tmp_path):
     from upgradeguard.tests_run import stable_identifier
     aliases = {"/work/env": "<env>", "/work/env/lib": "<lib>"}
     assert stable_identifier("x[/work/env/lib/a]", aliases) == "x[<lib>/a]"
+
+
+def test_a_passing_test_that_becomes_skipped_is_a_regression():
+    diff = diff_test_runs(results(a="passed"), results(a="skipped"))
+    assert [(item["test"], item["after"]) for item in diff["regressions"]] == [("a", "skipped")]
+
+
+def test_a_test_that_was_already_skipped_is_not_a_regression():
+    assert diff_test_runs(results(a="skipped"), results(a="skipped"))["regressions"] == []

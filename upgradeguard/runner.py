@@ -9,7 +9,7 @@ from .metadata import packages_as_map
 from .report import write_report
 from .contract import write_contract_evidence
 from .source import describe_source
-from .spec import declared_names, new_run_id, pin_package, read_requirements, validate_spec
+from .spec import canonical_name, declared_names, new_run_id, pin_package, read_requirements, validate_spec
 from .tests_run import diff_test_runs, run_test_suite
 from .util import write_json
 from .venvs import build_environment, copy_repository, resolve_python
@@ -105,6 +105,7 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
         "policy": policy.to_dict(),
         "python_bin": python_bin,
         "source": source,
+        "resolved": {side: resolved_version(sides[side]["graph"], spec.package) for side in ("before", "after")},
         "package_was_declared": before_found and after_found,
         "before": sides["before"],
         "after": sides["after"],
@@ -126,6 +127,11 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
     write_contract_evidence(bundle, evidence_dir, operation, execution_provider, image_digest)
     announce(progress, "done")
     return bundle
+
+
+def resolved_version(graph, package):
+    node = graph["nodes"].get(canonical_name(package))
+    return node["version"] if node else ""
 
 
 def strip_packages(build):

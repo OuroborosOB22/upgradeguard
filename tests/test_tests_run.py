@@ -81,3 +81,49 @@ def test_new_failing_test_is_listed_separately():
 def test_regressions_come_back_sorted():
     diff = diff_test_runs(results(b="passed", a="passed"), results(b="failed", a="failed"))
     assert [item["test"] for item in diff["regressions"]] == ["a", "b"]
+
+
+def fake_environment(tmp_path):
+    import os
+    import stat
+    import sys
+    scripts = tmp_path / "env" / "bin"
+    scripts.mkdir(parents=True)
+    wrapper = scripts / "python"
+    wrapper.write_text("#!/bin/sh\nexec %s \"$@\"\n" % sys.executable)
+    wrapper.chmod(wrapper.stat().st_mode | stat.S_IEXEC)
+    return str(tmp_path / "env")
+
+
+def write_project(tmp_path, body):
+    project = tmp_path / "project"
+    project.mkdir()
+    (project / "test_sample.py").write_text(body)
+    return str(project)
+
+
+def test_run_test_suite_collects_results(tmp_path):
+    from upgradeguard.tests_run import run_test_suite
+    project = write_project(tmp_path, "def test_a():\n    assert True\n\ndef test_b():\n    assert False\n")
+    result = run_test_suite(fake_environment(tmp_path), project, str(tmp_path / "out"))
+    assert result["ran"] is True
+    assert result["counts"]["passed"] == 1 and result["counts"]["failed"] == 1
+    assert (tmp_path / "out" / "junit.xml").exists()
+
+
+def test_a_run_that_collects_nothing_does_not_count_as_ran(tmp_path):
+    from upgradeguard.tests_run import run_test_suite
+    project = write_project(tmp_path, "def test_a():\n    assert True\n")
+    result = run_test_suite(fake_environment(tmp_path), project, str(tmp_path / "out"), extra_args=["-k", "nomatch"])
+    assert result["ran"] is False
+    assert result["junit_path"] == ""
+
+
+def test_a_broken_test_module_does_not_hide_the_good_ones(tmp_path):
+    from upgradeguard.tests_run import run_test_suite
+    project = write_project(tmp_path, "def test_a():\n    assert True\n")
+    (tmp_path / "project" / "test_broken.py").write_text("import module_that_does_not_exist\n")
+    result = run_test_suite(fake_environment(tmp_path), project, str(tmp_path / "out"))
+    assert result["ran"] is True
+    assert result["counts"]["passed"] == 1
+    assert result["counts"]["error"] == 1

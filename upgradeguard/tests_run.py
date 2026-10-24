@@ -25,7 +25,7 @@ def run_test_suite(env_dir, repo_path, output_dir, timeout=900, extra_args=None)
     )
 
     parsed = parse_junit(junit_path)
-    collected = parsed is not None
+    collected = bool(parsed)
     return {
         "ran": collected,
         "returncode": result["returncode"],

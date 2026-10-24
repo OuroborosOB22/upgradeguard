@@ -65,3 +65,11 @@ def test_json_helpers_round_trip_and_create_folders(tmp_path):
     path = tmp_path / "deep" / "file.json"
     write_json(str(path), {"b": 1, "a": [1, 2]})
     assert read_json(str(path)) == {"a": [1, 2], "b": 1}
+
+
+def test_timeout_output_comes_back_as_text(tmp_path):
+    result = run_command([sys.executable, "-u", "-c", "import time; print('partial', flush=True); time.sleep(5)"], timeout=1)
+    assert result["timed_out"] is True
+    assert isinstance(result["output"], str)
+    assert "partial" in result["output"]
+    assert "TIMED OUT" in result["output"]

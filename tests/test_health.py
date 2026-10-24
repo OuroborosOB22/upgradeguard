@@ -90,3 +90,14 @@ def test_history_survives_hostile_text(tmp_path):
     history = History(str(tmp_path / "h.db"))
     history.add("health", "'); drop table analyses; --", "x", {})
     assert len(history.recent()) == 1
+
+
+def test_lookups_that_run_out_of_time_are_unavailable_not_failures():
+    import time
+
+    def slow(name):
+        time.sleep(0.5)
+        return {"status": "found", "latest": "1", "summary": "", "licence": "MIT", "requires_python": ""}
+
+    answers = health.look_up_all(["a", "b"], slow, budget=0.05)
+    assert all(item["status"] == "unavailable" for item in answers.values())

@@ -1,5 +1,6 @@
 import json
 import re
+from concurrent.futures import ThreadPoolExecutor, wait
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -14,7 +15,9 @@ from .spec import PACKAGE_PATTERN, canonical_name
 MAX_BYTES = 200_000
 MAX_SPECS = 400
 PYPI_URL = "https://pypi.org/pypi/%s/json"
-MAX_METADATA_BYTES = 3_000_000
+MAX_METADATA_BYTES = 12_000_000
+LOOKUP_WORKERS = 8
+LOOKUP_BUDGET_SECONDS = 45
 POINTS = {"invalid": 15, "duplicate": 8, "conflict": 20, "licence_denied": 10, "not_on_index": 10}
 BANDS = ((90, "Good"), (70, "Fair"), (0, "Poor"))
 
@@ -124,6 +127,17 @@ def fetch_pypi(name, timeout=8):
             "licence": licence, "requires_python": info.get("requires_python") or ""}
 
 
+def look_up_all(names, lookup, budget=LOOKUP_BUDGET_SECONDS):
+    pool = ThreadPoolExecutor(max_workers=LOOKUP_WORKERS)
+    futures = {name: pool.submit(lookup, name) for name in names}
+    wait(futures.values(), timeout=budget)
+    pool.shutdown(wait=False, cancel_futures=True)
+    answers = {}
+    for name, future in futures.items():
+        answers[name] = future.result() if future.done() and not future.exception() else {"status": "unavailable", "reason": "time budget used up"}
+    return answers
+
+
 def score_for(counts):
     value = 100
     for key, points in POINTS.items():
@@ -139,9 +153,10 @@ def analyse(text, policy, lookup=fetch_pypi):
     names = sorted({item.name for item in entries if item.valid})
     packages, counts = [], {"invalid": len(invalid), "duplicate": len(duplicates), "conflict": len(conflicts), "licence_denied": 0, "not_on_index": 0}
     unknown_licences = metadata_unavailable = 0
+    answers = look_up_all(names, lookup)
     for name in names:
         declared = [item for item in entries if item.valid and item.name == name]
-        meta = lookup(name)
+        meta = answers[name]
         row = {"package": name, "declared": [item.specifier or "any version" for item in declared], "pinned": any(item.specifier.startswith("==") for item in declared),
                "metadata": meta["status"]}
         if meta["status"] == "found":

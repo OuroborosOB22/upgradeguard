@@ -16,11 +16,11 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_ROOT)
 
 from web import security
-from upgradeguard import health, remote
+from upgradeguard import explain, health, remote
 from upgradeguard.history import History
 from upgradeguard.runner import run_upgrade_check
 from upgradeguard.spec import UpgradeSpec, load_policy, new_run_id, validate_python_name, validate_spec
-from upgradeguard.util import read_json
+from upgradeguard.util import read_json, write_json
 
 RUN_ID_PATTERN = re.compile(r"[A-Za-z0-9._-]+")
 TEXT_SUFFIXES = (".json", ".txt", ".log", ".html", ".xml", ".md")
@@ -63,6 +63,8 @@ class Settings:
     remote_profiles_path: str = os.environ.get("UPGRADEGUARD_REMOTE_PROFILES", "")
     lookup_metadata: object = health.fetch_pypi
     checks_per_hour: int = 20
+    explain_provider: object = None
+    explanations_per_hour: int = 10
 
 
 def inside(candidate, base):
@@ -71,6 +73,8 @@ def inside(candidate, base):
 
 def create_app(settings=None):
     settings = settings or Settings()
+    if settings.explain_provider is None:
+        settings.explain_provider = explain_provider_or_none()
     if os.environ.get("UPGRADEGUARD_REQUIRE_TOKEN") == "1" and not settings.access_token:
         raise RuntimeError("UPGRADEGUARD_ACCESS_TOKEN must be set for this deployment")
     app = Flask(__name__)
@@ -90,6 +94,7 @@ def create_app(settings=None):
     health_limiter = security.RateLimiter(settings.checks_per_hour, 3600)
     cancel_flags = {}
     connection_tests = {}
+    explain_limiter = security.RateLimiter(settings.explanations_per_hour, 3600)
 
     def safe_repo_path(value):
         if not value:
@@ -410,7 +415,7 @@ def create_app(settings=None):
     @app.route("/settings")
     def settings_page():
         shown = [{"name": item.name, "host": item.host, "user": item.user, "port": item.port, "timeout": item.timeout_seconds} for item in profiles.values()]
-        return page("settings.html", profiles=sorted(shown, key=lambda item: item["name"]), tests=dict(connection_tests))
+        return page("settings.html", profiles=sorted(shown, key=lambda item: item["name"]), tests=dict(connection_tests), explain_destination=destination_text())
 
     @app.route("/settings/test", methods=["POST"])
     def settings_test():
@@ -441,6 +446,66 @@ def create_app(settings=None):
         flag.set()
         audit.info("%s cancelled %s", client(), run_id)
         return redirect(url_for("show_run", run_id=run_id))
+
+    def load_bundle(run_id):
+        directory = safe_evidence_dir(run_id)
+        path = os.path.join(directory, "bundle.json") if directory else ""
+        if not path or not os.path.isfile(path):
+            abort(404)
+        return directory, read_json(path)
+
+    def allowed_repo(bundle):
+        repo = os.path.realpath(bundle["spec"]["repo_path"])
+        return repo if os.path.isdir(repo) and any(inside(repo, base) for base in settings.repo_bases) else ""
+
+    def destination_text():
+        return settings.explain_provider.destination if settings.explain_provider else ""
+
+    @app.route("/runs/<run_id>/explain", methods=["GET", "POST"])
+    def explain_run(run_id):
+        directory, bundle = load_bundle(run_id)
+        repo = allowed_repo(bundle)
+        candidates = explain.project_files_importing(repo, bundle["spec"]["package"]) if repo else []
+        mode = "code" if request.values.get("mode") == "code" else "report"
+        chosen = [name for name in request.values.getlist("file") if name in candidates] if mode == "code" else []
+        try:
+            files = explain.read_selected_files(repo, chosen) if chosen else []
+        except ValueError as problem:
+            return page("explain.html", 400, run_id=run_id, bundle=bundle, candidates=candidates, mode=mode, chosen=chosen, preview=None,
+                        destination=destination_text(), error=str(problem))
+        if request.method == "POST" and request.form.get("confirm") == "1":
+            if not explain_limiter.allow(client()):
+                abort(429)
+            result = explain.explain(bundle, files, settings.explain_provider)
+            record = {"mode": mode, "files": chosen, "source": result["source"], "used_model": result["used_model"], "graph": result["graph"],
+                      "extra_limitations": result["extra_limitations"], "evidence": [{key: item[key] for key in ("id", "kind", "text") if key != "text" or item["kind"] != "file"} for item in result["evidence"]]}
+            write_json(os.path.join(directory, "explanation.json"), record)
+            audit.info("%s explained %s (model used: %s)", client(), run_id, result["used_model"])
+            return redirect(url_for("show_explanation", run_id=run_id))
+        items = explain.build_evidence(bundle, files)
+        return page("explain.html", run_id=run_id, bundle=bundle, candidates=candidates, mode=mode, chosen=chosen, preview=explain.preview(items, destination_text()),
+                    destination=destination_text(), error="")
+
+    def read_explanation(run_id):
+        directory = safe_evidence_dir(run_id)
+        path = os.path.join(directory, "explanation.json") if directory else ""
+        if not path or not os.path.isfile(path):
+            abort(404)
+        return read_json(path)
+
+    @app.route("/runs/<run_id>/explanation")
+    def show_explanation(run_id):
+        record = read_explanation(run_id)
+        return page("explanation.html", run_id=run_id, record=record, diagram=explain.svg(record["graph"]))
+
+    @app.route("/runs/<run_id>/explanation.md")
+    def explanation_markdown(run_id):
+        record = read_explanation(run_id)
+        text = explain.markdown(record["graph"], [dict(item, path=item.get("path", "")) for item in record["evidence"]], record["source"], record["extra_limitations"])
+        response = make_response(text)
+        response.headers["Content-Type"] = "text/markdown; charset=utf-8"
+        response.headers["Content-Disposition"] = 'attachment; filename="%s-explanation.md"' % run_id
+        return response
 
     @app.errorhandler(Exception)
     def any_problem(problem):
@@ -475,6 +540,13 @@ def build_audit_log(path):
         logger.setLevel(logging.INFO)
         logger.propagate = False
     return logger
+
+
+def explain_provider_or_none():
+    try:
+        return explain.provider_from_environment()
+    except ValueError:
+        return None
 
 
 def run_server():

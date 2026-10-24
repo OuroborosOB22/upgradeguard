@@ -443,3 +443,71 @@ def test_server_test_results_are_fixed_text_and_the_detail_goes_to_the_log(world
     page = client.get("/settings").get_data(as_text=True)
     assert "could not be reached" in page and "10.1.2.3" not in page and "/home/secret" not in page
     assert "10.1.2.3" in (world / "logs" / "audit.log").read_text()
+
+
+def write_finished_run(world, run_id="20261024-000000-requests-1-to-2"):
+    from bundles import regression_bundle
+    bundle = regression_bundle(world.parent)
+    bundle["run_id"] = run_id
+    bundle["spec"]["repo_path"] = str(world / "examples" / "demo_repo")
+    bundle["spec"]["package"] = "requests"
+    directory = world / "evidence" / run_id
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / "bundle.json").write_text(json.dumps(bundle))
+    (directory / "verdict.json").write_text(json.dumps(bundle["verdict"]))
+    (directory / "run.json").write_text(json.dumps(bundle["spec"]))
+    (world / "examples" / "demo_repo" / "client.py").write_text("import requests\nrequests.get('x')\n")
+    return run_id
+
+
+def test_explain_page_previews_what_is_shared_and_sends_nothing_on_get(world):
+    run_id = write_finished_run(world)
+    sent = []
+
+    class Mock:
+        destination = "mock service (model mock-1)"
+
+        def complete(self, system, user):
+            sent.append(user)
+            raise explain_module.ProviderError("down")
+
+    client = make_app(world, explain_provider=Mock()).test_client()
+    page = client.get("/runs/%s/explain?mode=code&file=client.py" % run_id).get_data(as_text=True)
+    assert "mock service" in page and "file:client.py" in page and not sent
+
+
+def test_confirming_an_explanation_falls_back_when_the_model_is_down(world):
+    run_id = write_finished_run(world)
+
+    class Down:
+        destination = "mock service (model mock-1)"
+
+        def complete(self, system, user):
+            raise explain_module.ProviderError("the model service could not be reached")
+
+    client = make_app(world, explain_provider=Down()).test_client()
+    token = csrf_pair(client)
+    response = client.post("/runs/%s/explain" % run_id, data={"csrf": token, "confirm": "1", "mode": "report"})
+    assert response.status_code == 302
+    page = client.get("/runs/%s/explanation" % run_id).get_data(as_text=True)
+    assert "<svg" in page and "could not be reached" in page and "does not change the verdict" in page.lower()
+    assert "text/markdown" in client.get("/runs/%s/explanation.md" % run_id).headers["Content-Type"]
+
+
+def test_without_a_model_nothing_is_sent_and_the_page_says_so(world):
+    run_id = write_finished_run(world)
+    page = make_app(world).test_client().get("/runs/%s/explain" % run_id).get_data(as_text=True)
+    assert "Nothing leaves it" in page
+
+
+def test_explain_refuses_files_outside_the_project_and_unknown_runs(world):
+    run_id = write_finished_run(world)
+    client = make_app(world).test_client()
+    token = csrf_pair(client)
+    escape = client.post("/runs/%s/explain" % run_id, data={"csrf": token, "confirm": "1", "mode": "code", "file": "../../outside.py"})
+    assert escape.status_code == 302
+    assert client.get("/runs/not-there/explain").status_code == 404
+    assert client.post("/runs/%s/explain" % run_id, data={"confirm": "1"}).status_code == 403
+
+
+from upgradeguard import explain as explain_module

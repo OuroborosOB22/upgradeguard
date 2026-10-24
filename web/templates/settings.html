@@ -1,5 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Settings{% endblock %}
+{% block title %}Settings<section class="panel">
+  <h2>Explanations</h2>
+  {% if explain_destination %}
+  <p>A model is set up: <strong>{{ explain_destination }}</strong>. It is only used after you confirm what would be sent, for each explanation.</p>
+  {% else %}
+  <p class="note">No model is set up. Explanations are built from the report on this server. To set one up, the person running the site sets UPGRADEGUARD_EXPLAIN_URL and UPGRADEGUARD_EXPLAIN_MODEL, and keeps the key in an environment variable.</p>
+  {% endif %}
+  <p class="note">Running checks on a server and sending text to a model are separate choices. Choosing one never turns on the other.</p>
+</section>
+{% endblock %}
 {% block content %}
 <h1>Settings</h1>
 <p class="lede">Servers are set up by whoever runs this site, in a file on the server. Nothing here can add a server from the browser.</p>
@@ -24,5 +33,14 @@
   {% else %}
   <p class="note">No servers are set up. Checks run on this computer. To add one, point UPGRADEGUARD_REMOTE_PROFILES at a profiles file (see REMOTE.md in the project folder).</p>
   {% endif %}
+</section>
+<section class="panel">
+  <h2>Explanations</h2>
+  {% if explain_destination %}
+  <p>A model is set up: <strong>{{ explain_destination }}</strong>. It is only used after you confirm what would be sent, for each explanation.</p>
+  {% else %}
+  <p class="note">No model is set up. Explanations are built from the report on this server. To set one up, the person running the site sets UPGRADEGUARD_EXPLAIN_URL and UPGRADEGUARD_EXPLAIN_MODEL, and keeps the key in an environment variable.</p>
+  {% endif %}
+  <p class="note">Running checks on a server and sending text to a model are separate choices. Choosing one never turns on the other.</p>
 </section>
 {% endblock %}

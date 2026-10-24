@@ -407,7 +407,8 @@ def test_a_server_problem_is_shown_as_not_an_upgrade_verdict(world):
         if state["state"] == "failed":
             break
         time.sleep(0.05)
-    assert "says nothing about the upgrade" in state["error"] and "could not reach the server" in state["error"]
+    assert "says nothing about the upgrade" in state["error"] and "could not be reached" in state["error"]
+    assert "could not reach the server" not in state["error"]
 
 
 def test_a_browser_form_post_with_a_null_origin_is_accepted_but_cross_site_is_not(world):
@@ -418,3 +419,27 @@ def test_a_browser_form_post_with_a_null_origin_is_accepted_but_cross_site_is_no
     cross = {"Origin": "https://evil.example", "Sec-Fetch-Site": "cross-site"}
     assert client.post("/runs", data=good_form(token), headers=cross).status_code == 403
     assert client.post("/runs", data=good_form(token), headers={"Origin": "https://evil.example"}).status_code == 403
+
+
+def test_server_test_results_are_fixed_text_and_the_detail_goes_to_the_log(world):
+    from upgradeguard import remote
+
+    profiles = world / "profiles.json"
+    profiles.write_text(json.dumps({"profiles": {"demo": {"host": "build.example.org", "user": "azureuser", "identity_file": "/keys/id", "known_hosts_file": "/keys/known",
+                                                          "worker_dir": "/srv/ug", "jobs_dir": "/srv/jobs"}}}))
+    client = make_app(world, remote_profiles_path=str(profiles)).test_client()
+    token = csrf_pair(client)
+
+    def failing(profile, run=None):
+        raise remote.RemoteError("connection", "ssh: connect to host 10.1.2.3 port 22: Connection refused /home/secret/.ssh/id")
+
+    original = remote.test_connection
+    remote.test_connection = failing
+    try:
+        response = client.post("/settings/test", data={"csrf": token, "profile": "demo"})
+    finally:
+        remote.test_connection = original
+    assert "?" not in response.headers["Location"]
+    page = client.get("/settings").get_data(as_text=True)
+    assert "could not be reached" in page and "10.1.2.3" not in page and "/home/secret" not in page
+    assert "10.1.2.3" in (world / "logs" / "audit.log").read_text()

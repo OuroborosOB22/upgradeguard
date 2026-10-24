@@ -19,10 +19,10 @@
     {% endfor %}
     </tbody>
   </table></div>
-  {% if outcome %}<p class="note" role="status"><strong>{{ tested }}</strong>: {{ outcome }}</p>{% endif %}
+  {% for name, outcome in tests.items() %}<p class="note" role="status"><strong>{{ name }}</strong>: {{ outcome }}</p>{% endfor %}
   <p class="note">A connection test only checks that the server answers and has enough room. It does not prove a full check will work.</p>
   {% else %}
-  <p class="note">No servers are set up. Checks run on this computer. To add one, point UPGRADEGUARD_REMOTE_PROFILES at a profiles file (see docs/REMOTE.md).</p>
+  <p class="note">No servers are set up. Checks run on this computer. To add one, point UPGRADEGUARD_REMOTE_PROFILES at a profiles file (see REMOTE.md in the project folder).</p>
   {% endif %}
 </section>
 {% endblock %}

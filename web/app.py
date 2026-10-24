@@ -25,6 +25,14 @@ from upgradeguard.util import read_json
 RUN_ID_PATTERN = re.compile(r"[A-Za-z0-9._-]+")
 TEXT_SUFFIXES = (".json", ".txt", ".log", ".html", ".xml", ".md")
 PYTHON_CHOICES = ["python3"]
+SERVER_MESSAGES = {
+    "connection": "The server could not be reached. Check its address, the key and the known hosts entry.",
+    "preflight": "The server answered but is not suitable (it needs a recent Python and enough free disk).",
+    "timeout": "The check ran longer than the time limit and was stopped.",
+    "cancelled": "The check was cancelled.",
+    "output": "The server returned results that did not pass the checks, so they were thrown away.",
+    "worker": "The worker on the server could not finish the job.",
+}
 
 
 def default_repo_bases():
@@ -81,6 +89,7 @@ def create_app(settings=None):
     profiles = remote.load_profiles(settings.remote_profiles_path)
     health_limiter = security.RateLimiter(settings.checks_per_hour, 3600)
     cancel_flags = {}
+    connection_tests = {}
 
     def safe_repo_path(value):
         if not value:
@@ -195,8 +204,8 @@ def create_app(settings=None):
                     active_runs[spec.run_id]["message"] = "could not finish"
                     active_runs[spec.run_id]["kind"] = kind
                     active_runs[spec.run_id]["error"] = (
-                        "The server could not be used (%s): %s. This says nothing about the upgrade." % (kind, str(failure)[:200])
-                        if kind in ("connection", "preflight", "timeout", "cancelled", "output", "worker")
+                        "%s This says nothing about the upgrade. The details are in the server log." % SERVER_MESSAGES[kind]
+                        if kind in SERVER_MESSAGES
                         else "The check could not finish. The details are in the server log.")
                 history.add("upgrade", "%s %s to %s" % (spec.package, spec.from_version, spec.to_version), "Not finished",
                             {"run_id": spec.run_id, "location": location, "kind": kind}, run_id=None)
@@ -401,7 +410,7 @@ def create_app(settings=None):
     @app.route("/settings")
     def settings_page():
         shown = [{"name": item.name, "host": item.host, "user": item.user, "port": item.port, "timeout": item.timeout_seconds} for item in profiles.values()]
-        return page("settings.html", profiles=sorted(shown, key=lambda item: item["name"]), tested=request.args.get("tested", ""), outcome=request.args.get("outcome", ""))
+        return page("settings.html", profiles=sorted(shown, key=lambda item: item["name"]), tests=dict(connection_tests))
 
     @app.route("/settings/test", methods=["POST"])
     def settings_test():
@@ -414,9 +423,11 @@ def create_app(settings=None):
             caps = remote.test_connection(profiles[name])
             outcome = "Connected. Python %s, %d MB free." % (caps["python"], caps["disk_free_mb"])
         except remote.RemoteError as problem:
-            outcome = "Not usable (%s): %s" % (problem.kind, str(problem)[:160])
+            audit.warning("%s test of profile %s failed (%s): %s", client(), name, problem.kind, str(problem)[:300])
+            outcome = SERVER_MESSAGES.get(problem.kind, "The test failed. The details are in the server log.")
+        connection_tests[name] = outcome
         audit.info("%s tested profile %s", client(), name)
-        return redirect(url_for("settings_page", tested=name, outcome=outcome))
+        return redirect(url_for("settings_page"))
 
     @app.route("/runs/<run_id>/cancel", methods=["POST"])
     def cancel_run(run_id):

@@ -43,8 +43,11 @@ def csrf_matches(cookie_value, form_value):
 
 
 def same_origin(headers):
+    fetch_site = headers.get("Sec-Fetch-Site")
+    if fetch_site:
+        return fetch_site in ("same-origin", "none")
     origin = headers.get("Origin") or headers.get("Referer")
-    if not origin:
+    if not origin or origin == "null":
         return True
     return urlparse(origin).netloc == headers.get("Host", "")
 

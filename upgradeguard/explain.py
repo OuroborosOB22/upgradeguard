@@ -39,6 +39,15 @@ def redact(text):
     return text
 
 
+URLISH = re.compile(r"\S*(://|www\.|mailto:|javascript:|data:)\S*", re.IGNORECASE)
+TEXT_SAFE = re.compile(r"[^A-Za-z0-9 .,:;_/+()%'-]")
+
+
+def plain_text(text, limit=300):
+    text = URLISH.sub(" ", str(text))
+    return re.sub(r"\s+", " ", TEXT_SAFE.sub(" ", text)).strip()[:limit]
+
+
 def safe_id(prefix, value):
     return "%s:%s" % (prefix, ID_SAFE.sub("_", value)[:110] or "x")
 
@@ -111,6 +120,16 @@ def preview(items, destination):
 
 def normalise(graph):
     notes = []
+    if isinstance(graph, dict):
+        if isinstance(graph.get("summary"), str):
+            graph["summary"] = plain_text(graph["summary"], 800)
+        graph["limitations"] = [plain_text(item) for item in graph.get("limitations", []) if isinstance(item, str)]
+        for finding in graph.get("findings", []):
+            if isinstance(finding, dict) and isinstance(finding.get("text"), str):
+                finding["text"] = plain_text(finding["text"])
+        for node in graph.get("nodes", []):
+            if isinstance(node, dict) and isinstance(node.get("label"), str):
+                node["label"] = safe_label(node["label"])
     for node in graph.get("nodes", []) if isinstance(graph, dict) else []:
         if isinstance(node, dict) and node.get("failed") and node.get("kind") != "test":
             node.pop("failed")
@@ -186,9 +205,9 @@ def mermaid(graph):
 
 def markdown(graph, items, source, extras=()):
     cited = {ref for part in graph["nodes"] + graph["edges"] + graph["findings"] for ref in part["evidence_ids"]}
-    lines = ["# Explanation of the check", "", graph["summary"], "", "```mermaid", mermaid(graph), "```", "", "## Evidence", ""]
-    lines += ["- `%s`: %s" % (item["id"], item["text"].splitlines()[0][:160] if item["kind"] != "file" else item["path"]) for item in items if item["id"] in cited]
-    lines += ["", "## Limits", ""] + ["- %s" % text for text in list(graph["limitations"]) + list(extras)]
+    lines = ["# Explanation of the check", "", plain_text(graph["summary"], 800), "", "```mermaid", mermaid(graph), "```", "", "## Evidence", ""]
+    lines += ["- `%s`: %s" % (item["id"], plain_text(item["text"].splitlines()[0] if item["kind"] != "file" else item["path"], 160)) for item in items if item["id"] in cited]
+    lines += ["", "## Limits", ""] + ["- %s" % plain_text(text) for text in list(graph["limitations"]) + list(extras)]
     lines += ["", "Source of this explanation: %s. It is a generated explanation of recorded evidence and does not change the verdict." % source, ""]
     return "\n".join(lines)
 

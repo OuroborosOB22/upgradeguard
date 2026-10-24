@@ -124,6 +124,13 @@ def test_hyphenated_names_and_values_with_commas_are_redacted():
     assert "plain = 1,2" in cleaned
 
 
+def test_long_names_and_long_values_cannot_slip_past_a_bound():
+    name = "a_very_long_identifier_name_that_goes_on_and_on_for_more_than_forty_eight_characters_password"
+    cleaned = explain.redact("%s = '%s'\nurl = \"https://user:%s@host/x\"\ntoken = \"%s\"" % (name, "S" * 400, "P" * 400, "T" * 400))
+    for leaked in ("S" * 20, "P" * 20, "T" * 20):
+        assert leaked not in cleaned
+
+
 def test_a_huge_line_is_dropped_quickly_and_cannot_slow_the_redactor():
     import time
     started = time.time()

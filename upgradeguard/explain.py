@@ -49,7 +49,7 @@ def plain_text(text, limit=300):
 
 
 def safe_id(prefix, value):
-    return "%s:%s" % (prefix, ID_SAFE.sub("_", value)[:110] or "x")
+    return "%s:%s" % (prefix, ID_SAFE.sub("_", value.replace("://", "_"))[:110] or "x")
 
 
 def safe_label(text, limit=60):

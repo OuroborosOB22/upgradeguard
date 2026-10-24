@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "operation": "COMPARE",
+  "project_id": "demo-repo",
+  "old_snapshot_id": "snap-0123456789ab",
+  "new_snapshot_id": "snap-ba9876543210",
+  "changes": {
+    "code": {
+      "added": [
+        "new.py"
+      ],
+      "removed": [],
+      "changed": [
+        "app.py"
+      ]
+    },
+    "runtime": [],
+    "dependencies": {
+      "added": [],
+      "removed": [],
+      "changed": [
+        {
+          "name": "requests",
+          "from": "2.28.2",
+          "to": "2.32.5"
+        }
+      ]
+    },
+    "tests": {
+      "newly_failing": [],
+      "newly_skipped": [],
+      "missing": [],
+      "fixed": [],
+      "added": [
+        "tests/test_b.py::test_two"
+      ]
+    }
+  },
+  "warnings": [
+    "A changed file or dependency is a lead, not proof of what caused a difference."
+  ],
+  "created_at": "2026-10-24T10:05:00Z"
+}

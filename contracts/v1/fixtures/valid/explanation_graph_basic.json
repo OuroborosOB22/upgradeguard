@@ -1,0 +1,14 @@
+{
+  "summary": "jinja2 moves from 3.0.3 to 3.1.6. Five tests that passed before fail after.",
+  "nodes": [
+    {"id": "project", "label": "demo project", "kind": "component", "change": "unchanged", "evidence_ids": ["change:main"], "inferred": false},
+    {"id": "jinja2", "label": "jinja2 3.0.3 to 3.1.6", "kind": "package", "change": "modified", "evidence_ids": ["dep:jinja2"], "inferred": false},
+    {"id": "tests", "label": "test suite", "kind": "test", "change": "unchanged", "failed": true, "evidence_ids": ["finding:test-regression"], "inferred": false}
+  ],
+  "edges": [
+    {"source": "project", "target": "jinja2", "relation": "depends_on", "evidence_ids": ["dep:jinja2"], "inferred": false},
+    {"source": "tests", "target": "project", "relation": "tests", "evidence_ids": ["finding:test-regression"], "inferred": true}
+  ],
+  "findings": [{"text": "Five tests passed before the upgrade and fail after it.", "evidence_ids": ["finding:test-regression"]}],
+  "limitations": ["The graph shows dependency and test facts only. It is not a full architecture."]
+}

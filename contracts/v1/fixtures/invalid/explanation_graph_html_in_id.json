@@ -1,0 +1,7 @@
+{
+  "summary": "x",
+  "nodes": [{"id": "a\"]; click a href \"http://evil\"", "label": "a", "kind": "component", "change": "unchanged", "evidence_ids": [], "inferred": false}],
+  "edges": [],
+  "findings": [],
+  "limitations": []
+}

@@ -8,7 +8,7 @@ from referencing import Registry, Resource
 
 HERE = Path(__file__).parent
 MANIFEST = HERE / "manifest.json"
-SCHEMA_NAMES = ["request", "evidence", "prediction_request", "prediction_response", "snapshot", "comparison", "worker_result"]
+SCHEMA_NAMES = ["request", "evidence", "prediction_request", "prediction_response", "snapshot", "comparison", "worker_result", "explanation_graph"]
 
 
 def load_json(path):

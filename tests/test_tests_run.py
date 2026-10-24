@@ -149,3 +149,12 @@ def test_a_passing_test_that_becomes_skipped_is_a_regression():
 
 def test_a_test_that_was_already_skipped_is_not_a_regression():
     assert diff_test_runs(results(a="skipped"), results(a="skipped"))["regressions"] == []
+
+
+def test_tool_driven_test_runs_are_marked_so_the_recorder_stays_quiet(tmp_path):
+    from upgradeguard.tests_run import environment_for, run_test_suite
+    project = write_project(tmp_path, "import os\n\ndef test_marker():\n    assert os.environ['UPGRADEGUARD_ACTIVE'] == '1'\n")
+    environment = fake_environment(tmp_path)
+    assert environment_for(environment)["UPGRADEGUARD_ACTIVE"] == "1"
+    result = run_test_suite(environment, project, str(tmp_path / "out"))
+    assert result["counts"]["passed"] == 1

@@ -45,7 +45,7 @@ def run_test_suite(env_dir, repo_path, output_dir, timeout=900, extra_args=None)
 
 def environment_for(env_dir):
     scripts = os.path.dirname(interpreter_path(env_dir))
-    return {"VIRTUAL_ENV": env_dir, "PATH": scripts + os.pathsep + os.environ.get("PATH", "")}
+    return {"VIRTUAL_ENV": env_dir, "PATH": scripts + os.pathsep + os.environ.get("PATH", ""), "UPGRADEGUARD_ACTIVE": "1"}
 
 
 def parse_junit(path, path_aliases=None): # usual junit tagging recog

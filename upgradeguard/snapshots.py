@@ -89,35 +89,42 @@ def capture_snapshot(repo_path, store_root, python_bin="python3", requirements_f
             tests = run_test_suite(os.path.join(work, "env"), repo_copy, os.path.join(staging, "logs"), timeout=test_timeout, extra_args=pytest_args)
         graph = build_graph(build["packages"], set(declared_names(lines)))
         eligibility = eligibility_for(build, tests, verify)
-        records = records_of_tests(tests)
-        snapshot_id = snapshot_identity(source["manifest_sha256"], profile, records, eligibility)
-        final = os.path.join(project_dir(store_root, project), snapshot_id)
-        if os.path.isdir(final):
-            return read_json(os.path.join(final, "snapshot.json")), True
+        dependencies = [{"name": name, "version": node["version"]} for name, node in sorted(graph["nodes"].items())]
+        environment = environment_block(build.get("python_version", ""), allow_network, None, sorted(build_env or {}))
         shutil.rmtree(work)
-        write_archive(repo_path, manifest, os.path.join(staging, "source.tar.gz"))
-        write_json(os.path.join(staging, "manifest.json"), {"files": manifest["files"]})
-        record = {
-            "schema_version": SCHEMA_VERSION,
-            "snapshot_id": snapshot_id,
-            "project_id": project,
-            "source": {key: source[key] for key in ("commit", "dirty", "manifest_sha256", "snapshot_id", "exclusions")},
-            "environment": environment_block(build.get("python_version", ""), allow_network, None, sorted(build_env or {})),
-            "resolved_dependencies": [{"name": name, "version": node["version"]} for name, node in sorted(graph["nodes"].items())],
-            "tests": {"verified": verify, "ran": tests["ran"], "results": records},
-            "profile_id": profile,
-            "eligibility": eligibility,
-            "artifacts": [],
-            "created_at": utc_now(),
-        }
-        record["artifacts"] = artifact_manifest(staging, skip=("snapshot.json",))
-        write_json(os.path.join(staging, "snapshot.json"), record)
-        os.replace(staging, final)
-        add_to_index(store_root, project, {"snapshot_id": snapshot_id, "created_at": record["created_at"], "eligibility": eligibility,
-                                           "profile_id": profile, "manifest_sha256": source["manifest_sha256"]})
-        return record, False
+        return store_snapshot(store_root, project, profile, source, manifest, repo_path, environment, dependencies,
+                              tests, verify, eligibility, staging)
     finally:
         shutil.rmtree(staging, ignore_errors=True)
+
+
+def store_snapshot(store_root, project, profile, source, manifest, repo_path, environment, dependencies, tests, verified, eligibility, staging):
+    records = records_of_tests(tests)
+    snapshot_id = snapshot_identity(source["manifest_sha256"], profile, records, eligibility)
+    final = os.path.join(project_dir(store_root, project), snapshot_id)
+    if os.path.isdir(final):
+        return read_json(os.path.join(final, "snapshot.json")), True
+    write_archive(repo_path, manifest, os.path.join(staging, "source.tar.gz"))
+    write_json(os.path.join(staging, "manifest.json"), {"files": manifest["files"]})
+    record = {
+        "schema_version": SCHEMA_VERSION,
+        "snapshot_id": snapshot_id,
+        "project_id": project,
+        "source": {key: source[key] for key in ("commit", "dirty", "manifest_sha256", "snapshot_id", "exclusions")},
+        "environment": environment,
+        "resolved_dependencies": dependencies,
+        "tests": {"verified": verified, "ran": tests["ran"], "results": records},
+        "profile_id": profile,
+        "eligibility": eligibility,
+        "artifacts": [],
+        "created_at": utc_now(),
+    }
+    record["artifacts"] = artifact_manifest(staging, skip=("snapshot.json",))
+    write_json(os.path.join(staging, "snapshot.json"), record)
+    os.replace(staging, final)
+    add_to_index(store_root, project, {"snapshot_id": snapshot_id, "created_at": record["created_at"], "eligibility": eligibility,
+                                       "profile_id": profile, "manifest_sha256": source["manifest_sha256"]})
+    return record, False
 
 
 def load_snapshot(store_root, project_id, snapshot_id):

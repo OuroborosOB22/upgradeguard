@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+import shutil
+import sys
+
+arguments = sys.argv[1:]
+divider = arguments.index("--")
+source, destination = arguments[divider + 1], arguments[divider + 2]
+strip = lambda value: value.split(":", 1)[1] if "@" in value.split(":", 1)[0] else value
+shutil.copyfile(strip(source), strip(destination))

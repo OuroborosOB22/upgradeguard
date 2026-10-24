@@ -119,13 +119,13 @@ def test_only_plain_interpreter_names_are_allowed_in_a_container(tmp_path):
         container.run_in_container(spec, load_policy(""), str(tmp_path))
 
 
-def sample_output(tmp_path):
+def sample_output(tmp_path, request=None):
     from upgradeguard.contract import file_sha256
     directory = tmp_path / "out" / "run-worker-test"
     (directory / "after").mkdir(parents=True)
     (directory / "bundle.json").write_text("{}")
     (directory / "after" / "pytest.log").write_text("log")
-    request = make_request(write_project(tmp_path))
+    request = request or make_request(write_project(tmp_path))
     evidence = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "contracts", "v1", "fixtures", "valid", "evidence_reject.json")).read())
     evidence["run_id"] = request["run_id"]
     evidence["request"] = request

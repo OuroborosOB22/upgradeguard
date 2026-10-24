@@ -127,3 +127,53 @@ def test_plain_install_failure_stays_a_build_failure():
     after = side(build_ok=False, stage="dependency-install")
     after["build"]["failure_output"] = "ERROR: No matching distribution found for pluggy==99.0.0"
     assert reason_codes(decide(make_bundle(after=after))) == ["upgrade-build-failed"]
+
+
+def unfinished(**changes):
+    after = side(tests_ran=False)
+    after["tests"].update(changes)
+    return after
+
+
+def test_blocking_evidence_still_rejects_when_the_tests_never_finished():
+    diff = empty_diff()
+    diff["vulnerabilities"]["introduced"] = [{"id": "GHSA-1", "package": "cryptography"}]
+    verdict = decide(make_bundle(diff=diff, after=unfinished(timed_out=True)))
+    assert verdict["decision"] == REJECT
+    assert reason_codes(verdict) == ["new-vulnerability"]
+    assert note_codes(verdict) == ["tests-timed-out"]
+
+
+def test_a_timeout_with_nothing_else_found_is_insufficient_evidence():
+    verdict = decide(make_bundle(after=unfinished(timed_out=True)))
+    assert verdict["decision"] == INSUFFICIENT
+    assert reason_codes(verdict) == ["tests-timed-out"]
+
+
+def test_a_baseline_that_never_finished_is_insufficient_evidence_even_with_a_clean_upgrade():
+    before = side(tests_ran=False)
+    before["tests"]["timed_out"] = True
+    verdict = decide(make_bundle(before=before))
+    assert verdict["decision"] == INSUFFICIENT
+    assert reason_codes(verdict) == ["tests-timed-out"]
+
+
+def test_a_suite_that_cannot_start_after_the_upgrade_is_a_rejection():
+    diff = empty_diff()
+    diff["tests"]["regressions"] = [{"test": "t1", "after": "not collected"}]
+    verdict = decide(make_bundle(diff=diff, after=unfinished(startup_error=True)))
+    assert verdict["decision"] == REJECT
+    assert reason_codes(verdict) == ["tests-could-not-start"]
+
+
+def test_a_suite_that_cannot_start_before_is_not_blamed_on_the_upgrade():
+    verdict = decide(make_bundle(before=unfinished(startup_error=True)))
+    assert verdict["decision"] == INSUFFICIENT
+
+
+def test_missing_tests_are_not_called_regressions_when_a_run_did_not_finish():
+    diff = empty_diff()
+    diff["tests"]["regressions"] = [{"test": "t%d" % number, "after": "not collected"} for number in range(50)]
+    verdict = decide(make_bundle(diff=diff, after=unfinished(timed_out=True)))
+    assert verdict["decision"] == INSUFFICIENT
+    assert "test-regression" not in reason_codes(verdict)

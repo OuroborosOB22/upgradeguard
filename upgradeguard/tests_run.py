@@ -6,6 +6,9 @@ from .util import run_command
 
 # runs pytest in the sandbox + parses the machine-readable junit XML output + diffs the test results to detect test regressions
 
+STARTUP_MARKERS = ("ImportError", "ModuleNotFoundError", "ConftestImportFailure")
+
+
 def run_test_suite(env_dir, repo_path, output_dir, timeout=900, extra_args=None):
     junit_path = os.path.join(output_dir, "junit.xml")
     log_path = os.path.join(output_dir, "pytest.log")
@@ -28,6 +31,7 @@ def run_test_suite(env_dir, repo_path, output_dir, timeout=900, extra_args=None)
     collected = bool(parsed)
     return {
         "ran": collected,
+        "startup_error": not collected and result["returncode"] in (2, 3, 4) and any(mark in result["output"] for mark in STARTUP_MARKERS),
         "returncode": result["returncode"],
         "timed_out": result["timed_out"],
         "duration": result["duration"],

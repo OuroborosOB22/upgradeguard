@@ -10,7 +10,7 @@ from .spec import UpgradeSpec, load_policy
 from .util import read_json, write_json
 
 SIGNAL_CODES = {
-    "test-regression": {"test-regression"},
+    "test-regression": {"test-regression", "tests-could-not-start"},
     "dependency-conflict": {"new-dependency-conflict", "upgrade-dependency-conflict"},
     "vulnerability": {"new-vulnerability"},
     "licence-violation": {"licence-policy-violation", "licence-policy-precondition"},
@@ -48,6 +48,7 @@ def run_case(case, args, base_dir):
         evidence_root=args.evidence,
         work_root=args.work,
         allow_network=not args.offline,
+        test_timeout=args.test_timeout,
         strict_licences=case.get("strict_licences", False),
     )
 

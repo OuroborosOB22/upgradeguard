@@ -41,14 +41,6 @@ def decide(bundle):
         ))
         return finalise(REJECT, reasons, notes, bundle)
 
-    if not before_tests["ran"] or not after_tests["ran"]:
-        reasons.append(reason(
-            "tests-did-not-run",
-            "The test suite could not be collected in at least one environment, so a regression cannot be proved either way.",
-            ["before/pytest.log", "after/pytest.log"],
-        ))
-        return finalise(INSUFFICIENT, reasons, notes, bundle)
-
     conflicts = bundle["diff"]["conflicts"]["introduced"]
     if conflicts:
         reasons.append(reason(
@@ -89,7 +81,8 @@ def decide(bundle):
             notes.append(reason("licence-policy-precondition", message + " The upgrade did not cause this, so it does not block the verdict.",
                                 ["after/licenses.json", "policy.json"], severity="warning"))
 
-    regressions = bundle["diff"]["tests"]["regressions"]
+    comparable = before_tests["ran"] and after_tests["ran"]
+    regressions = bundle["diff"]["tests"]["regressions"] if comparable else []
     if regressions:
         listed = ", ".join(item["test"] for item in regressions[:3])
         reasons.append(reason(
@@ -98,7 +91,7 @@ def decide(bundle):
             ["before/junit.xml", "after/junit.xml", "after/pytest.log"],
         ))
 
-    new_failing = bundle["diff"]["tests"]["new_failing_tests"]
+    new_failing = bundle["diff"]["tests"]["new_failing_tests"] if comparable else []
     if new_failing:
         notes.append(reason(
             "new-failing-tests",
@@ -135,6 +128,15 @@ def decide(bundle):
             severity="warning",
         ))
 
+    problem = test_run_problem(before_tests, after_tests)
+    if problem and problem["blocking"]:
+        reasons.append(problem["reason"])
+    elif problem:
+        if reasons:
+            notes.append(dict(problem["reason"], severity="warning"))
+        else:
+            return finalise(INSUFFICIENT, [problem["reason"]], notes, bundle)
+
     if reasons:
         return finalise(REJECT, reasons, notes, bundle)
 
@@ -145,6 +147,25 @@ def decide(bundle):
         severity="info",
     ))
     return finalise(ACCEPT, reasons, notes, bundle)
+
+
+def test_run_problem(before_tests, after_tests):
+    if not before_tests["ran"]:
+        code = "tests-timed-out" if before_tests.get("timed_out") else "tests-did-not-run"
+        return {"blocking": False, "reason": reason(
+            code, "The test suite of the current version could not be collected or finished, so there is no baseline to compare tests against.",
+            ["before/pytest.log"], severity="warning")}
+    if after_tests["ran"]:
+        return None
+    if after_tests.get("startup_error"):
+        return {"blocking": True, "reason": reason(
+            "tests-could-not-start",
+            "The test suite ran before the upgrade but cannot even start after it because of an import error.",
+            ["after/pytest.log"])}
+    code = "tests-timed-out" if after_tests.get("timed_out") else "tests-did-not-run"
+    return {"blocking": False, "reason": reason(
+        code, "The test suite could not be collected or finished after the upgrade, so a regression cannot be proved either way.",
+        ["after/pytest.log"], severity="warning")}
 
 
 def finalise(decision, reasons, notes, bundle):

@@ -6,7 +6,7 @@ EMPTY_TESTS = {"ran": True, "results": {}, "counts": {}}
 def side(build_ok=True, tests_ran=True, stage=""):
     return {
         "build": {"ok": build_ok, "failure_stage": stage},
-        "tests": {"ran": tests_ran, "results": {}, "counts": {}},
+        "tests": {"ran": tests_ran, "results": {}, "counts": {}, "timed_out": False, "startup_error": False},
         "licenses": {"violations": [], "unknown": []},
     }
 

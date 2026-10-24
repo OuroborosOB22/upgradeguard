@@ -65,7 +65,7 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
         conflicts = {"clean": True, "problems": [], "returncode": 0, "log_path": ""}
         vulnerabilities = {"source": "not-run", "findings": [], "available": False, "raw_path": ""}
         licenses = {"policy": policy.name, "entries": [], "violations": [], "unknown": [], "allowed_count": 0}
-        tests = {"ran": False, "results": {}, "counts": {}, "returncode": -1, "log_path": "", "junit_path": "", "tail": "", "duration": 0, "timed_out": False}
+        tests = {"ran": False, "startup_error": False, "results": {}, "counts": {}, "returncode": -1, "log_path": "", "junit_path": "", "tail": "", "duration": 0, "timed_out": False}
 
         if build["created"] and build["installed"]:
             announce(progress, "checking %s environment" % side)

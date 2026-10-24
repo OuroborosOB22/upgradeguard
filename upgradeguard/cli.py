@@ -76,6 +76,7 @@ def build_parser():
     suite.add_argument("--offline", action="store_true")
     suite.add_argument("--output", default="benchmark/results.json")
     suite.add_argument("--jobs", type=int, default=1)
+    suite.add_argument("--test-timeout", type=int, default=900)
     suite.add_argument("--only", nargs="*")
 
     snap = sub.add_parser("snapshot-run", help="run the tests once and record the result as a snapshot")

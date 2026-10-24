@@ -9,6 +9,7 @@
   </div>
   <p class="note">{{ record.title }}. {{ record.created_at }}. Licence policy: {{ report.policy }}.</p>
   <p class="note">{{ report.score_note }} {{ report.metadata_note }}</p>
+  <div class="row"><a class="button ghost" href="{{ url_for('health_json', record_id=record.id) }}">Download as JSON</a></div>
 </section>
 
 <div class="stats">

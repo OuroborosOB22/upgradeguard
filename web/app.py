@@ -1,4 +1,5 @@
 import io
+import json
 import logging
 import os
 import re
@@ -407,6 +408,16 @@ def create_app(settings=None):
         if not record or record["kind"] != "health":
             abort(404)
         return page("health.html", record=record, report=record["payload"])
+
+    @app.route("/health/<int:record_id>.json")
+    def health_json(record_id):
+        record = history.get(record_id)
+        if not record or record["kind"] != "health":
+            abort(404)
+        response = make_response(json.dumps(record["payload"], indent=2, sort_keys=True))
+        response.headers["Content-Type"] = "application/json"
+        response.headers["Content-Disposition"] = 'attachment; filename="health-%d.json"' % record_id
+        return response
 
     @app.route("/history")
     def history_page():

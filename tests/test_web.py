@@ -511,3 +511,13 @@ def test_explain_refuses_files_outside_the_project_and_unknown_runs(world):
 
 
 from upgradeguard import explain as explain_module
+
+
+def test_a_health_report_can_be_downloaded_as_json(world):
+    client = make_app(world, lookup_metadata=fake_lookup).test_client()
+    token = csrf_pair(client)
+    location = client.post("/health", data={"csrf": token, "text": "flask==3.0.0\nnumpy>=1\nnumpy==2\n"}).headers["Location"]
+    response = client.get(location + ".json")
+    assert response.status_code == 200 and "attachment" in response.headers["Content-Disposition"]
+    assert response.get_json()["score"] == 92 and response.get_json()["duplicates"][0]["package"] == "numpy"
+    assert client.get("/health/9999.json").status_code == 404

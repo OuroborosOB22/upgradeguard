@@ -108,6 +108,23 @@ def test_edges_to_missing_nodes_and_duplicate_ids_are_refused(bundle):
     assert any("not unique" in text for text in explain.validate_graph(graph, set(allowed)))
 
 
+def test_secrets_inside_identifiers_urls_and_long_literals_are_redacted():
+    text = ('db_password = "hunter2"\nSECRET_KEY = \'abc\'\nurl = "https://user:pw9@host/x"\njwt = "eyJhbGciOi.eyJzdWIiOi.SflKxwRJSM"\n'
+            'token = "sk-abcdefghijklmnopqrstuv"\nblob = "AbCdEfGhIjKlMnOpQrStUvWxYz0123456789=="\nplain = 3')
+    cleaned = explain.redact(text)
+    for secret in ("hunter2", "abc'", "pw9", "SflKxwRJSM", "abcdefghijklmnopqrstuv", "AbCdEfGh"):
+        assert secret not in cleaned
+    assert "plain = 3" in cleaned
+
+
+def test_a_secret_near_the_cut_off_is_redacted_before_the_file_is_trimmed(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "a.py").write_text("x = 1\n" * 1990 + "api_key = 'LEAKME123'\n" + "y = 2\n" * 100)
+    text = explain.read_selected_files(str(repo), ["a.py"])[0]["text"]
+    assert "LEAKME" not in text
+
+
 def test_secrets_are_redacted_before_anything_is_shared():
     text = "password = hunter2\nAKIAABCDEFGHIJKLMNOP\n-----BEGIN RSA PRIVATE KEY-----\nabc\n-----END RSA PRIVATE KEY-----\nplain line"
     cleaned = explain.redact(text)

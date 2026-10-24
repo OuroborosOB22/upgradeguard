@@ -11,13 +11,19 @@ from .source import is_excluded
 MAX_TESTS = 8
 MAX_FILES = 3
 MAX_FILE_BYTES = 12_000
+MAX_READ_BYTES = 200_000
 MAX_RESPONSE_BYTES = 200_000
 MODEL_TIMEOUT = 60
 SECRET_PATTERNS = [
     re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?(-----END [A-Z ]*PRIVATE KEY-----|$)", re.S),
-    re.compile(r"(?i)\b(api[_-]?key|secret|token|passwd|password)\b\s*[:=]\s*\S+"),
+    re.compile(r"(?i)[A-Za-z0-9_.-]*(password|passwd|pwd|secret|token|api_?key|credential|private_?key|auth|jwt)[A-Za-z0-9_.-]*\s*[:=(]\s*(\"[^\"\n]*\"|'[^'\n]*'|[^\s,;)]+)"),
+    re.compile(r"(?i)[a-z][a-z0-9+.-]*://[^\s/:@]+:[^\s/@]+@"),
+    re.compile(r"\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}"),
+    re.compile(r"\bsk-[A-Za-z0-9_-]{16,}"),
+    re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}"),
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
     re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,}\b"),
+    re.compile(r"[\"'][A-Za-z0-9+/=_-]{32,}[\"']"),
 ]
 ID_SAFE = re.compile(r"[^A-Za-z0-9_./:-]")
 LABEL_SAFE = re.compile(r"[^A-Za-z0-9 .,:_/+()-]")
@@ -83,8 +89,10 @@ def read_selected_files(repo_path, relative_paths):
         parts = relative.split("/")
         if not (full.startswith(root + os.sep) and os.path.isfile(full)) or any(is_excluded(part) for part in parts) or os.path.islink(os.path.join(root, relative)):
             raise ValueError("that file cannot be shared")
+        if os.path.getsize(full) > MAX_READ_BYTES:
+            raise ValueError("that file is too large to share")
         with open(full, encoding="utf8", errors="replace") as handle:
-            text = redact(handle.read(MAX_FILE_BYTES))
+            text = redact(handle.read())[:MAX_FILE_BYTES]
         items.append({"id": safe_id("file", relative), "kind": "file", "path": relative, "text": text})
     return items
 
@@ -115,7 +123,8 @@ def user_message(items):
 
 def preview(items, destination):
     return {"destination": destination, "items": [{"id": item["id"], "kind": item["kind"], "bytes": len(item["text"].encode("utf8"))} for item in items],
-            "total_bytes": sum(len(item["text"].encode("utf8")) for item in items), "files": [item["path"] for item in items if item["kind"] == "file"]}
+            "total_bytes": sum(len(item["text"].encode("utf8")) for item in items), "files": [item["path"] for item in items if item["kind"] == "file"],
+            "file_texts": {item["path"]: item["text"] for item in items if item["kind"] == "file"}}
 
 
 def normalise(graph):

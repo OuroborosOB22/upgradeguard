@@ -1,6 +1,6 @@
 {
-  "version": "0.1.0",
-  "note": "Ground truth is written before the case is executed. See GROUND_TRUTH.md for how each expected value was decided.",
+  "version": "0.2.0",
+  "note": "Ground truth is written before the case is executed. benchmark/doc.md explains how each expected value was decided.",
   "cases": [
     {
       "id": "demo-requests-safe",
@@ -57,6 +57,1073 @@
       "expected": "Accept",
       "expected_signal": "none",
       "why": "requests 2.26 replaced chardet, which is LGPL, with charset-normalizer, which is MIT. The upgrade should pass and the evidence should show the LGPL package leaving the dependency graph."
+    },
+    {
+      "id": "click-pytest-major-safe",
+      "repo": "benchmark/repos/pallets__click",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "pytest",
+      "from": "7.4.4",
+      "to": "8.2.2",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "pytest 8 is a major release, but click only uses plain asserts, parametrize and fixtures that did not change. A tool that rejects every major bump would wrongly block this."
+    },
+    {
+      "id": "click-pytest-missing",
+      "repo": "benchmark/repos/pallets__click",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "pytest",
+      "from": "7.4.4",
+      "to": "99.0.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "build-failure",
+      "why": "pytest 99.0.0 There is no such release on PyPI, so the upgraded environment cannot be built and the result must be a build failure, not a test problem."
+    },
+    {
+      "id": "markupsafe-pytest-major-safe",
+      "repo": "benchmark/repos/pallets__markupsafe",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "pytest",
+      "from": "7.4.4",
+      "to": "8.2.2",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "markupsafe has a tiny plain-pytest test suite with nothing that pytest 8 removed."
+    },
+    {
+      "id": "markupsafe-baseline-missing",
+      "repo": "benchmark/repos/pallets__markupsafe",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "pytest",
+      "from": "99.0.0",
+      "to": "100.0.0",
+      "policy": "policies/default.json",
+      "expected": "Insufficient Evidence",
+      "expected_signal": "build-failure",
+      "why": "The starting version pytest 99.0.0 does not exist, so the baseline cannot be built. With nothing to compare against the tool must say Insufficient Evidence, not Reject."
+    },
+    {
+      "id": "itsdangerous-freezegun-patch-safe",
+      "repo": "benchmark/repos/pallets__itsdangerous",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "freezegun",
+      "from": "1.5.1",
+      "to": "1.5.5",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "Patch releases of freezegun 1.5.x only fix bugs. itsdangerous uses it to freeze the clock in timestamp tests."
+    },
+    {
+      "id": "itsdangerous-dateutil-missing",
+      "repo": "benchmark/repos/pallets__itsdangerous",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "python-dateutil",
+      "from": "2.9.0.post0",
+      "to": "99.0.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "build-failure",
+      "why": "python-dateutil 99.0.0 There is no such release on PyPI, so the upgraded environment cannot be built and the result must be a build failure, not a test problem."
+    },
+    {
+      "id": "platformdirs-pytest-mock-patch-safe",
+      "repo": "benchmark/repos/platformdirs__platformdirs",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "4.2.2"
+      },
+      "package": "pytest-mock",
+      "from": "3.14.0",
+      "to": "3.14.1",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "pytest-mock 3.14.1 is a bug fix release of the mocker fixture platformdirs uses."
+    },
+    {
+      "id": "platformdirs-coverage-missing",
+      "repo": "benchmark/repos/platformdirs__platformdirs",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "4.2.2"
+      },
+      "package": "coverage",
+      "from": "7.5.4",
+      "to": "99.0.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "build-failure",
+      "why": "coverage 99.0.0 There is no such release on PyPI, so the upgraded environment cannot be built and the result must be a build failure, not a test problem."
+    },
+    {
+      "id": "filelock-pytest-mock-patch-safe",
+      "repo": "benchmark/repos/tox-dev__filelock",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "3.15.4"
+      },
+      "package": "pytest-mock",
+      "from": "3.14.0",
+      "to": "3.14.1",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "A bug fix release of a test helper. filelock's own locking code does not touch it."
+    },
+    {
+      "id": "filelock-virtualenv-new-advisory",
+      "repo": "benchmark/repos/tox-dev__filelock",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "3.15.4"
+      },
+      "package": "virtualenv",
+      "from": "20.26.3",
+      "to": "20.30.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "vulnerability",
+      "why": "OSV lists GHSA-8rjx-v5ww-45pp as affecting virtualenv 20.30.0 but not 20.26.3 (checked by hand against api.osv.dev before this case was written). The upgrade introduces a known advisory."
+    },
+    {
+      "id": "filelock-pytest9-asyncio-conflict",
+      "repo": "benchmark/repos/tox-dev__filelock",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "3.15.4"
+      },
+      "package": "pytest",
+      "from": "8.2.2",
+      "to": "9.1.1",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "dependency-conflict",
+      "why": "pytest-asyncio 0.23.7 declares pytest<9 on PyPI, so pip cannot install it together with pytest 9.1.1. The resolver must refuse the pair."
+    },
+    {
+      "id": "dotenv-sh-patch-safe",
+      "repo": "benchmark/repos/theskumar__python-dotenv",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "sh",
+      "from": "2.0.6",
+      "to": "2.0.7",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "The CLI tests use sh to run the dotenv command. A patch release should not change how a command is launched."
+    },
+    {
+      "id": "dotenv-click-missing",
+      "repo": "benchmark/repos/theskumar__python-dotenv",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "click",
+      "from": "8.1.7",
+      "to": "99.0.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "build-failure",
+      "why": "click 99.0.0 There is no such release on PyPI, so the upgraded environment cannot be built and the result must be a build failure, not a test problem."
+    },
+    {
+      "id": "tenacity-pytest-minor-safe",
+      "repo": "benchmark/repos/jd__tenacity",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "8.5.0"
+      },
+      "package": "pytest",
+      "from": "8.2.2",
+      "to": "8.3.5",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "A minor pytest release inside the 8.x line. tenacity's tests are plain functions and asyncio tests that 8.3 does not affect."
+    },
+    {
+      "id": "tenacity-tornado-new-advisory",
+      "repo": "benchmark/repos/jd__tenacity",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "8.5.0"
+      },
+      "package": "tornado",
+      "from": "6.4.1",
+      "to": "6.5.5",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "vulnerability",
+      "why": "OSV lists GHSA-wwv5-g3v4-889x as affecting tornado 6.5.5 but not 6.4.1 (checked by hand). The newer release fixes many old advisories but introduces this one, and only new findings count."
+    },
+    {
+      "id": "dateutil-six-minor-safe",
+      "repo": "benchmark/repos/dateutil__dateutil",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "2.9.0"
+      },
+      "package": "six",
+      "from": "1.16.0",
+      "to": "1.17.0",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "six 1.17 only adds Python 3.12 and 3.13 compatibility fixes. dateutil uses it for a few compatibility helpers."
+    },
+    {
+      "id": "dateutil-hypothesis-strict-licence",
+      "repo": "benchmark/repos/dateutil__dateutil",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "2.9.0"
+      },
+      "package": "hypothesis",
+      "from": "6.108.2",
+      "to": "6.108.2",
+      "policy": "policies/strict.json",
+      "expected": "Reject",
+      "expected_signal": "licence-violation",
+      "why": "hypothesis is published under MPL-2.0 and the strict policy does not allow MPL-2.0. In strict licence mode a graph that already breaks the policy is blocked even though the version did not change.",
+      "strict_licences": true
+    },
+    {
+      "id": "marshmallow-pytz-safe",
+      "repo": "benchmark/repos/marshmallow-code__marshmallow",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore",
+        "-k",
+        "not test_invalid_datetime_deserialization"
+      ],
+      "env": {},
+      "package": "pytz",
+      "from": "2024.1",
+      "to": "2025.2",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "pytz releases only update the timezone database. marshmallow's timezone tests use fixed zones."
+    },
+    {
+      "id": "marshmallow-simplejson-missing",
+      "repo": "benchmark/repos/marshmallow-code__marshmallow",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore",
+        "-k",
+        "not test_invalid_datetime_deserialization"
+      ],
+      "env": {},
+      "package": "simplejson",
+      "from": "3.19.2",
+      "to": "99.0.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "build-failure",
+      "why": "simplejson 99.0.0 There is no such release on PyPI, so the upgraded environment cannot be built and the result must be a build failure, not a test problem."
+    },
+    {
+      "id": "records-sqlalchemy-14-regression",
+      "repo": "benchmark/repos/kennethreitz__records",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "sqlalchemy",
+      "from": "1.3.24",
+      "to": "1.4.52",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "test-regression",
+      "why": "records 0.5.3 was written for SQLAlchemy 1.3. SQLAlchemy 1.4 changed how result objects close, and the baseline screening run showed ResourceClosedError in the records tests on 1.4.52. Tests that pass on 1.3.24 must fail after the upgrade."
+    },
+    {
+      "id": "records-pytest-minor-safe",
+      "repo": "benchmark/repos/kennethreitz__records",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "pytest",
+      "from": "8.2.2",
+      "to": "8.3.5",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "A minor pytest release. records only uses plain tests and parametrize."
+    },
+    {
+      "id": "jinja-markupsafe-soft-unicode",
+      "repo": "benchmark/repos/pallets__jinja",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "markupsafe",
+      "from": "2.0.1",
+      "to": "2.1.5",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "test-regression",
+      "why": "MarkupSafe 2.1.0 removed soft_unicode, which Jinja 2.11.3 imports at start up. The changelog of MarkupSafe 2.1.0 lists the removal, so the whole suite must stop importing."
+    },
+    {
+      "id": "jinja-pytest-patch-safe",
+      "repo": "benchmark/repos/pallets__jinja",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "pytest",
+      "from": "7.4.0",
+      "to": "7.4.4",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "Patch releases inside pytest 7.4 only fix bugs."
+    },
+    {
+      "id": "flask-werkzeug-3-regression",
+      "repo": "benchmark/repos/pallets__flask",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "werkzeug",
+      "from": "2.2.3",
+      "to": "3.0.6",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "test-regression",
+      "why": "Flask 2.2.5 imports url_quote from werkzeug.urls, which Werkzeug 3.0 removed. Flask fails to import and its tests must stop passing. This is a widely reported break from the Werkzeug 3.0 release notes."
+    },
+    {
+      "id": "flask-click-patch-safe",
+      "repo": "benchmark/repos/pallets__flask",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "click",
+      "from": "8.1.7",
+      "to": "8.1.8",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "click 8.1.8 is a bug fix release inside 8.1. Flask's CLI tests use it through the same public API."
+    },
+    {
+      "id": "requests-urllib3-new-advisories",
+      "repo": "benchmark/repos/psf__requests",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore",
+        "--timeout=30"
+      ],
+      "env": {},
+      "package": "urllib3",
+      "from": "1.26.19",
+      "to": "2.0.5",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "vulnerability",
+      "why": "OSV lists GHSA-v845-jxx5-vc9f, GHSA-34jh-p97f-mpxf, GHSA-g4mx-q9vg-27p4 and others as affecting urllib3 2.0.5 but not 1.26.19 (checked by hand). requests allows urllib3 below 3, so the pair installs, but the security position gets worse."
+    },
+    {
+      "id": "requests-certifi-patch-safe",
+      "repo": "benchmark/repos/psf__requests",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore",
+        "--timeout=30"
+      ],
+      "env": {},
+      "package": "certifi",
+      "from": "2024.7.4",
+      "to": "2024.8.30",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "certifi releases only update the root certificate bundle. requests' tests use their own local test certificates."
+    },
+    {
+      "id": "requests-certifi-strict-licence",
+      "repo": "benchmark/repos/psf__requests",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore",
+        "--timeout=30"
+      ],
+      "env": {},
+      "package": "certifi",
+      "from": "2024.7.4",
+      "to": "2024.8.30",
+      "policy": "policies/strict.json",
+      "expected": "Reject",
+      "expected_signal": "licence-violation",
+      "why": "certifi is published under MPL-2.0 and the strict policy does not allow it. In strict licence mode the resulting environment is blocked.",
+      "strict_licences": true
+    },
+    {
+      "id": "httpx-idna-minor-safe",
+      "repo": "benchmark/repos/encode__httpx",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "idna",
+      "from": "3.7",
+      "to": "3.10",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "idna 3.10 only updates Unicode data and fixes small bugs. httpx uses it for host name encoding."
+    },
+    {
+      "id": "httpx-cryptography-new-advisories",
+      "repo": "benchmark/repos/encode__httpx",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "cryptography",
+      "from": "42.0.8",
+      "to": "46.0.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "vulnerability",
+      "why": "OSV lists GHSA-g6cj-pr64-35w5, GHSA-m2h6-j472-rp4c and GHSA-p423-j2cm-9vmq as affecting cryptography 46.0.0 but not 42.0.8 (checked by hand)."
+    },
+    {
+      "id": "httpx-h11-httpcore-conflict",
+      "repo": "benchmark/repos/encode__httpx",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "h11",
+      "from": "0.14.0",
+      "to": "0.16.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "dependency-conflict",
+      "why": "httpcore 1.0.5 declares h11<0.15 on PyPI, so pip cannot install h11 0.16.0 next to it. The resolver must refuse the pair."
+    },
+    {
+      "id": "starlette-jinja2-patch-safe",
+      "repo": "benchmark/repos/encode__starlette",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "jinja2",
+      "from": "3.1.4",
+      "to": "3.1.6",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "Jinja2 3.1.5 and 3.1.6 are security and bug fix releases inside 3.1. Starlette's template tests use the stable public API."
+    },
+    {
+      "id": "starlette-httpx-028-regression",
+      "repo": "benchmark/repos/encode__starlette",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "httpx",
+      "from": "0.27.0",
+      "to": "0.28.1",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "test-regression",
+      "why": "httpx 0.28 removed the deprecated app argument of httpx.Client. Starlette 0.37.2's TestClient is a subclass of httpx.Client and passes it, so tests built on TestClient are expected to fail. This one is my best reading of the httpx 0.28 notes rather than something I have seen fail."
+    },
+    {
+      "id": "attrs-cloudpickle-minor-safe",
+      "repo": "benchmark/repos/python-attrs__attrs",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "23.2.0"
+      },
+      "package": "cloudpickle",
+      "from": "3.0.0",
+      "to": "3.1.2",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "attrs uses cloudpickle in one regression test to check that attrs classes still pickle. A minor release keeps that behaviour."
+    },
+    {
+      "id": "attrs-zope-missing",
+      "repo": "benchmark/repos/python-attrs__attrs",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "23.2.0"
+      },
+      "package": "zope.interface",
+      "from": "6.4.post2",
+      "to": "99.0.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "build-failure",
+      "why": "zope.interface 99.0.0 There is no such release on PyPI, so the upgraded environment cannot be built and the result must be a build failure, not a test problem."
+    },
+    {
+      "id": "rich-attrs-major-safe",
+      "repo": "benchmark/repos/Textualize__rich",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "attrs",
+      "from": "23.2.0",
+      "to": "24.2.0",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "rich only uses attrs in a pretty-printing test with a simple attrs class. attrs 24 kept that API."
+    },
+    {
+      "id": "rich-mdurl-missing",
+      "repo": "benchmark/repos/Textualize__rich",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "mdurl",
+      "from": "0.1.2",
+      "to": "99.0.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "build-failure",
+      "why": "mdurl 99.0.0 There is no such release on PyPI, so the upgraded environment cannot be built and the result must be a build failure, not a test problem."
+    },
+    {
+      "id": "structlog-freezegun-patch-safe",
+      "repo": "benchmark/repos/hynek__structlog",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "24.2.0"
+      },
+      "package": "freezegun",
+      "from": "1.5.1",
+      "to": "1.5.5",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "freezegun patch releases only fix bugs. structlog uses it for timestamper tests."
+    },
+    {
+      "id": "structlog-simplejson-missing",
+      "repo": "benchmark/repos/hynek__structlog",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "24.2.0"
+      },
+      "package": "simplejson",
+      "from": "3.19.2",
+      "to": "99.0.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "build-failure",
+      "why": "simplejson 99.0.0 There is no such release on PyPI, so the upgraded environment cannot be built and the result must be a build failure, not a test problem."
+    },
+    {
+      "id": "anyio-psutil-minor-safe",
+      "repo": "benchmark/repos/agronholm__anyio",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "4.4.0"
+      },
+      "package": "psutil",
+      "from": "6.0.0",
+      "to": "6.1.1",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "psutil 6.1 adds features and fixes. anyio uses it for one process test."
+    },
+    {
+      "id": "anyio-cryptography-new-advisories",
+      "repo": "benchmark/repos/agronholm__anyio",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "4.4.0"
+      },
+      "package": "cryptography",
+      "from": "42.0.8",
+      "to": "46.0.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "vulnerability",
+      "why": "The same three cryptography advisories as the httpx case apply to 46.0.0 and not to 42.0.8 (checked by hand against OSV)."
+    },
+    {
+      "id": "tomli-six-minor-safe",
+      "repo": "benchmark/repos/hukkin__tomli",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "six",
+      "from": "1.16.0",
+      "to": "1.17.0",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "six is only a transitive helper of python-dateutil in tomli's test requirements."
+    },
+    {
+      "id": "tomli-baseline-missing",
+      "repo": "benchmark/repos/hukkin__tomli",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "python-dateutil",
+      "from": "99.0.0",
+      "to": "100.0.0",
+      "policy": "policies/default.json",
+      "expected": "Insufficient Evidence",
+      "expected_signal": "build-failure",
+      "why": "The starting version python-dateutil 99.0.0 does not exist, so there is no baseline and the result must be Insufficient Evidence."
+    },
+    {
+      "id": "tabulate-wcwidth-patch-safe",
+      "repo": "benchmark/repos/astanin__python-tabulate",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "0.9.0"
+      },
+      "package": "wcwidth",
+      "from": "0.2.13",
+      "to": "0.2.14",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "wcwidth 0.2.14 refreshes the Unicode width tables by a tiny amount. tabulate's width tests use common characters."
+    },
+    {
+      "id": "tabulate-wcwidth-missing",
+      "repo": "benchmark/repos/astanin__python-tabulate",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "0.9.0"
+      },
+      "package": "wcwidth",
+      "from": "0.2.13",
+      "to": "99.0.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "build-failure",
+      "why": "wcwidth 99.0.0 There is no such release on PyPI, so the upgraded environment cannot be built and the result must be a build failure, not a test problem."
+    },
+    {
+      "id": "cachetools-pytest-minor-safe",
+      "repo": "benchmark/repos/tkem__cachetools",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "pytest",
+      "from": "8.2.2",
+      "to": "8.3.5",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "A minor pytest release. cachetools has plain unittest-style tests that pytest runs unchanged."
+    },
+    {
+      "id": "cachetools-pytest-missing",
+      "repo": "benchmark/repos/tkem__cachetools",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "pytest",
+      "from": "8.2.2",
+      "to": "99.0.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "build-failure",
+      "why": "pytest 99.0.0 There is no such release on PyPI, so the upgraded environment cannot be built and the result must be a build failure, not a test problem."
+    },
+    {
+      "id": "humanize-freezegun-patch-safe",
+      "repo": "benchmark/repos/python-humanize__humanize",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "4.9.0"
+      },
+      "package": "freezegun",
+      "from": "1.5.1",
+      "to": "1.5.5",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "humanize freezes the clock to test relative times. A bug fix release keeps that behaviour."
+    },
+    {
+      "id": "humanize-dateutil-missing",
+      "repo": "benchmark/repos/python-humanize__humanize",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {
+        "SETUPTOOLS_SCM_PRETEND_VERSION": "4.9.0"
+      },
+      "package": "python-dateutil",
+      "from": "2.9.0.post0",
+      "to": "99.0.0",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "build-failure",
+      "why": "python-dateutil 99.0.0 There is no such release on PyPI, so the upgraded environment cannot be built and the result must be a build failure, not a test problem."
+    },
+    {
+      "id": "moreitertools-pytest-minor-safe",
+      "repo": "benchmark/repos/more-itertools__more-itertools",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "pytest",
+      "from": "8.2.2",
+      "to": "8.3.5",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "A minor pytest release. more-itertools tests are unittest classes that pytest runs unchanged."
+    },
+    {
+      "id": "moreitertools-no-tests-collected",
+      "repo": "benchmark/repos/more-itertools__more-itertools",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore",
+        "-k",
+        "nothing_matches_this"
+      ],
+      "env": {},
+      "package": "pytest",
+      "from": "8.2.2",
+      "to": "8.3.5",
+      "policy": "policies/default.json",
+      "expected": "Insufficient Evidence",
+      "expected_signal": "no-tests",
+      "why": "The selection expression deselects every test, so neither side collects anything. Without a test run there is no evidence about the upgrade, so the answer must be Insufficient Evidence and never Accept."
+    },
+    {
+      "id": "blinker-pytest-minor-safe",
+      "repo": "benchmark/repos/pallets-eco__blinker",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "pytest",
+      "from": "8.2.2",
+      "to": "8.3.5",
+      "policy": "policies/default.json",
+      "expected": "Accept",
+      "expected_signal": "none",
+      "why": "A minor pytest release. blinker's tests are plain functions and asyncio tests that pytest 8.3 does not affect."
+    },
+    {
+      "id": "blinker-pytest9-asyncio-conflict",
+      "repo": "benchmark/repos/pallets-eco__blinker",
+      "requirements": "requirements.benchmark.txt",
+      "python": "python3.13",
+      "install_project": true,
+      "pytest_args": [
+        "-W",
+        "ignore"
+      ],
+      "env": {},
+      "package": "pytest",
+      "from": "8.2.2",
+      "to": "9.1.1",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "dependency-conflict",
+      "why": "pytest-asyncio 0.23.7 declares pytest<9 on PyPI, so pip cannot install it together with pytest 9.1.1. The resolver must refuse the pair."
+    },
+    {
+      "id": "legacy-requests-rollback-adds-lgpl",
+      "repo": "examples/legacy_repo",
+      "package": "requests",
+      "from": "2.28.2",
+      "to": "2.25.1",
+      "policy": "policies/default.json",
+      "expected": "Reject",
+      "expected_signal": "licence-violation",
+      "why": "Rolling requests back to 2.25.1 brings chardet back. chardet is LGPL-2.1, which the default policy denies, and the 2.28.2 environment does not contain it. This is a recovery style change that makes the licence position worse."
     }
   ]
 }

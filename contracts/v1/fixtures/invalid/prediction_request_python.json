@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "task": "maven_upgrade_build_failure",
+  "ecosystem": "PYTHON",
+  "project_id": "sample-maven-app",
+  "package": "com.google.guava:guava",
+  "from_version": "31.1-jre",
+  "to_version": "33.0.0-jre",
+  "feature_schema_version": "0.1.0",
+  "features": {
+    "major_jump": 2,
+    "versions_skipped": 7,
+    "release_age_days": 410,
+    "api_removed_count": null
+  },
+  "missing_features": [
+    "api_removed_count"
+  ]
+}

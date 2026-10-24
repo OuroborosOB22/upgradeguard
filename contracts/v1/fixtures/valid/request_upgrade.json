@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "run-jinja2-demo",
+  "project_id": "demo-repo",
+  "operation": "REHEARSE_UPGRADE",
+  "source": {
+    "commit": "2bd4d08",
+    "dirty": false,
+    "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "snapshot_id": "snap-demo-001",
+    "exclusions": [".git", ".venv", "__pycache__"]
+  },
+  "profile_id": "pytest-default",
+  "environment_spec": {
+    "os": "linux",
+    "architecture": "arm64",
+    "runtimes": {"python": "3.12.4"},
+    "image_digest": null,
+    "network_mode": "CONTROLLED",
+    "env_var_names": ["PATH"]
+  },
+  "policy_id": "default-policy",
+  "execution_provider": "LOCAL",
+  "change": {"ecosystem": "PYTHON", "package": "jinja2", "from_version": "3.0.3", "to_version": "3.1.6"}
+}

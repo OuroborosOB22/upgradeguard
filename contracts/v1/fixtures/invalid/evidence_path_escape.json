@@ -1,0 +1,210 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "run-jinja2-demo",
+  "request": {
+    "schema_version": "1.0.0",
+    "run_id": "run-jinja2-demo",
+    "project_id": "demo-repo",
+    "operation": "REHEARSE_UPGRADE",
+    "source": {
+      "commit": "2bd4d08",
+      "dirty": false,
+      "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "snapshot_id": "snap-demo-001",
+      "exclusions": [
+        ".git",
+        ".venv",
+        "__pycache__"
+      ]
+    },
+    "profile_id": "pytest-default",
+    "environment_spec": {
+      "os": "linux",
+      "architecture": "arm64",
+      "runtimes": {
+        "python": "3.12.4"
+      },
+      "image_digest": null,
+      "network_mode": "CONTROLLED",
+      "env_var_names": [
+        "PATH"
+      ]
+    },
+    "policy_id": "default-policy",
+    "execution_provider": "LOCAL",
+    "change": {
+      "ecosystem": "PYTHON",
+      "package": "jinja2",
+      "from_version": "3.0.3",
+      "to_version": "3.1.6"
+    }
+  },
+  "before": {
+    "install": {
+      "outcome": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 5.1,
+      "log_artifact": "before-install-log"
+    },
+    "build": {
+      "outcome": "NOT_RUN",
+      "exit_code": null,
+      "duration_seconds": 0
+    },
+    "tests": {
+      "stage": {
+        "outcome": "PASS",
+        "exit_code": 0,
+        "duration_seconds": 0.4
+      },
+      "results": [
+        {
+          "id": "tests/test_render.py::test_title",
+          "outcome": "PASS"
+        }
+      ]
+    },
+    "resolved_dependencies": [
+      {
+        "name": "jinja2",
+        "version": "3.0.3"
+      }
+    ],
+    "scanner_results": [
+      {
+        "scanner": "pip-audit",
+        "version": "2.7.0",
+        "available": true,
+        "coverage": "python packages",
+        "checked_at": "2026-10-24T10:00:00Z",
+        "finding_count": 0
+      }
+    ],
+    "environment": {
+      "os": "linux",
+      "architecture": "arm64",
+      "runtimes": {
+        "python": "3.12.4"
+      },
+      "image_digest": null,
+      "network_mode": "CONTROLLED"
+    }
+  },
+  "after": {
+    "install": {
+      "outcome": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 5.3,
+      "log_artifact": "after-install-log"
+    },
+    "build": {
+      "outcome": "NOT_RUN",
+      "exit_code": null,
+      "duration_seconds": 0
+    },
+    "tests": {
+      "stage": {
+        "outcome": "FAIL",
+        "exit_code": 1,
+        "duration_seconds": 0.5
+      },
+      "results": [
+        {
+          "id": "tests/test_render.py::test_title",
+          "outcome": "ERROR"
+        }
+      ]
+    },
+    "resolved_dependencies": [
+      {
+        "name": "jinja2",
+        "version": "3.1.6"
+      }
+    ],
+    "scanner_results": [
+      {
+        "scanner": "pip-audit",
+        "version": "2.7.0",
+        "available": true,
+        "coverage": "python packages",
+        "checked_at": "2026-10-24T10:00:30Z",
+        "finding_count": 0
+      }
+    ],
+    "environment": {
+      "os": "linux",
+      "architecture": "arm64",
+      "runtimes": {
+        "python": "3.12.4"
+      },
+      "image_digest": null,
+      "network_mode": "CONTROLLED"
+    }
+  },
+  "diff": {
+    "dependencies": {
+      "added": [],
+      "removed": [],
+      "changed": [
+        {
+          "name": "jinja2",
+          "from": "3.0.3",
+          "to": "3.1.6"
+        }
+      ]
+    },
+    "tests": {
+      "regressions": [
+        "tests/test_render.py::test_title"
+      ],
+      "new_failing": [],
+      "missing_or_skipped": []
+    }
+  },
+  "verdict": {
+    "decision": "REJECT",
+    "findings": [
+      {
+        "code": "test-regression",
+        "severity": "BLOCKING",
+        "subject": "tests/test_render.py::test_title",
+        "message": "This test passed before the upgrade and errors after it.",
+        "evidence_ids": [
+          "after-pytest-log"
+        ],
+        "provenance": "junit.xml"
+      }
+    ]
+  },
+  "coverage": {
+    "checked": [
+      "install",
+      "tests",
+      "vulnerabilities"
+    ],
+    "not_checked": [
+      "integration tests"
+    ],
+    "unavailable": []
+  },
+  "artifact_manifest": [
+    {
+      "id": "after-pytest-log",
+      "path": "../secrets/token.txt",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "media_type": "text/plain"
+    },
+    {
+      "id": "after-install-log",
+      "path": "after/install.log",
+      "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "media_type": "text/plain"
+    },
+    {
+      "id": "before-install-log",
+      "path": "before/install.log",
+      "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "media_type": "text/plain"
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "request.schema.json",
+  "title": "Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "run_id", "project_id", "operation", "source",
+    "profile_id", "environment_spec", "policy_id", "execution_provider"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "run_id": {"$ref": "#/$defs/id"},
+    "project_id": {"$ref": "#/$defs/id"},
+    "operation": {"enum": ["SNAPSHOT", "COMPARE", "REHEARSE_UPGRADE", "REHEARSE_RECOVERY"]},
+    "source": {"$ref": "#/$defs/source"},
+    "profile_id": {"$ref": "#/$defs/id"},
+    "environment_spec": {"$ref": "#/$defs/environment"},
+    "policy_id": {"$ref": "#/$defs/id"},
+    "execution_provider": {"enum": ["LOCAL", "AZURE_VM"]},
+    "change": {"$ref": "#/$defs/change"}
+  },
+  "if": {
+    "properties": {"operation": {"enum": ["REHEARSE_UPGRADE", "REHEARSE_RECOVERY"]}}
+  },
+  "then": {"required": ["change"]},
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,63}$"},
+    "version": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,63}$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "dirty", "manifest_sha256", "snapshot_id", "exclusions"],
+      "properties": {
+        "commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{7,40}$"},
+        "dirty": {"type": "boolean"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "snapshot_id": {"$ref": "#/$defs/id"},
+        "exclusions": {"type": "array", "items": {"type": "string", "maxLength": 200}}
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "architecture", "runtimes", "network_mode"],
+      "properties": {
+        "os": {"type": "string", "maxLength": 64},
+        "architecture": {"type": "string", "maxLength": 32},
+        "runtimes": {
+          "type": "object",
+          "additionalProperties": {"$ref": "#/$defs/version"}
+        },
+        "image_digest": {"type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$"},
+        "network_mode": {"enum": ["OFFLINE", "CONTROLLED"]},
+        "env_var_names": {"type": "array", "items": {"type": "string", "pattern": "^[A-Z_][A-Z0-9_]{0,63}$"}}
+      }
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ecosystem", "package", "from_version", "to_version"],
+      "properties": {
+        "ecosystem": {"enum": ["PYTHON", "MAVEN"]},
+        "package": {"type": "string", "maxLength": 200},
+        "from_version": {"$ref": "#/$defs/version"},
+        "to_version": {"$ref": "#/$defs/version"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"ecosystem": {"const": "MAVEN"}}},
+          "then": {"properties": {"package": {"pattern": "^[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+$"}}}
+        },
+        {
+          "if": {"properties": {"ecosystem": {"const": "PYTHON"}}},
+          "then": {"properties": {"package": {"pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"}}}
+        }
+      ]
+    }
+  }
+}

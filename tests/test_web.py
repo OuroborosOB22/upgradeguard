@@ -521,3 +521,10 @@ def test_a_health_report_can_be_downloaded_as_json(world):
     assert response.status_code == 200 and "attachment" in response.headers["Content-Disposition"]
     assert response.get_json()["score"] == 92 and response.get_json()["duplicates"][0]["package"] == "numpy"
     assert client.get("/health/9999.json").status_code == 404
+
+
+def test_the_logo_is_the_tab_icon_and_the_brand_mark_and_needs_no_login(world):
+    client = make_app(world, access_token="secret-token").test_client()
+    page = client.get("/").get_data(as_text=True)
+    assert 'rel="icon"' in page and "logo.png" in page
+    assert client.get("/static/logo.png").status_code == 200

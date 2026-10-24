@@ -1,3 +1,5 @@
+<p align="center"><img src="web/static/logo.png" width="120" alt="UpgradeGuard logo"></p>
+
 # UpgradeGuard
 
 Evidence based dependency upgrade and licence policy verifier for Python projects.

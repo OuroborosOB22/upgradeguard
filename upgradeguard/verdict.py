@@ -132,6 +132,13 @@ def decide(bundle):
             severity="warning",
         ))
 
+    scanner = scanner_problem(bundle)
+    if scanner:
+        if reasons:
+            notes.append(dict(scanner, severity="warning"))
+        else:
+            return finalise(INSUFFICIENT, [scanner], notes, bundle)
+
     problem = test_run_problem(before_tests, after_tests)
     if problem and problem["blocking"]:
         reasons.append(problem["reason"])
@@ -151,6 +158,17 @@ def decide(bundle):
         severity="info",
     ))
     return finalise(ACCEPT, reasons, notes, bundle)
+
+
+def scanner_problem(bundle):
+    if not bundle.get("policy", {}).get("require_online_vulnerability_scan"):
+        return None
+    if all(bundle[side]["vulnerabilities"].get("available") for side in ("before", "after")):
+        return None
+    return reason(
+        "required-scanner-unavailable",
+        "The policy requires the online vulnerability scan, but it could not run, so the vulnerability position of this upgrade is unknown.",
+        ["before/audit.json", "after/audit.json"])
 
 
 def same_version(left, right):

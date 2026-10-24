@@ -209,3 +209,29 @@ def test_a_package_missing_from_the_environment_is_reported_as_such():
     verdict = decide(with_resolved("", "2.32.5"))
     assert verdict["decision"] == INSUFFICIENT
     assert "(not installed)" in verdict["reasons"][0]["message"]
+
+
+def offline_bundle(require):
+    bundle = make_bundle()
+    bundle["policy"] = {"require_online_vulnerability_scan": require}
+    for side_name in ("before", "after"):
+        bundle[side_name]["vulnerabilities"] = {"available": False, "source": "bundled-advisories", "findings": []}
+    return bundle
+
+
+def test_an_unavailable_required_scanner_prevents_accept():
+    verdict = decide(offline_bundle(True))
+    assert verdict["decision"] == INSUFFICIENT
+    assert reason_codes(verdict) == ["required-scanner-unavailable"]
+
+
+def test_an_unavailable_optional_scanner_does_not_block():
+    assert decide(offline_bundle(False))["decision"] == ACCEPT
+
+
+def test_other_blocking_evidence_still_rejects_when_the_required_scanner_is_down():
+    bundle = offline_bundle(True)
+    bundle["diff"]["tests"]["regressions"] = [{"test": "t"}]
+    verdict = decide(bundle)
+    assert verdict["decision"] == REJECT
+    assert note_codes(verdict) == ["required-scanner-unavailable"]

@@ -46,6 +46,7 @@ class LicencePolicy:
     denied: list = field(default_factory=list)
     unknown_action: str = "warn"
     package_exceptions: dict = field(default_factory=dict)
+    require_online_vulnerability_scan: bool = False
 
     def to_dict(self):
         return asdict(self)
@@ -91,6 +92,7 @@ def load_policy(path):
         denied=[value.upper() for value in raw.get("denied", [])],
         unknown_action=raw.get("unknown_action", "warn"),
         package_exceptions={canonical_name(k): v for k, v in raw.get("package_exceptions", {}).items()},
+        require_online_vulnerability_scan=bool(raw.get("require_online_vulnerability_scan", False)),
     )
 
 

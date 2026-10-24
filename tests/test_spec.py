@@ -113,3 +113,10 @@ def test_the_runner_refuses_a_hostile_spec_before_doing_anything(tmp_path):
     with pytest.raises(ValueError):
         run_upgrade_check(bad, load_policy(""), evidence_root=str(tmp_path / "e"), work_root=str(tmp_path / "w"))
     assert not (tmp_path / "e").exists()
+
+
+def test_the_scanner_requirement_is_read_from_the_policy_file(tmp_path):
+    path = tmp_path / "policy.json"
+    path.write_text(json.dumps({"name": "p", "require_online_vulnerability_scan": True}))
+    assert load_policy(str(path)).require_online_vulnerability_scan is True
+    assert load_policy("").require_online_vulnerability_scan is False

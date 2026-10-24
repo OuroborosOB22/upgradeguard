@@ -53,7 +53,23 @@ def run_snapshot_job(request, source_dir, out_dir, python_bin, offline, progress
     return None, "snapshots/%s/%s/snapshot.json" % (record["project_id"], record["snapshot_id"])
 
 
-def run_worker(request_path, source_dir, out_dir, python_bin="python3", offline=False, work_dir=None, progress=None, options=None):
+def publish(out_dir, publish_dir):
+    os.makedirs(publish_dir, exist_ok=True)
+    for name in os.listdir(publish_dir):
+        full = os.path.join(publish_dir, name)
+        shutil.rmtree(full) if os.path.isdir(full) and not os.path.islink(full) else os.remove(full)
+    for current, folders, names in os.walk(out_dir):
+        relative = os.path.relpath(current, out_dir)
+        target = publish_dir if relative == "." else os.path.join(publish_dir, relative)
+        folders[:] = [name for name in folders if not os.path.islink(os.path.join(current, name))]
+        os.makedirs(target, exist_ok=True)
+        for name in names:
+            source = os.path.join(current, name)
+            if os.path.isfile(source) and not os.path.islink(source):
+                shutil.copyfile(source, os.path.join(target, name))
+
+
+def run_worker(request_path, source_dir, out_dir, python_bin="python3", offline=False, work_dir=None, progress=None, options=None, publish_dir=None):
     started = utc_now()
     os.makedirs(out_dir, exist_ok=True)
     request = None
@@ -77,4 +93,6 @@ def run_worker(request_path, source_dir, out_dir, python_bin="python3", offline=
             shutil.rmtree(work_dir, ignore_errors=True)
     schemas.require_valid("worker_result", result)
     write_json(os.path.join(out_dir, "result.json"), result)
+    if publish_dir:
+        publish(out_dir, publish_dir)
     return result

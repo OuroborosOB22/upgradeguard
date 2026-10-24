@@ -4,12 +4,13 @@ import shutil
 import tempfile
 
 from . import schemas
-from .contract import request_from_parts
+from .contract import file_sha256, request_from_parts
 from .source import describe_source
 from .spec import validate_python_name
 from .util import run_command, read_json
 
 DEFAULT_IMAGE = "upgradeguard-runner:local"
+MAX_OUTPUT_BYTES = 500 * 1024 * 1024
 MEMORY = "4g"
 CPUS = "2"
 PIDS = "512"
@@ -35,11 +36,44 @@ def docker_command(image, repo_path, request_dir, out_dir, digest, user, offline
         "--tmpfs", "/work:rw,exec,nosuid,size=%s" % WORK_SIZE, "--tmpfs", "/tmp:rw,nosuid,size=512m",
         "-v", "%s:/input/repo:ro" % repo_path, "-v", "%s:/input/request:ro" % request_dir, "-v", "%s:/output:rw" % out_dir,
         "-e", "HOME=/work/home", "-e", "UPGRADEGUARD_IMAGE_DIGEST=%s" % digest,
-        image, "worker", "--request", "/input/request/request.json", "--source", "/input/repo", "--out", "/output", "--work", "/work/jobs",
+        image, "worker", "--request", "/input/request/request.json", "--source", "/input/repo", "--out", "/work/out", "--publish", "/output", "--work", "/work/jobs",
     ]
     if offline:
         command.append("--offline")
     return command + list(extra or [])
+
+
+class UntrustedOutput(Exception):
+    pass
+
+
+def verify_output(directory, request):
+    total = 0
+    for current, folders, names in os.walk(directory):
+        for name in folders + names:
+            full = os.path.join(current, name)
+            if os.path.islink(full):
+                raise UntrustedOutput("the container left a link at %s" % os.path.relpath(full, directory))
+        for name in names:
+            full = os.path.join(current, name)
+            if not os.path.isfile(full):
+                raise UntrustedOutput("the container left a file that is not a regular file")
+            total += os.path.getsize(full)
+    if total > MAX_OUTPUT_BYTES:
+        raise UntrustedOutput("the container output is larger than %d bytes" % MAX_OUTPUT_BYTES)
+    evidence = read_json(os.path.join(directory, "evidence.json"))
+    schemas.require_valid("evidence", evidence)
+    if evidence["request"]["run_id"] != request["run_id"] or evidence["request"]["source"]["manifest_sha256"] != request["source"]["manifest_sha256"]:
+        raise UntrustedOutput("the evidence does not belong to the job that was requested")
+    listed = {item["path"]: item["sha256"] for item in evidence["artifact_manifest"]}
+    present = {os.path.relpath(os.path.join(current, name), directory).replace(os.sep, "/")
+               for current, _, names in os.walk(directory) for name in names} - {"evidence.json"}
+    if present != set(listed):
+        raise UntrustedOutput("the files in the container output do not match the evidence manifest")
+    for path, digest in listed.items():
+        if file_sha256(os.path.join(directory, path)) != digest:
+            raise UntrustedOutput("%s does not match its recorded hash" % path)
+    return evidence
 
 
 def run_in_container(spec, policy, evidence_root, image=DEFAULT_IMAGE, offline=False, operation="REHEARSE_UPGRADE", progress=None, strict_licences=False):
@@ -78,13 +112,19 @@ def run_in_container(spec, policy, evidence_root, image=DEFAULT_IMAGE, offline=F
         result_path = os.path.join(out_dir, "result.json")
         if not os.path.isfile(result_path):
             raise RuntimeError("the container finished without a result: %s" % finished["output"].strip()[-300:])
-        result = read_json(result_path)
+        if os.path.islink(result_path):
+            raise UntrustedOutput("the container left a link instead of a result")
+        result = schemas.require_valid("worker_result", read_json(result_path))
         if result["job_state"] != "SUCCEEDED":
             raise RuntimeError("the container job failed: %s" % result["error"])
+        produced = os.path.join(out_dir, request["run_id"])
+        verify_output(produced, request)
         final = os.path.join(os.path.abspath(evidence_root), request["run_id"])
         shutil.rmtree(final, ignore_errors=True)
-        os.replace(os.path.join(out_dir, request["run_id"]), final)
-        return read_json(os.path.join(final, "bundle.json")), request
+        os.replace(produced, final)
+        bundle = read_json(os.path.join(final, "bundle.json"))
+        bundle["evidence_dir"] = final
+        return bundle, request
     finally:
         shutil.rmtree(request_dir, ignore_errors=True)
         shutil.rmtree(out_dir, ignore_errors=True)

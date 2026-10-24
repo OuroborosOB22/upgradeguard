@@ -106,6 +106,7 @@ def build_parser():
     work.add_argument("--source", required=True)
     work.add_argument("--out", required=True)
     work.add_argument("--work")
+    work.add_argument("--publish")
     work.add_argument("--python", dest="python_bin", default="python3")
     work.add_argument("--requirements", default="requirements.txt")
     work.add_argument("--policy", default="")

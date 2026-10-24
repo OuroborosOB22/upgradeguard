@@ -156,5 +156,5 @@ def command_worker(args):
     options = {"requirements": args.requirements, "pytest_args": args.pytest_args, "install_project": args.install_project,
                "strict_licences": args.strict_licences, "policy": args.policy}
     result = run_worker(args.request, args.source, args.out, python_bin=args.python_bin, offline=args.offline, work_dir=args.work,
-                        progress=progress_line, options=options)
+                        progress=progress_line, options=options, publish_dir=args.publish)
     return 0 if result["job_state"] == "SUCCEEDED" else FAILURE_EXIT

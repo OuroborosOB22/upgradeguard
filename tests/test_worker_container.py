@@ -117,3 +117,93 @@ def test_only_plain_interpreter_names_are_allowed_in_a_container(tmp_path):
     spec = UpgradeSpec(repo_path=str(tmp_path), package="six", from_version="1", to_version="2", python_bin="/bin/sh")
     with pytest.raises(ValueError):
         container.run_in_container(spec, load_policy(""), str(tmp_path))
+
+
+def sample_output(tmp_path):
+    from upgradeguard.contract import file_sha256
+    directory = tmp_path / "out" / "run-worker-test"
+    (directory / "after").mkdir(parents=True)
+    (directory / "bundle.json").write_text("{}")
+    (directory / "after" / "pytest.log").write_text("log")
+    request = make_request(write_project(tmp_path))
+    evidence = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "contracts", "v1", "fixtures", "valid", "evidence_reject.json")).read())
+    evidence["run_id"] = request["run_id"]
+    evidence["request"] = request
+    evidence["artifact_manifest"] = [
+        {"id": "bundle.json", "path": "bundle.json", "sha256": file_sha256(str(directory / "bundle.json")), "media_type": "application/json"},
+        {"id": "after-pytest.log", "path": "after/pytest.log", "sha256": file_sha256(str(directory / "after" / "pytest.log")), "media_type": "text/plain"},
+    ]
+    for item in evidence["verdict"]["findings"]:
+        item["evidence_ids"] = ["after-pytest.log"]
+    (directory / "evidence.json").write_text(json.dumps(evidence))
+    return directory, request
+
+
+def test_untouched_container_output_is_accepted(tmp_path):
+    directory, request = sample_output(tmp_path)
+    assert container.verify_output(str(directory), request)["verdict"]["decision"] == "REJECT"
+
+
+def test_a_symlink_in_the_output_is_refused(tmp_path):
+    directory, request = sample_output(tmp_path)
+    os.symlink("/etc/passwd", str(directory / "after" / "shortcut"))
+    with pytest.raises(container.UntrustedOutput, match="link"):
+        container.verify_output(str(directory), request)
+
+
+def test_a_file_changed_after_its_hash_was_recorded_is_refused(tmp_path):
+    directory, request = sample_output(tmp_path)
+    (directory / "after" / "pytest.log").write_text("forged")
+    with pytest.raises(container.UntrustedOutput, match="hash"):
+        container.verify_output(str(directory), request)
+
+
+def test_extra_and_missing_files_are_refused(tmp_path):
+    directory, request = sample_output(tmp_path)
+    (directory / "planted.txt").write_text("x")
+    with pytest.raises(container.UntrustedOutput, match="manifest"):
+        container.verify_output(str(directory), request)
+    (directory / "planted.txt").unlink()
+    (directory / "bundle.json").unlink()
+    with pytest.raises(container.UntrustedOutput, match="manifest"):
+        container.verify_output(str(directory), request)
+
+
+def test_evidence_for_another_job_or_source_is_refused(tmp_path):
+    directory, request = sample_output(tmp_path)
+    other = dict(request)
+    other["run_id"] = "some-other-run"
+    with pytest.raises(container.UntrustedOutput, match="belong"):
+        container.verify_output(str(directory), other)
+
+
+def test_evidence_that_breaks_the_schema_is_refused(tmp_path):
+    directory, request = sample_output(tmp_path)
+    broken = json.loads((directory / "evidence.json").read_text())
+    broken["verdict"]["decision"] = "MAYBE"
+    (directory / "evidence.json").write_text(json.dumps(broken))
+    with pytest.raises(schemas.ContractError):
+        container.verify_output(str(directory), request)
+
+
+def test_oversized_output_is_refused(tmp_path, monkeypatch):
+    directory, request = sample_output(tmp_path)
+    monkeypatch.setattr(container, "MAX_OUTPUT_BYTES", 1)
+    with pytest.raises(container.UntrustedOutput, match="larger"):
+        container.verify_output(str(directory), request)
+
+
+def test_publish_copies_regular_files_only_and_replaces_old_content(tmp_path):
+    from upgradeguard.worker import publish
+    out = tmp_path / "out"
+    (out / "run" / "after").mkdir(parents=True)
+    (out / "run" / "after" / "a.log").write_text("log")
+    (out / "result.json").write_text("{}")
+    os.symlink("/etc/passwd", str(out / "run" / "link"))
+    target = tmp_path / "published"
+    (target / "stale").mkdir(parents=True)
+    (target / "stale" / "old.txt").write_text("old")
+    publish(str(out), str(target))
+    assert (target / "run" / "after" / "a.log").read_text() == "log"
+    assert (target / "result.json").exists()
+    assert not (target / "run" / "link").exists() and not (target / "stale").exists()

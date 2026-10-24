@@ -117,6 +117,20 @@ def test_secrets_inside_identifiers_urls_and_long_literals_are_redacted():
     assert "plain = 3" in cleaned
 
 
+def test_hyphenated_names_and_values_with_commas_are_redacted():
+    cleaned = explain.redact("api-key = abc,def\nPRIVATE-KEY: xyz\nmy-auth-token='a b c'\nplain = 1,2")
+    for secret in ("abc", "def", "xyz", "a b c"):
+        assert secret not in cleaned
+    assert "plain = 1,2" in cleaned
+
+
+def test_a_huge_line_is_dropped_quickly_and_cannot_slow_the_redactor():
+    import time
+    started = time.time()
+    cleaned = explain.redact("a" * 190_000 + "\nok = 1")
+    assert time.time() - started < 2 and "ok = 1" in cleaned and "very long line removed" in cleaned
+
+
 def test_a_secret_near_the_cut_off_is_redacted_before_the_file_is_trimmed(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()

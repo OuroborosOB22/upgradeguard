@@ -14,16 +14,17 @@ MAX_FILE_BYTES = 12_000
 MAX_READ_BYTES = 200_000
 MAX_RESPONSE_BYTES = 200_000
 MODEL_TIMEOUT = 60
-SECRET_PATTERNS = [
-    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?(-----END [A-Z ]*PRIVATE KEY-----|$)", re.S),
-    re.compile(r"(?i)[A-Za-z0-9_.-]*(password|passwd|pwd|secret|token|api_?key|credential|private_?key|auth|jwt)[A-Za-z0-9_.-]*\s*[:=(]\s*(\"[^\"\n]*\"|'[^'\n]*'|[^\s,;)]+)"),
-    re.compile(r"(?i)[a-z][a-z0-9+.-]*://[^\s/:@]+:[^\s/@]+@"),
-    re.compile(r"\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}"),
-    re.compile(r"\bsk-[A-Za-z0-9_-]{16,}"),
-    re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}"),
+MAX_LINE = 2000
+KEY_BLOCK = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?(-----END [A-Z ]*PRIVATE KEY-----|$)", re.S)
+LINE_SECRETS = [
+    re.compile(r"(?i)\b[A-Za-z0-9_.-]{0,48}(password|passwd|pwd|secret|token|api[_-]?key|credential|private[_-]?key|auth|jwt)[A-Za-z0-9_.-]{0,48}\s{0,8}[:=(]\s{0,8}(\"[^\"]{0,300}\"|'[^']{0,300}'|[^\s;)]{1,300})"),
+    re.compile(r"(?i)\b[a-z][a-z0-9+.-]{0,20}://[^\s/:@]{1,100}:[^\s/@]{1,200}@"),
+    re.compile(r"\beyJ[A-Za-z0-9_-]{5,400}\.[A-Za-z0-9_-]{5,400}\.[A-Za-z0-9_-]{5,400}"),
+    re.compile(r"\bsk-[A-Za-z0-9_-]{16,200}"),
+    re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,200}"),
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
-    re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,}\b"),
-    re.compile(r"[\"'][A-Za-z0-9+/=_-]{32,}[\"']"),
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,200}\b"),
+    re.compile(r"[\"'][A-Za-z0-9+/=_-]{32,300}[\"']"),
 ]
 ID_SAFE = re.compile(r"[^A-Za-z0-9_./:-]")
 LABEL_SAFE = re.compile(r"[^A-Za-z0-9 .,:_/+()-]")
@@ -40,9 +41,15 @@ class ProviderError(Exception):
 
 
 def redact(text):
-    for pattern in SECRET_PATTERNS:
-        text = pattern.sub("[redacted]", text)
-    return text
+    lines = []
+    for line in KEY_BLOCK.sub("[redacted]", text).splitlines():
+        if len(line) > MAX_LINE:
+            lines.append("[very long line removed]")
+            continue
+        for pattern in LINE_SECRETS:
+            line = pattern.sub("[redacted]", line)
+        lines.append(line)
+    return "\n".join(lines)
 
 
 URLISH = re.compile(r"\S*(://|www\.|mailto:|javascript:|data:)\S*", re.IGNORECASE)

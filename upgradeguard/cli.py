@@ -103,13 +103,14 @@ def print_summary(bundle):
     print("dependency changes : %d added, %d removed, %d version changes" % (
         len(diff["graph"]["added"]), len(diff["graph"]["removed"]), len(diff["graph"]["changed"])))
     print("test regressions   : %d" % len(diff["tests"]["regressions"]))
+    # print("python interpreter : %s" % bundle["python_bin"])
     print("new conflicts      : %d" % len(diff["conflicts"]["introduced"]))
     print("new vulnerabilities: %d" % len(diff["vulnerabilities"]["introduced"]))
     print("licence violations : %d new" % len(diff["licenses"]["introduced"]))
     print("evidence           : %s" % bundle["evidence_dir"])
     print("report             : %s" % os.path.join(bundle["evidence_dir"], "report.html"))
     print("total time         : %ss" % bundle["total_seconds"])
-
+ 
 
 if __name__ == "__main__":
     sys.exit(main())

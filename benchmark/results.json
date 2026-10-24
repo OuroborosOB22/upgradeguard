@@ -6,7 +6,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260830-041835-demo-requests-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260917-084906-demo-requests-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "2.28.2",
@@ -14,7 +14,7 @@
       "package": "requests",
       "regressions": 0,
       "repo": "examples/demo_repo",
-      "seconds": 12.23,
+      "seconds": 12.03,
       "signal_detected": true,
       "to": "2.32.5",
       "verdict_correct": true
@@ -24,7 +24,7 @@
       "codes": [
         "test-regression"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260830-041848-demo-jinja2-removed-api",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260917-084918-demo-jinja2-removed-api",
       "expected": "Reject",
       "expected_signal": "test-regression",
       "from": "3.0.3",
@@ -32,7 +32,7 @@
       "package": "jinja2",
       "regressions": 5,
       "repo": "examples/demo_repo",
-      "seconds": 12.38,
+      "seconds": 11.49,
       "signal_detected": true,
       "to": "3.1.6",
       "verdict_correct": true
@@ -42,7 +42,7 @@
       "codes": [
         "upgrade-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260830-041900-demo-requests-missing-version",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260917-084929-demo-requests-missing-version",
       "expected": "Reject",
       "expected_signal": "build-failure",
       "from": "2.28.2",
@@ -50,7 +50,7 @@
       "package": "requests",
       "regressions": 10,
       "repo": "examples/demo_repo",
-      "seconds": 8.06,
+      "seconds": 7.77,
       "signal_detected": true,
       "to": "2.99.0",
       "verdict_correct": true
@@ -60,7 +60,7 @@
       "codes": [
         "licence-policy-precondition"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260830-041908-demo-requests-strict-licence",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260917-084937-demo-requests-strict-licence",
       "expected": "Reject",
       "expected_signal": "licence-violation",
       "from": "2.28.2",
@@ -68,7 +68,7 @@
       "package": "requests",
       "regressions": 0,
       "repo": "examples/demo_repo",
-      "seconds": 12.19,
+      "seconds": 11.46,
       "signal_detected": true,
       "to": "2.32.5",
       "verdict_correct": true
@@ -78,7 +78,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260830-041920-legacy-requests-drops-lgpl",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20260917-084949-legacy-requests-drops-lgpl",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "2.25.1",
@@ -86,7 +86,7 @@
       "package": "requests",
       "regressions": 0,
       "repo": "examples/legacy_repo",
-      "seconds": 10.02,
+      "seconds": 11.27,
       "signal_detected": true,
       "to": "2.28.2",
       "verdict_correct": true
@@ -96,11 +96,11 @@
     "cases": 5,
     "false_approvals": 0,
     "false_rejections": 0,
-    "mean_seconds": 10.98,
+    "mean_seconds": 10.8,
     "reject_precision": 1.0,
     "reject_recall": 1.0,
     "signal_detection": 1.0,
-    "total_seconds": 54.88,
+    "total_seconds": 54.02,
     "verdict_accuracy": 1.0
   }
 }

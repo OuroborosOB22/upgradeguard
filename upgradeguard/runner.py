@@ -19,28 +19,29 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
                       install_timeout=1800, strict_licences=False, progress=None):
     started = time.time()
     if not spec.run_id:
-        spec.run_id = new_run_id(spec)
+        spec.run_id = new_run_id(spec) # responsible for creating unique run folders names
 
     repo_path = os.path.abspath(spec.repo_path)
     requirements_path = os.path.join(repo_path, spec.requirements_file)
     if not os.path.isfile(requirements_path):
         raise FileNotFoundError("no %s found in %s" % (spec.requirements_file, repo_path))
 
-    evidence_dir = os.path.abspath(os.path.join(evidence_root, spec.run_id))
-    work_dir = os.path.abspath(os.path.join(work_root, spec.run_id))
+    evidence_dir = os.path.abspath(os.path.join(evidence_root, spec.run_id)) # evidence/<run_id> for json/html logs
+    work_dir = os.path.abspath(os.path.join(work_root, spec.run_id)) # work/<run_id> for venvs and repo copies
     os.makedirs(evidence_dir, exist_ok=True)
     os.makedirs(work_dir, exist_ok=True)
 
-    python_bin = resolve_python(spec.python_bin)
-    base_lines = read_requirements(requirements_path)
+    python_bin = resolve_python(spec.python_bin) # returns absolute path to python executable
+    base_lines = read_requirements(requirements_path) # req.txt
     direct = set(declared_names(base_lines))
 
+    # pin_package modifies the file lines in memory from ver & to ver
     before_lines, before_found = pin_package(base_lines, spec.package, spec.from_version)
     after_lines, after_found = pin_package(base_lines, spec.package, spec.to_version)
     direct.add(spec.normalised_package())
 
     sides = {}
-    for side, lines in (("before", before_lines), ("after", after_lines)):
+    for side, lines in (("before", before_lines), ("after", after_lines)):     #loops through before then after
         announce(progress, "building %s environment" % side)
         side_dir = os.path.join(evidence_dir, side)
         env_dir = os.path.join(work_dir, side, "env")
@@ -50,9 +51,11 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
             use_cache=use_cache, install_timeout=install_timeout,
         )
 
+        # builds dependency graph and writes graph.json.
         graph = build_graph(build["packages"], direct)
         write_json(os.path.join(side_dir, "graph.json"), graph)
 
+        # if the environment built successfully then  checks following and generates a sum up in summary.json
         conflicts = {"clean": True, "problems": [], "returncode": 0, "log_path": ""}
         vulnerabilities = {"source": "not-run", "findings": [], "available": False, "raw_path": ""}
         licenses = {"policy": policy.name, "entries": [], "violations": [], "unknown": [], "allowed_count": 0}
@@ -80,15 +83,16 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
         }
         write_json(os.path.join(side_dir, "summary.json"), sides[side])
 
-    announce(progress, "comparing both environments")
+    announce(progress, "comparing both environments") # diff
     difference = {
         "graph": diff_graphs(sides["before"]["graph"], sides["after"]["graph"]),
         "conflicts": diff_conflicts(sides["before"]["conflicts"], sides["after"]["conflicts"]),
         "vulnerabilities": diff_vulnerabilities(sides["before"]["vulnerabilities"], sides["after"]["vulnerabilities"]),
         "licenses": diff_licenses(sides["before"]["licenses"], sides["after"]["licenses"]),
-        "tests": diff_test_runs(sides["before"]["tests"], sides["after"]["tests"]),
+        "tests": diff_test_runs(sides["before"]["tests"], sides["after"]["tests"]), # spots rregression after
     }
 
+    # & calls decide(bundle) from verdict.py to calculate verdict
     bundle = {
         "run_id": spec.run_id,
         "spec": spec.to_dict(),
@@ -105,6 +109,7 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
     bundle["verdict"] = decide(bundle)
     bundle["total_seconds"] = round(time.time() - started, 2)
 
+    # writes run.json, diff.json, verdict.json, bundle.json, and report.html.
     write_json(os.path.join(evidence_dir, "run.json"), bundle["spec"])
     write_json(os.path.join(evidence_dir, "policy.json"), bundle["policy"])
     write_json(os.path.join(evidence_dir, "diff.json"), difference)
@@ -117,10 +122,10 @@ def run_upgrade_check(spec, policy, evidence_root="evidence", work_root="work",
 
 def strip_packages(build):
     copied = dict(build)
-    copied.pop("packages", None)
+    copied.pop("packages", None) # strip out packages list so bundle.json is lighter
     return copied
 
 
 def announce(progress, message):
-    if progress:
+    if progress: 
         progress(message)

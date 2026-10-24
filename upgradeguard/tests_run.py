@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ElementTree
 from .venvs import interpreter_path
 from .util import run_command
 
+# runs pytest in the sandbox + parses the machine-readable junit XML output + diffs the test results to detect test regressions
 
 def run_test_suite(env_dir, repo_path, output_dir, timeout=900):
     junit_path = os.path.join(output_dir, "junit.xml")
@@ -13,7 +14,8 @@ def run_test_suite(env_dir, repo_path, output_dir, timeout=900):
             interpreter_path(env_dir), "-m", "pytest",
             "--junitxml", junit_path,
             "-q", "-p", "no:cacheprovider",
-            "--continue-on-collection-errors",
+            "--continue-on-collection-errors", # -flag forces pytest to continue running the rest of the test suite
+            # if one test file has a broken import pytest aborts tests and skips all other test files
             "--rootdir", repo_path,
         ],
         cwd=repo_path,
@@ -36,7 +38,7 @@ def run_test_suite(env_dir, repo_path, output_dir, timeout=900):
     }
 
 
-def parse_junit(path):
+def parse_junit(path): # usual junit tagging recog
     if not os.path.isfile(path):
         return None
     try:
@@ -86,11 +88,16 @@ def tail_lines(text, limit=30):
     lines = [line for line in text.splitlines() if line.strip()]
     return "\n".join(lines[-limit:])
 
+# RDA(regression detection algo)
+# test is a regression if it passed in the before environment but failed or error in the after environment
+# if a test was already failing before the upgrade (previous["status"] in broken), it is not a regression & upgrade did not break it
+# if a test passed before but is missing after results (because the test file failed to import or was deleted) it is counted as a regression ("not collected")
+# if a test failed before and passes after then it is recorded under fixed
 
 def diff_test_runs(before, after):
     before_results = before.get("results", {})
     after_results = after.get("results", {})
-    broken = {"failed", "error"}
+    broken = {"failed", "error"} # or "skipped"
 
     regressions = []
     fixed = []

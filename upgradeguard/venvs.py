@@ -11,7 +11,7 @@ COPY_IGNORE = shutil.ignore_patterns(
 from .metadata import read_installed_packages, site_packages_dir
 from .util import run_command, write_text
 
-
+# locate  private python binary inside the venv dirc
 def interpreter_path(env_dir):
     unix = os.path.join(env_dir, "bin", "python")
     if os.path.exists(unix):
@@ -21,20 +21,20 @@ def interpreter_path(env_dir):
 
 def create_environment(python_bin, env_dir, log_path):
     if os.path.isdir(env_dir):
-        shutil.rmtree(env_dir)
+        shutil.rmtree(env_dir) # env_dir cleared for clean state then writes full creation output to log
     os.makedirs(env_dir, exist_ok=True)
     return run_command([python_bin, "-m", "venv", env_dir], log_path=log_path, timeout=300)
 
 
 def pip_install(env_dir, arguments, log_path, use_cache=True, timeout=1800):
-    command = [interpreter_path(env_dir), "-m", "pip", "install", "--disable-pip-version-check", "--no-input"]
+    command = [interpreter_path(env_dir), "-m", "pip", "install", "--disable-pip-version-check", "--no-input"] # calls pip insall from env
     if not use_cache:
         command.append("--no-cache-dir")
     command.extend(arguments)
     return run_command(command, log_path=log_path, timeout=timeout)
 
 
-def pip_freeze(env_dir, log_path):
+def pip_freeze(env_dir, log_path): # exxports log with packages exact version for evidence
     return run_command(
         [interpreter_path(env_dir), "-m", "pip", "freeze", "--all"],
         log_path=log_path,
@@ -68,6 +68,7 @@ def build_environment(side, env_dir, requirement_lines, output_dir, python_bin,
         "duration": 0.0,
     }
 
+    # runs create_environment and sets venv-create and returns
     creation = create_environment(python_bin, env_dir, install_log)
     if creation["returncode"] != 0:
         result["failure_stage"] = "venv-create"
@@ -76,6 +77,7 @@ def build_environment(side, env_dir, requirement_lines, output_dir, python_bin,
         return result
     result["created"] = True
 
+    # runs pip_install with -r requirements.used.txt and sets dependency-install and returns
     install = pip_install(env_dir, ["-r", requirements_path], install_log, use_cache, install_timeout)
     if install["returncode"] != 0:
         result["failure_stage"] = "dependency-install"
@@ -84,6 +86,7 @@ def build_environment(side, env_dir, requirement_lines, output_dir, python_bin,
         return result
     result["installed"] = True
 
+    # installs pytest so the test suite can be run
     if test_runner:
         runner = pip_install(env_dir, [test_runner], install_log, use_cache, 900)
         result["runner_installed"] = runner["returncode"] == 0
@@ -91,17 +94,19 @@ def build_environment(side, env_dir, requirement_lines, output_dir, python_bin,
             result["failure_stage"] = "test-runner-install"
             result["failure_output"] = tail(runner["output"])
 
+    # runs pip_freeze and writes freeze.txt
     frozen = pip_freeze(env_dir, install_log)
     if frozen["returncode"] == 0:
         result["freeze"] = [line.strip() for line in frozen["output"].splitlines() if line.strip()]
         write_text(os.path.join(output_dir, "freeze.txt"), "\n".join(result["freeze"]) + "\n")
 
+    # inspects site packages directory using read_installed_packages(env_dir)
     packages = read_installed_packages(env_dir)
     result["packages"] = packages
     result["site_packages"] = site_packages_dir(env_dir)
     result["ok"] = result["installed"] and result["runner_installed"]
     result["duration"] = round(time.time() - started, 2)
-    return result
+    return result # returns result with ok = True
 
 
 def tail(text, lines=40):
@@ -120,7 +125,7 @@ def resolve_python(preferred):
             return found
     return sys.executable
 
-
+# copies target repo using shutil.copytree(cp -r)
 def copy_repository(repo_path, destination):
     if os.path.isdir(destination):
         shutil.rmtree(destination)

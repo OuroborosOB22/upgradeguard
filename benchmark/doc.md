@@ -81,3 +81,10 @@ history stays visible. Nothing else in `cases.json` changed between the runs.
 Two things the benchmark does not show: a 100 percent score on 59 cases we wrote
 ourselves is not a claim about all projects, and the cases are mostly small, fast
 libraries, not big applications.
+
+Run 3 repeated all 59 cases after the last change to the tool (a test id that appears
+twice now counts as its worst outcome). It gave the same 59 correct answers, so
+`results.json` and `results.md` are run 3. Run 2 is kept as `results.run2.json`. Times in
+run 3 are higher because other builds were running on the same laptop; the httpx
+cryptography case hit the 420 second test limit and still ended as Reject because the
+new advisories are found without the tests.

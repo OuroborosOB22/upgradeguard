@@ -5,18 +5,11 @@
 <section class="card">
   <h1>Working on it</h1>
   <p class="sub">{{ pending.package }} {{ pending.from_version }} to {{ pending.to_version }}</p>
-  <p class="status" id="status">{{ pending.message }}</p>
+  <p class="status" id="status" data-state-url="{{ url_for('run_state', run_id=run_id) }}">{{ pending.message }}</p>
   {% if pending.error %}<pre>{{ pending.error }}</pre>{% endif %}
   <div class="bar"><span></span></div>
 </section>
-<script>
-const poll = setInterval(async () => {
-  const response = await fetch("{{ url_for('run_state', run_id=run_id) }}");
-  const data = await response.json();
-  document.getElementById("status").textContent = data.message || data.state;
-  if (data.state === "finished") { clearInterval(poll); location.reload(); }
-}, 1500);
-</script>
+<script src="{{ url_for('static', filename='poll.js') }}"></script>
 {% else %}
 <section class="card">
   <span class="badge {{ bundle.verdict.decision.split(' ')[0]|lower }}">{{ bundle.verdict.decision }}</span>

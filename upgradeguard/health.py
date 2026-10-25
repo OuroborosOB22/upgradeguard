@@ -60,21 +60,24 @@ def parse(text):
 
 
 def candidate_versions(specifiers):
-    found = set()
+    found = {Version("0"), Version("9999")}
     for spec in specifiers:
         for item in spec:
             try:
                 base = Version(item.version.replace(".*", ""))
             except InvalidVersion:
                 continue
-            parts = list(base.release) + [0, 0]
+            release = list(base.release)
             found.add(base)
-            for index in range(len(base.release)):
+            for tail in ((1,), (0, 1), (0, 0, 1), (0, 0, 0, 1)):
+                found.add(Version(".".join(str(part) for part in release + list(tail))))
+            for index in range(len(release)):
                 for step in (-1, 1):
-                    changed = parts[:len(base.release)]
+                    changed = release[:]
                     changed[index] = max(0, changed[index] + step)
                     found.add(Version(".".join(str(part) for part in changed)))
-    found |= {Version("0"), Version("9999")}
+                below = release[:index] + [max(0, release[index] - 1), 9999]
+                found.add(Version(".".join(str(part) for part in below)))
     return found
 
 

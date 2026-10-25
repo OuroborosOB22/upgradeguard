@@ -1,6 +1,6 @@
 {
   "version": "0.2.0",
-  "note": "Ground truth is written before the case is executed. benchmark/doc.md explains how each expected value was decided.",
+  "note": "Ground truth is written before the case is executed.",
   "cases": [
     {
       "id": "demo-requests-safe",

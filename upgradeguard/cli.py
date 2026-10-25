@@ -183,26 +183,31 @@ def progress_line(message):
 
 
 def print_summary(bundle):
+    from .banner import accent, dim, headline, print_banner, wants_colour
     verdict = bundle["verdict"]
     diff = bundle["diff"]
+    print_banner()
     print("")
-    print(verdict["headline"])
-    print("-" * len(verdict["headline"]))
+    print(headline(verdict["headline"]))
+    print("")
     for item in verdict["reasons"]:
-        print("  [%s] %s" % (item["code"], item["message"]))
+        print("  %s %s" % (accent("[%s]" % item["code"], sys.stdout), item["message"]))
     for item in verdict["notes"]:
-        print("  (%s) %s" % (item["code"], item["message"]))
+        print("  %s %s" % (dim("(%s)" % item["code"], sys.stdout), item["message"]))
     print("")
-    print("dependency changes : %d added, %d removed, %d version changes" % (
+    def row(label, value, bad=False):
+        colour = "\033[1;38;5;203m%s\033[0m" if bad and wants_colour(sys.stdout) else "%s"
+        print("%s %s" % (dim("%-19s:" % label, sys.stdout), colour % value))
+
+    row("dependency changes", "%d added, %d removed, %d version changes" % (
         len(diff["graph"]["added"]), len(diff["graph"]["removed"]), len(diff["graph"]["changed"])))
-    print("test regressions   : %d" % len(diff["tests"]["regressions"]))
-    # print("python interpreter : %s" % bundle["python_bin"])
-    print("new conflicts      : %d" % len(diff["conflicts"]["introduced"]))
-    print("new vulnerabilities: %d" % len(diff["vulnerabilities"]["introduced"]))
-    print("licence violations : %d new" % len(diff["licenses"]["introduced"]))
-    print("evidence           : %s" % bundle["evidence_dir"])
-    print("report             : %s" % os.path.join(bundle["evidence_dir"], "report.html"))
-    print("total time         : %ss" % bundle["total_seconds"])
+    row("test regressions", len(diff["tests"]["regressions"]), bool(diff["tests"]["regressions"]))
+    row("new conflicts", len(diff["conflicts"]["introduced"]), bool(diff["conflicts"]["introduced"]))
+    row("new vulnerabilities", len(diff["vulnerabilities"]["introduced"]), bool(diff["vulnerabilities"]["introduced"]))
+    row("licence violations", "%d new" % len(diff["licenses"]["introduced"]), bool(diff["licenses"]["introduced"]))
+    row("evidence", bundle["evidence_dir"])
+    row("report", os.path.join(bundle["evidence_dir"], "report.html"))
+    row("total time", "%ss" % bundle["total_seconds"])
  
 
 if __name__ == "__main__":

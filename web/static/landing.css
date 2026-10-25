@@ -55,7 +55,7 @@ a{color:inherit}
 .navfull .edge{position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.5}
 .navlinks{display:flex;align-items:center;gap:30px;position:relative;z-index:2}
 .navlogo{display:flex;align-items:center;gap:14px;color:var(--acc);text-decoration:none;position:relative;z-index:2}
-.navmark{display:block;height:44px;width:44px;border-radius:10px;filter:drop-shadow(0 0 6px var(--glow))}
+.navmark{display:block;height:52px;width:52px;filter:drop-shadow(0 0 6px var(--glow))}
 .figtxt{margin:0;font-family:var(--mono);font-weight:600;white-space:pre;line-height:var(--fig-lh,1);font-size:var(--fig-nav)}
 .navlogo .figtxt{font-size:var(--fig-logo)}
 .figlink{text-decoration:none;color:var(--mute);transition:color .4s var(--e),transform .5s var(--e);display:block}

@@ -550,5 +550,5 @@ def test_landing_page_has_strict_headers_and_no_inline_code_or_remote_urls(world
 
 def test_landing_assets_are_served(world):
     client = make_app(world).test_client()
-    for name in ("landing.css", "landing.js", "scene.png", "logo-64.png"):
+    for name in ("landing.css", "landing.js", "scene.png", "logo-64.png", "logo-128.png"):
         assert client.get("/static/" + name).status_code == 200

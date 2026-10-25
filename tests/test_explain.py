@@ -263,3 +263,33 @@ def test_repository_text_in_the_evidence_lines_is_made_plain_too(bundle):
     result = explain.explain(bundle)
     text = explain.markdown(result["graph"], result["evidence"], result["source"], [])
     assert "://" not in text and "](" not in text and "[x]" not in text
+
+
+def test_a_reasoning_model_gets_the_reasoning_parameters_and_no_temperature():
+    sent = {}
+
+    class Answer(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    def opener(request, timeout):
+        sent["body"] = json.loads(request.data)
+        sent["timeout"] = timeout
+        return Answer(b'{"choices": [{"message": {"content": "{}"}}]}')
+
+    explain.OpenAICompatible("https://m.example/v1", "m", opener=opener, reasoning_effort="high").complete("s", "u")
+    assert sent["body"]["reasoning_effort"] == "high" and sent["body"]["max_completion_tokens"] == explain.REASONING_TOKENS
+    assert "temperature" not in sent["body"] and "max_tokens" not in sent["body"] and sent["timeout"] == explain.REASONING_TIMEOUT
+    explain.OpenAICompatible("https://m.example/v1", "m", opener=opener).complete("s", "u")
+    assert sent["body"]["temperature"] == 0 and sent["body"]["max_tokens"] == 1800 and "reasoning_effort" not in sent["body"]
+    explain.OpenAICompatible("https://m.example/v1", "m", opener=opener, reasoning_effort="extreme").complete("s", "u")
+    assert "reasoning_effort" not in sent["body"]
+
+
+def test_the_environment_turns_the_reasoning_option_on():
+    provider = explain.provider_from_environment({"UPGRADEGUARD_EXPLAIN_URL": "https://m.example/v1", "UPGRADEGUARD_EXPLAIN_MODEL": "m",
+                                                  "UPGRADEGUARD_EXPLAIN_REASONING_EFFORT": "High"})
+    assert provider.reasoning_effort == "high"

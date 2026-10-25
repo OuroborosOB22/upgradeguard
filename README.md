@@ -112,8 +112,8 @@ Projects can also record snapshots from inside pytest: set
 ./.venv/bin/python -m web.app
 ```
 
-Then open http://127.0.0.1:5057. Fill in the project folder, the package and the two
-versions. The page shows progress while the run happens, then the verdict, the
+Then open http://127.0.0.1:5057 for the front page and press Start (or go to /app). Fill in the
+project folder, the package and the two versions. The page shows progress while the run happens, then the verdict, the
 reasons and a download link for the whole evidence folder.
 
 We do not use port 5000 because macOS already uses it for AirPlay.

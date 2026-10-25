@@ -10,9 +10,10 @@
 </head>
 <body>
 <header class="bar">
-  <a class="brand" href="{{ url_for('index') }}"><img class="logo" src="{{ url_for('static', filename='logo.png') }}" alt="" width="32" height="32">UpgradeGuard</a>
+  <a class="brand" href="{{ url_for('landing') }}"><img class="logo" src="{{ url_for('static', filename='logo.png') }}" alt="" width="32" height="32">UpgradeGuard</a>
   <nav aria-label="Pages">
-    <a href="{{ url_for('index') }}" {% if request.endpoint in ('index', 'create_run', 'show_run', 'health_check', 'show_health') %}aria-current="page"{% endif %}>Check</a>
+    <a href="{{ url_for('landing') }}">Home</a>
+    <a href="{{ url_for('app_page') }}" {% if request.endpoint in ('app_page', 'create_run', 'show_run', 'health_check', 'show_health') %}aria-current="page"{% endif %}>Check</a>
     <a href="{{ url_for('history_page') }}" {% if request.endpoint == 'history_page' %}aria-current="page"{% endif %}>History</a>
     <a href="{{ url_for('settings_page') }}" {% if request.endpoint == 'settings_page' %}aria-current="page"{% endif %}>Settings</a>
   </nav>

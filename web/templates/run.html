@@ -15,7 +15,7 @@
       <button type="submit">Cancel the check</button>
     </form>
     {% endif %}
-    <a class="button ghost" href="{{ url_for('index') }}">Back</a>
+    <a class="button ghost" href="{{ url_for('app_page') }}">Back</a>
   </div>
   <p class="note">This page updates by itself. {% if pending.location == 'local' %}A check on this computer cannot be cancelled once it starts.{% endif %}</p>
 </section>

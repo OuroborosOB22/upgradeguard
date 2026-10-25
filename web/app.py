@@ -252,7 +252,7 @@ def create_app(settings=None):
         if request.method == "POST" and not csrf_ok():
             audit.warning("%s csrf rejected on %s", client(), request.path)
             abort(403)
-        if request.endpoint in ("static", "index", "login"):
+        if request.endpoint in ("static", "landing", "app_page", "login"):
             return None
         if not authenticated():
             abort(401)
@@ -263,7 +263,11 @@ def create_app(settings=None):
         return security.add_security_headers(response, is_report=request.endpoint == "run_report")
 
     @app.route("/")
-    def index():
+    def landing():
+        return render_template("landing.html")
+
+    @app.route("/app")
+    def app_page():
         return index_page()
 
     @app.route("/login", methods=["POST"])
@@ -275,7 +279,7 @@ def create_app(settings=None):
             audit.warning("%s login failed", client())
             return index_page(400, error="That access token is not right.")
         audit.info("%s logged in", client())
-        response = redirect(url_for("index"))
+        response = redirect(url_for("app_page"))
         response.set_cookie(security.SESSION_COOKIE, gate.make_session(), httponly=True, samesite="Strict",
                             secure=settings.secure_cookies, max_age=security.SESSION_SECONDS)
         return response

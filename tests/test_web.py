@@ -51,7 +51,7 @@ def make_app(world, **changes):
 
 
 def csrf_pair(client):
-    client.get("/")
+    client.get("/app")
     return client.get_cookie(security.CSRF_COOKIE).value
 
 
@@ -71,7 +71,7 @@ def wait_until_done(client, run_id):
 
 
 def test_pages_carry_security_headers(world):
-    response = make_app(world).test_client().get("/")
+    response = make_app(world).test_client().get("/app")
     assert response.status_code == 200
     assert "script-src 'self'" in response.headers["Content-Security-Policy"]
     assert "frame-ancestors 'none'" in response.headers["Content-Security-Policy"]
@@ -82,7 +82,7 @@ def test_pages_carry_security_headers(world):
 
 
 def test_pages_have_no_inline_script_or_style(world):
-    html = make_app(world).test_client().get("/").get_data(as_text=True)
+    html = make_app(world).test_client().get("/app").get_data(as_text=True)
     assert "<script>" not in html and "style=" not in html
 
 
@@ -92,7 +92,7 @@ def test_debug_mode_is_off(world):
 
 def test_a_post_without_the_csrf_token_is_refused(world):
     client = make_app(world).test_client()
-    client.get("/")
+    client.get("/app")
     form = good_form("")
     assert client.post("/runs", data=form).status_code == 403
 
@@ -178,7 +178,7 @@ def write_run(world, run_id, package="requests"):
 
 def test_run_list_escapes_hostile_values(world):
     write_run(world, "run-one", package="<script>alert(1)</script>")
-    html = make_app(world).test_client().get("/").get_data(as_text=True)
+    html = make_app(world).test_client().get("/app").get_data(as_text=True)
     assert "<script>alert(1)</script>" not in html
     assert "&lt;script&gt;alert(1)&lt;/script&gt;" in html
 
@@ -241,14 +241,14 @@ def test_the_site_refuses_new_runs_when_busy(world):
 
 def test_request_rate_limit(world):
     client = make_app(world, requests_per_minute=3).test_client()
-    codes = [client.get("/").status_code for _ in range(5)]
+    codes = [client.get("/app").status_code for _ in range(5)]
     assert codes[:3] == [200, 200, 200] and 429 in codes[3:]
 
 
 def test_everything_except_the_landing_page_needs_login_when_a_token_is_set(world):
     client = make_app(world, access_token="letmein").test_client()
-    assert client.get("/").status_code == 200
-    assert "Access token" in client.get("/").get_data(as_text=True)
+    assert client.get("/app").status_code == 200
+    assert "Access token" in client.get("/app").get_data(as_text=True)
     for path in ("/runs/anything", "/runs/anything/state", "/runs/anything/report", "/runs/anything/evidence.zip"):
         assert client.get(path).status_code == 401, path
     token = csrf_pair(client)
@@ -257,7 +257,7 @@ def test_everything_except_the_landing_page_needs_login_when_a_token_is_set(worl
 
 def test_landing_page_hides_runs_from_anonymous_visitors(world):
     write_run(world, "run-four")
-    html = make_app(world, access_token="letmein").test_client().get("/").get_data(as_text=True)
+    html = make_app(world, access_token="letmein").test_client().get("/app").get_data(as_text=True)
     assert "run-four" not in html
 
 
@@ -381,7 +381,7 @@ def test_settings_lists_servers_without_secrets_and_cannot_add_one(world):
     assert "build.example.org" in page and "secret-id" not in page
     token = csrf_pair(client)
     assert client.post("/settings/test", data={"csrf": token, "profile": "not-a-profile"}).status_code == 404
-    assert "Server: demo" in client.get("/").get_data(as_text=True)
+    assert "Server: demo" in client.get("/app").get_data(as_text=True)
 
 
 def test_a_remote_run_only_accepts_a_server_that_is_configured(world):
@@ -525,6 +525,30 @@ def test_a_health_report_can_be_downloaded_as_json(world):
 
 def test_the_logo_is_the_tab_icon_and_the_brand_mark_and_needs_no_login(world):
     client = make_app(world, access_token="secret-token").test_client()
-    page = client.get("/").get_data(as_text=True)
+    page = client.get("/app").get_data(as_text=True)
     assert 'rel="icon"' in page and "logo.png" in page
     assert client.get("/static/logo.png").status_code == 200
+
+
+def test_landing_page_is_public_and_links_to_the_app(world):
+    client = make_app(world, access_token="letmein").test_client()
+    response = client.get("/")
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert 'href="/app"' in html and 'href="#lifecycle"' in html
+    assert "logo-64.png" in html
+    assert client.get("/app").status_code == 200
+
+
+def test_landing_page_has_strict_headers_and_no_inline_code_or_remote_urls(world):
+    response = make_app(world).test_client().get("/")
+    html = response.get_data(as_text=True)
+    assert "script-src 'self'" in response.headers["Content-Security-Policy"]
+    assert "<script>" not in html and "style=" not in html
+    assert "http://" not in html and "https://" not in html
+
+
+def test_landing_assets_are_served(world):
+    client = make_app(world).test_client()
+    for name in ("landing.css", "landing.js", "scene.png", "logo-64.png"):
+        assert client.get("/static/" + name).status_code == 200

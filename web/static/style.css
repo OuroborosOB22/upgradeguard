@@ -92,4 +92,4 @@ svg.graph{width:100%;height:auto;min-width:520px;max-height:520px}
 .swatch{display:inline-block;width:12px;height:12px;border:2px solid var(--mute);margin-right:6px;vertical-align:-1px}
 .swatch.added{border-color:var(--ok)}.swatch.modified{border-color:var(--acc)}.swatch.removed{border-style:dashed}.swatch.failed{border-color:var(--bad)}
 
-.logo{display:block;width:28px;height:28px;object-fit:contain}
+.logo{display:block;width:32px;height:32px;object-fit:cover;border-radius:6px}

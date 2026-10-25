@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}UpgradeGuard{% endblock %}</title>
-<link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+<link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='logo-64.png') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <script src="{{ url_for('static', filename='theme.js') }}"></script>
 </head>
 <body>
 <header class="bar">
-  <a class="brand" href="{{ url_for('index') }}"><img class="logo" src="{{ url_for('static', filename='logo.png') }}" alt="" width="28" height="28">UpgradeGuard</a>
+  <a class="brand" href="{{ url_for('index') }}"><img class="logo" src="{{ url_for('static', filename='logo.png') }}" alt="" width="32" height="32">UpgradeGuard</a>
   <nav aria-label="Pages">
     <a href="{{ url_for('index') }}" {% if request.endpoint in ('index', 'create_run', 'show_run', 'health_check', 'show_health') %}aria-current="page"{% endif %}>Check</a>
     <a href="{{ url_for('history_page') }}" {% if request.endpoint == 'history_page' %}aria-current="page"{% endif %}>History</a>

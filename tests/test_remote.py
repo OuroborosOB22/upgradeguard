@@ -325,3 +325,19 @@ def test_the_cli_refuses_an_unknown_server_name(tmp_path, capsys):
     path.write_text(json.dumps({"profiles": {"demo": PROFILE}}))
     assert cli.main(["remote-check", "--profiles", str(path), "--server", "other"]) == 3
     assert "demo" in capsys.readouterr().err
+
+
+def test_a_job_that_finishes_while_status_is_read_is_not_reported_as_failed(tmp_path, monkeypatch):
+    (tmp_path / "pid").write_text("12345")
+
+    def finishes_now(pid):
+        (tmp_path / "exit").write_text("0")
+        return False
+
+    monkeypatch.setattr(remote_worker, "alive", finishes_now)
+    assert remote_worker.status(str(tmp_path)) == {"state": "SUCCEEDED", "exit": 0}
+
+
+def test_a_job_with_no_exit_and_no_process_is_reported_as_failed(tmp_path):
+    (tmp_path / "pid").write_text("99999999")
+    assert remote_worker.status(str(tmp_path)) == {"state": "FAILED", "exit": -1}

@@ -86,8 +86,10 @@ def run_job(folder):
         command.append("--install-project")
     with open(os.path.join(folder, "stdout.log"), "w") as out, open(os.path.join(folder, "stderr.log"), "w") as err:
         code = subprocess.run(command, stdout=out, stderr=err, stdin=subprocess.DEVNULL).returncode
-    with open(os.path.join(folder, "exit"), "w") as handle:
+    temporary = os.path.join(folder, "exit.tmp")
+    with open(temporary, "w") as handle:
         handle.write(str(code))
+    os.replace(temporary, os.path.join(folder, "exit"))
 
 
 def alive(pid):
@@ -98,13 +100,19 @@ def alive(pid):
         return False
 
 
+def finished(exit_path):
+    code = int(open(exit_path).read().strip() or -1)
+    return {"state": "SUCCEEDED" if code == 0 else ("CANCELLED" if code == 130 else "FAILED"), "exit": code}
+
+
 def status(folder):
     exit_path, pid_path = os.path.join(folder, "exit"), os.path.join(folder, "pid")
     if os.path.isfile(exit_path):
-        code = int(open(exit_path).read().strip() or -1)
-        return {"state": "SUCCEEDED" if code == 0 else ("CANCELLED" if code == 130 else "FAILED"), "exit": code}
+        return finished(exit_path)
     if os.path.isfile(pid_path) and alive(int(open(pid_path).read().strip() or 0)):
         return {"state": "RUNNING"}
+    if os.path.isfile(exit_path):
+        return finished(exit_path)
     return {"state": "FAILED", "exit": -1}
 
 
@@ -137,8 +145,9 @@ def cancel(folder):
         pid = int(open(pid_path).read().strip() or 0)
         if pid > 1:
             stopped = stop_group(pid)
-        with open(os.path.join(folder, "exit"), "w") as handle:
+        with open(os.path.join(folder, "exit.tmp"), "w") as handle:
             handle.write("130")
+        os.replace(os.path.join(folder, "exit.tmp"), os.path.join(folder, "exit"))
     return {"cancelled": True, "confirmed_stopped": stopped}
 
 

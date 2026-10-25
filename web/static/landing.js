@@ -18,6 +18,7 @@
   };
 
   var themeBusy = false;
+  var visibleFrames = new Set();
   var wave = { wake: function () {}, refresh: function () {} };
 
   function startTheme() {
@@ -118,8 +119,12 @@
         } else {
           nav.classList.remove("hot");
         }
-        root.style.setProperty("--cx", e.clientX + "px");
-        root.style.setProperty("--cy", e.clientY + "px");
+        visibleFrames.forEach(function (card) {
+          var box = card.querySelector(":scope > .fbx");
+          if (!box) return;
+          box.style.setProperty("--cx", e.clientX + "px");
+          box.style.setProperty("--cy", e.clientY + "px");
+        });
         var foot = document.getElementById("figwrap");
         if (foot) {
           var r = foot.getBoundingClientRect();
@@ -238,6 +243,10 @@
       var ro = new ResizeObserver(later);
       document.querySelectorAll(".pxb").forEach(function (el) { ro.observe(el); });
     }
+    var seen = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) visibleFrames.add(en.target); else visibleFrames.delete(en.target); });
+    });
+    document.querySelectorAll(".pxb").forEach(function (el) { seen.observe(el); });
     document.querySelectorAll(".guard img").forEach(function (im) { im.addEventListener("load", later); });
   }
 
@@ -496,23 +505,33 @@
     };
     var size = function () {
       var r = cv.parentElement.getBoundingClientRect();
-      var dpr = Math.min(2, window.devicePixelRatio || 1);
       w = r.width; ht = r.height;
-      cv.width = Math.max(1, w * dpr); cv.height = Math.max(1, ht * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cv.width = Math.max(1, w); cv.height = Math.max(1, ht);
     };
     var draw = function () {
       ctx.clearRect(0, 0, w, ht);
       var cols = Math.ceil(w / gap), rows = Math.ceil(ht / gap);
+      var near = [];
+      ctx.fillStyle = rgb(colors.line);
+      ctx.beginPath();
       for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) {
         var x = c * gap + gap / 2, y = r * gap + gap / 2;
-        var dx = px - x, dy = py - y, d = Math.hypot(dx, dy);
-        var f = power * Math.max(0, 1 - d / reach);
-        var ox = d > 0 ? dx / d * f * 9 : 0, oy = d > 0 ? dy / d * f * 9 : 0;
-        ctx.fillStyle = f > 0.02 ? mix(colors.line, colors.acc, Math.min(1, f * 1.5)) : rgb(colors.line);
-        ctx.beginPath(); ctx.arc(x + ox, y + oy, 1.6 + f * 5, 0, 6.2832); ctx.fill();
-        if (olw && f > 0.3) { ctx.lineWidth = 1; ctx.strokeStyle = "#000"; ctx.stroke(); }
+        var dx = px - x, dy = py - y;
+        if (power > 0.002 && Math.abs(dx) < reach && Math.abs(dy) < reach) {
+          var d = Math.hypot(dx, dy);
+          var f = power * Math.max(0, 1 - d / reach);
+          if (f > 0.02) { near.push([x, y, dx, dy, d, f]); continue; }
+        }
+        ctx.moveTo(x + 1.6, y);
+        ctx.arc(x, y, 1.6, 0, 6.2832);
       }
+      ctx.fill();
+      near.forEach(function (n) {
+        var ox = n[4] > 0 ? n[2] / n[4] * n[5] * 9 : 0, oy = n[4] > 0 ? n[3] / n[4] * n[5] * 9 : 0;
+        ctx.fillStyle = mix(colors.line, colors.acc, Math.min(1, n[5] * 1.5));
+        ctx.beginPath(); ctx.arc(n[0] + ox, n[1] + oy, 1.6 + n[5] * 5, 0, 6.2832); ctx.fill();
+        if (olw && n[5] > 0.3) { ctx.lineWidth = 1; ctx.strokeStyle = "#000"; ctx.stroke(); }
+      });
     };
     var loop = function (ts) {
       requestAnimationFrame(loop);

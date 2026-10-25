@@ -69,7 +69,7 @@ th{font:600 12px var(--mono);color:var(--mute);text-transform:uppercase;letter-s
 td.num,th.num{text-align:right;font-family:var(--mono)}
 pre{overflow:auto;background:var(--bg);padding:12px;border-radius:6px}
 footer{border-top:1px solid var(--line);padding:18px 24px;color:var(--mute);font-size:13px;text-align:center}
-@media (max-width:700px){.row3{grid-template-columns:1fr}.bar{flex-wrap:wrap;gap:10px}nav{margin-left:0;order:3;width:100%}}
+@media (max-width:700px){.row3{grid-template-columns:1fr}.bar{flex-wrap:wrap;gap:10px}nav{margin-left:0;order:3;width:100%;flex-wrap:wrap}nav a{padding:8px 10px}}
 
 fieldset{border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin:0 0 16px}
 legend{font:600 12px var(--mono);color:var(--mute);padding:0 6px}

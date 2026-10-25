@@ -1,4 +1,5 @@
 import io
+import re
 
 from upgradeguard import banner, cli
 
@@ -28,7 +29,7 @@ def test_a_wide_terminal_gets_the_big_letters_and_a_narrow_one_the_small_ones(mo
     tiny = Terminal()
     banner.print_banner(tiny)
     assert wide.getvalue().count("\n") > narrow.getvalue().count("\n") > tiny.getvalue().count("\n")
-    assert "\033[1;" in wide.getvalue() and "UPGRADEGUARD" in tiny.getvalue()
+    assert "\033[38;" in wide.getvalue() and "UPGRADEGUARD" in re.sub(r"\x1b\[[0-9;]*m", "", tiny.getvalue())
 
 
 def test_no_colour_is_respected(monkeypatch):
@@ -46,3 +47,12 @@ def test_the_summary_has_no_row_of_dashes(capsys):
     cli.print_summary(bundle)
     shown = capsys.readouterr().out
     assert "Accept: upgrading requests" in shown and "-----" not in shown
+
+
+def test_the_verdict_becomes_a_coloured_badge_only_in_a_terminal(monkeypatch):
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    monkeypatch.setenv("TERM", "xterm-256color")
+    monkeypatch.setenv("COLORTERM", "truecolor")
+    shown = banner.headline("Reject: upgrading a from 1 to 2", Terminal())
+    assert "\033[1;30;48;2;" in shown and " REJECT " in shown and "upgrading a from 1 to 2" in shown
+    assert banner.headline("Reject: upgrading a from 1 to 2", io.StringIO()) == "Reject: upgrading a from 1 to 2"

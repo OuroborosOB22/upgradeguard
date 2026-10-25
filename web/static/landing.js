@@ -505,8 +505,10 @@
     };
     var size = function () {
       var r = cv.parentElement.getBoundingClientRect();
+      var dpr = Math.min(2, window.devicePixelRatio || 1);
       w = r.width; ht = r.height;
-      cv.width = Math.max(1, w); cv.height = Math.max(1, ht);
+      cv.width = Math.max(1, w * dpr); cv.height = Math.max(1, ht * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     var draw = function () {
       ctx.clearRect(0, 0, w, ht);
@@ -551,6 +553,7 @@
       var r = cv.getBoundingClientRect();
       px = e.clientX - r.left; py = e.clientY - r.top;
       lastMove = performance.now();
+      dirty = true;
     }, { passive: true });
     window.addEventListener("resize", function () { size(); dirty = true; });
     if (!reduce) requestAnimationFrame(loop);

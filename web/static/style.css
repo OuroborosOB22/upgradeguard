@@ -48,6 +48,7 @@ button.primary,.button.primary{background:var(--acc);color:var(--onacc);border:m
 .log{font:400 13px var(--mono);color:var(--mute);padding-left:20px;margin:12px 0}
 .badge{display:inline-block;padding:3px 12px;border-radius:999px;font:600 12px var(--mono);border:1px solid var(--line);text-transform:uppercase;letter-spacing:.04em}
 .panel>.badge{align-self:flex-start}
+[hidden]{display:none !important}
 .badge.accept,.badge.good{color:var(--ok)}
 .badge.reject,.badge.poor{color:var(--bad)}
 .badge.insufficient,.badge.fair{color:var(--warn)}

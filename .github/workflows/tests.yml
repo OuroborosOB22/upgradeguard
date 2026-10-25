@@ -2,10 +2,27 @@ name: tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
+  tool-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: install
+        run: pip install -r requirements.txt pytest
+      - name: contract check
+        run: python contracts/v1/check.py
+      - name: fast tests of the tool and the website
+        run: python -m pytest tests -q
+
   demo-projects:
     runs-on: ubuntu-latest
     steps:
@@ -21,3 +38,15 @@ jobs:
         run: |
           pip install -r examples/demo_repo/requirements.txt
           cd examples/demo_repo && python -m pytest -q
+
+  own-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: scan our own requirements for known vulnerabilities
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt

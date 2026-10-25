@@ -526,7 +526,7 @@ def test_a_health_report_can_be_downloaded_as_json(world):
 def test_the_logo_is_the_tab_icon_and_the_brand_mark_and_needs_no_login(world):
     client = make_app(world, access_token="secret-token").test_client()
     page = client.get("/app").get_data(as_text=True)
-    assert 'rel="icon"' in page and "logo.png" in page
+    assert 'rel="icon"' in page and "logo-64.png" in page and "logo-128.png" in page
     assert client.get("/static/logo.png").status_code == 200
 
 

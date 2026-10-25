@@ -101,3 +101,33 @@ def test_lookups_that_run_out_of_time_are_unavailable_not_failures():
 
     answers = health.look_up_all(["a", "b"], slow, budget=0.05)
     assert all(item["status"] == "unavailable" for item in answers.values())
+
+
+def test_a_version_between_two_close_bounds_is_not_a_conflict():
+    assert health.has_conflict([">1.0", "<1.1"]) is False
+    assert health.has_conflict([">1.0.5", "<1.1"]) is False
+    assert health.has_conflict([">1.0", "<1.0.1"]) is False
+    assert health.has_conflict([">=1.2.3", "<1.2.4", "!=1.2.3"]) is False
+    assert health.has_conflict(["==1.0.*", ">1.0"]) is False
+    assert health.has_conflict(["~=1.4.2", ">1.4.2"]) is False
+
+
+def test_bounds_that_really_exclude_each_other_are_a_conflict():
+    assert health.has_conflict(["<1.0", ">=1.0"]) is True
+    assert health.has_conflict([">1.0", "<=1.0"]) is True
+    assert health.has_conflict(["==1.0", "==2.0"]) is True
+    assert health.has_conflict(["==1.0.*", ">=1.1"]) is True
+
+
+def test_a_reported_conflict_is_never_satisfiable_by_any_version_on_a_dense_grid():
+    import itertools
+    from packaging.specifiers import SpecifierSet
+    from packaging.version import Version
+    grid = [Version(".".join(map(str, parts))) for parts in itertools.product(range(4), range(4), range(3), range(3))]
+    pieces = [">", ">=", "<", "<=", "==", "!="]
+    versions = ["1.0", "1.0.1", "1.1", "1.2.3", "2.0", "0.9"]
+    specs = [op + version for op in pieces for version in versions]
+    for first, second in itertools.combinations(specs, 2):
+        if health.has_conflict([first, second]):
+            sets = [SpecifierSet(first), SpecifierSet(second)]
+            assert not any(all(item.contains(v, prereleases=True) for item in sets) for v in grid), (first, second)

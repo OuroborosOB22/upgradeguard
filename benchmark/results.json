@@ -45,12 +45,7 @@
   },
   "provenance": {
     "jobs": "3",
-    "machine": "MacBook arm64, 10 cores, 3 cases at a time",
-    "python": "python3.13 (uv), pip 25",
-    "run": "3",
-    "test_timeout": "420",
-    "timing_caveat": "other builds were running on the same machine so times are higher than in run 2",
-    "tool_commit": "af9f525101ed658fba4a15864282a94fbcb67727"
+    "test_timeout": "420"
   },
   "results": [
     {
@@ -65,7 +60,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132540-demo-requests-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125146-demo-requests-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "2.28.2",
@@ -73,7 +68,7 @@
       "package": "requests",
       "regressions": 0,
       "repo": "examples/demo_repo",
-      "seconds": 11.25,
+      "seconds": 15.6,
       "signal_detected": true,
       "to": "2.32.5",
       "verdict_correct": true
@@ -90,7 +85,7 @@
       "codes": [
         "test-regression"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132540-demo-jinja2-removed-api",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125146-demo-jinja2-removed-api",
       "expected": "Reject",
       "expected_signal": "test-regression",
       "from": "3.0.3",
@@ -98,7 +93,7 @@
       "package": "jinja2",
       "regressions": 5,
       "repo": "examples/demo_repo",
-      "seconds": 11.27,
+      "seconds": 14.88,
       "signal_detected": true,
       "to": "3.1.6",
       "verdict_correct": true
@@ -115,7 +110,7 @@
       "codes": [
         "upgrade-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132540-demo-requests-missing-version",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125146-demo-requests-missing-version",
       "expected": "Reject",
       "expected_signal": "build-failure",
       "from": "2.28.2",
@@ -123,7 +118,7 @@
       "package": "requests",
       "regressions": 10,
       "repo": "examples/demo_repo",
-      "seconds": 8.34,
+      "seconds": 10.91,
       "signal_detected": true,
       "to": "2.99.0",
       "verdict_correct": true
@@ -140,7 +135,7 @@
       "codes": [
         "licence-policy-precondition"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132548-demo-requests-strict-licence",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125157-demo-requests-strict-licence",
       "expected": "Reject",
       "expected_signal": "licence-violation",
       "from": "2.28.2",
@@ -148,7 +143,7 @@
       "package": "requests",
       "regressions": 0,
       "repo": "examples/demo_repo",
-      "seconds": 10.16,
+      "seconds": 12.14,
       "signal_detected": true,
       "to": "2.32.5",
       "verdict_correct": true
@@ -165,7 +160,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132551-legacy-requests-drops-lgpl",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125201-legacy-requests-drops-lgpl",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "2.25.1",
@@ -173,7 +168,7 @@
       "package": "requests",
       "regressions": 0,
       "repo": "examples/legacy_repo",
-      "seconds": 11.4,
+      "seconds": 12.0,
       "signal_detected": true,
       "to": "2.28.2",
       "verdict_correct": true
@@ -190,7 +185,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132551-click-pytest-major-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125202-click-pytest-major-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "7.4.4",
@@ -198,7 +193,7 @@
       "package": "pytest",
       "regressions": 0,
       "repo": "benchmark/repos/pallets__click",
-      "seconds": 16.56,
+      "seconds": 14.16,
       "signal_detected": true,
       "to": "8.2.2",
       "verdict_correct": true
@@ -215,7 +210,7 @@
       "codes": [
         "upgrade-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132559-click-pytest-missing",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125209-click-pytest-missing",
       "expected": "Reject",
       "expected_signal": "build-failure",
       "from": "7.4.4",
@@ -223,7 +218,7 @@
       "package": "pytest",
       "regressions": 588,
       "repo": "benchmark/repos/pallets__click",
-      "seconds": 8.45,
+      "seconds": 8.37,
       "signal_detected": true,
       "to": "99.0.0",
       "verdict_correct": true
@@ -240,7 +235,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132603-markupsafe-pytest-major-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125213-markupsafe-pytest-major-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "7.4.4",
@@ -248,7 +243,7 @@
       "package": "pytest",
       "regressions": 0,
       "repo": "benchmark/repos/pallets__markupsafe",
-      "seconds": 12.5,
+      "seconds": 12.44,
       "signal_detected": true,
       "to": "8.2.2",
       "verdict_correct": true
@@ -265,7 +260,7 @@
       "codes": [
         "baseline-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132607-markupsafe-baseline-missing",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125216-markupsafe-baseline-missing",
       "expected": "Insufficient Evidence",
       "expected_signal": "build-failure",
       "from": "99.0.0",
@@ -273,7 +268,7 @@
       "package": "pytest",
       "regressions": 0,
       "repo": "benchmark/repos/pallets__markupsafe",
-      "seconds": 4.02,
+      "seconds": 4.07,
       "signal_detected": true,
       "to": "100.0.0",
       "verdict_correct": true
@@ -290,7 +285,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132608-itsdangerous-freezegun-patch-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125218-itsdangerous-freezegun-patch-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "1.5.1",
@@ -298,7 +293,7 @@
       "package": "freezegun",
       "regressions": 0,
       "repo": "benchmark/repos/pallets__itsdangerous",
-      "seconds": 13.82,
+      "seconds": 13.31,
       "signal_detected": true,
       "to": "1.5.5",
       "verdict_correct": true
@@ -315,7 +310,7 @@
       "codes": [
         "upgrade-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132611-itsdangerous-dateutil-missing",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125220-itsdangerous-dateutil-missing",
       "expected": "Reject",
       "expected_signal": "build-failure",
       "from": "2.9.0.post0",
@@ -323,7 +318,7 @@
       "package": "python-dateutil",
       "regressions": 297,
       "repo": "benchmark/repos/pallets__itsdangerous",
-      "seconds": 7.97,
+      "seconds": 7.75,
       "signal_detected": true,
       "to": "99.0.0",
       "verdict_correct": true
@@ -340,7 +335,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132615-platformdirs-pytest-mock-patch-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125226-platformdirs-pytest-mock-patch-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "3.14.0",
@@ -348,7 +343,7 @@
       "package": "pytest-mock",
       "regressions": 0,
       "repo": "benchmark/repos/platformdirs__platformdirs",
-      "seconds": 17.03,
+      "seconds": 16.91,
       "signal_detected": true,
       "to": "3.14.1",
       "verdict_correct": true
@@ -365,7 +360,7 @@
       "codes": [
         "upgrade-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132619-platformdirs-coverage-missing",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125228-platformdirs-coverage-missing",
       "expected": "Reject",
       "expected_signal": "build-failure",
       "from": "7.5.4",
@@ -373,7 +368,7 @@
       "package": "coverage",
       "regressions": 433,
       "repo": "benchmark/repos/platformdirs__platformdirs",
-      "seconds": 9.91,
+      "seconds": 9.96,
       "signal_detected": true,
       "to": "99.0.0",
       "verdict_correct": true
@@ -390,7 +385,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132622-filelock-pytest-mock-patch-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125231-filelock-pytest-mock-patch-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "3.14.0",
@@ -398,7 +393,7 @@
       "package": "pytest-mock",
       "regressions": 0,
       "repo": "benchmark/repos/tox-dev__filelock",
-      "seconds": 42.49,
+      "seconds": 39.55,
       "signal_detected": true,
       "to": "3.14.1",
       "verdict_correct": true
@@ -415,7 +410,7 @@
       "codes": [
         "new-vulnerability"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132629-filelock-virtualenv-new-advisory",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125238-filelock-virtualenv-new-advisory",
       "expected": "Reject",
       "expected_signal": "vulnerability",
       "from": "20.26.3",
@@ -423,7 +418,7 @@
       "package": "virtualenv",
       "regressions": 0,
       "repo": "benchmark/repos/tox-dev__filelock",
-      "seconds": 39.25,
+      "seconds": 36.47,
       "signal_detected": true,
       "to": "20.30.0",
       "verdict_correct": true
@@ -440,7 +435,7 @@
       "codes": [
         "upgrade-dependency-conflict"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132632-filelock-pytest9-asyncio-conflict",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125242-filelock-pytest9-asyncio-conflict",
       "expected": "Reject",
       "expected_signal": "dependency-conflict",
       "from": "8.2.2",
@@ -448,7 +443,7 @@
       "package": "pytest",
       "regressions": 135,
       "repo": "benchmark/repos/tox-dev__filelock",
-      "seconds": 22.96,
+      "seconds": 21.53,
       "signal_detected": true,
       "to": "9.1.1",
       "verdict_correct": true
@@ -465,7 +460,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132655-dotenv-sh-patch-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125304-dotenv-sh-patch-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "2.0.6",
@@ -473,7 +468,7 @@
       "package": "sh",
       "regressions": 0,
       "repo": "benchmark/repos/theskumar__python-dotenv",
-      "seconds": 15.56,
+      "seconds": 17.35,
       "signal_detected": true,
       "to": "2.0.7",
       "verdict_correct": true
@@ -490,7 +485,7 @@
       "codes": [
         "upgrade-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132704-dotenv-click-missing",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125311-dotenv-click-missing",
       "expected": "Reject",
       "expected_signal": "build-failure",
       "from": "8.1.7",
@@ -498,7 +493,7 @@
       "package": "click",
       "regressions": 149,
       "repo": "benchmark/repos/theskumar__python-dotenv",
-      "seconds": 9.2,
+      "seconds": 10.95,
       "signal_detected": true,
       "to": "99.0.0",
       "verdict_correct": true
@@ -515,7 +510,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132708-tenacity-pytest-minor-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125314-tenacity-pytest-minor-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "8.2.2",
@@ -523,7 +518,7 @@
       "package": "pytest",
       "regressions": 0,
       "repo": "benchmark/repos/jd__tenacity",
-      "seconds": 18.24,
+      "seconds": 19.76,
       "signal_detected": true,
       "to": "8.3.5",
       "verdict_correct": true
@@ -540,7 +535,7 @@
       "codes": [
         "new-vulnerability"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132711-tenacity-tornado-new-advisory",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125321-tenacity-tornado-new-advisory",
       "expected": "Reject",
       "expected_signal": "vulnerability",
       "from": "6.4.1",
@@ -548,7 +543,7 @@
       "package": "tornado",
       "regressions": 0,
       "repo": "benchmark/repos/jd__tenacity",
-      "seconds": 17.76,
+      "seconds": 17.78,
       "signal_detected": true,
       "to": "6.5.5",
       "verdict_correct": true
@@ -565,7 +560,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132713-dateutil-six-minor-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125321-dateutil-six-minor-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "1.16.0",
@@ -573,7 +568,7 @@
       "package": "six",
       "regressions": 0,
       "repo": "benchmark/repos/dateutil__dateutil",
-      "seconds": 21.5,
+      "seconds": 21.58,
       "signal_detected": true,
       "to": "1.17.0",
       "verdict_correct": true
@@ -590,7 +585,7 @@
       "codes": [
         "licence-policy-precondition"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132727-dateutil-hypothesis-strict-licence",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125334-dateutil-hypothesis-strict-licence",
       "expected": "Reject",
       "expected_signal": "licence-violation",
       "from": "6.108.2",
@@ -598,7 +593,7 @@
       "package": "hypothesis",
       "regressions": 0,
       "repo": "benchmark/repos/dateutil__dateutil",
-      "seconds": 19.53,
+      "seconds": 20.45,
       "signal_detected": true,
       "to": "6.108.2",
       "verdict_correct": true
@@ -615,7 +610,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132729-marshmallow-pytz-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125339-marshmallow-pytz-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "2024.1",
@@ -623,7 +618,7 @@
       "package": "pytz",
       "regressions": 0,
       "repo": "benchmark/repos/marshmallow-code__marshmallow",
-      "seconds": 13.57,
+      "seconds": 13.37,
       "signal_detected": true,
       "to": "2025.2",
       "verdict_correct": true
@@ -640,7 +635,7 @@
       "codes": [
         "upgrade-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132735-marshmallow-simplejson-missing",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125343-marshmallow-simplejson-missing",
       "expected": "Reject",
       "expected_signal": "build-failure",
       "from": "3.19.2",
@@ -648,7 +643,7 @@
       "package": "simplejson",
       "regressions": 1218,
       "repo": "benchmark/repos/marshmallow-code__marshmallow",
-      "seconds": 8.44,
+      "seconds": 8.41,
       "signal_detected": true,
       "to": "99.0.0",
       "verdict_correct": true
@@ -665,7 +660,7 @@
       "codes": [
         "test-regression"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132742-records-sqlalchemy-14-regression",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125352-records-sqlalchemy-14-regression",
       "expected": "Reject",
       "expected_signal": "test-regression",
       "from": "1.3.24",
@@ -673,7 +668,7 @@
       "package": "sqlalchemy",
       "regressions": 10,
       "repo": "benchmark/repos/kennethreitz__records",
-      "seconds": 48.32,
+      "seconds": 50.69,
       "signal_detected": true,
       "to": "1.4.52",
       "verdict_correct": true
@@ -690,7 +685,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132743-records-pytest-minor-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125353-records-pytest-minor-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "8.2.2",
@@ -698,7 +693,7 @@
       "package": "pytest",
       "regressions": 0,
       "repo": "benchmark/repos/kennethreitz__records",
-      "seconds": 77.5,
+      "seconds": 81.54,
       "signal_detected": true,
       "to": "8.3.5",
       "verdict_correct": true
@@ -715,7 +710,7 @@
       "codes": [
         "tests-could-not-start"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132746-jinja-markupsafe-soft-unicode",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125354-jinja-markupsafe-soft-unicode",
       "expected": "Reject",
       "expected_signal": "test-regression",
       "from": "2.0.1",
@@ -723,7 +718,7 @@
       "package": "markupsafe",
       "regressions": 742,
       "repo": "benchmark/repos/pallets__jinja",
-      "seconds": 13.44,
+      "seconds": 14.65,
       "signal_detected": true,
       "to": "2.1.5",
       "verdict_correct": true
@@ -740,7 +735,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132800-jinja-pytest-patch-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125409-jinja-pytest-patch-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "7.4.0",
@@ -748,7 +743,7 @@
       "package": "pytest",
       "regressions": 0,
       "repo": "benchmark/repos/pallets__jinja",
-      "seconds": 12.85,
+      "seconds": 12.74,
       "signal_detected": true,
       "to": "7.4.4",
       "verdict_correct": true
@@ -765,7 +760,7 @@
       "codes": [
         "tests-could-not-start"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132812-flask-werkzeug-3-regression",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125422-flask-werkzeug-3-regression",
       "expected": "Reject",
       "expected_signal": "test-regression",
       "from": "2.2.3",
@@ -773,7 +768,7 @@
       "package": "werkzeug",
       "regressions": 479,
       "repo": "benchmark/repos/pallets__flask",
-      "seconds": 16.03,
+      "seconds": 16.11,
       "signal_detected": true,
       "to": "3.0.6",
       "verdict_correct": true
@@ -790,7 +785,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132828-flask-click-patch-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125438-flask-click-patch-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "8.1.7",
@@ -798,7 +793,7 @@
       "package": "click",
       "regressions": 0,
       "repo": "benchmark/repos/pallets__flask",
-      "seconds": 15.24,
+      "seconds": 16.14,
       "signal_detected": true,
       "to": "8.1.8",
       "verdict_correct": true
@@ -816,7 +811,7 @@
         "new-vulnerability",
         "test-regression"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132831-requests-urllib3-new-advisories",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125442-requests-urllib3-new-advisories",
       "expected": "Reject",
       "expected_signal": "vulnerability",
       "from": "1.26.19",
@@ -824,7 +819,7 @@
       "package": "urllib3",
       "regressions": 1,
       "repo": "benchmark/repos/psf__requests",
-      "seconds": 194.53,
+      "seconds": 193.97,
       "signal_detected": true,
       "to": "2.0.5",
       "verdict_correct": true
@@ -841,7 +836,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132844-requests-certifi-patch-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125454-requests-certifi-patch-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "2024.7.4",
@@ -849,7 +844,7 @@
       "package": "certifi",
       "regressions": 0,
       "repo": "benchmark/repos/psf__requests",
-      "seconds": 220.71,
+      "seconds": 219.63,
       "signal_detected": true,
       "to": "2024.8.30",
       "verdict_correct": true
@@ -866,7 +861,7 @@
       "codes": [
         "licence-policy-precondition"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-132901-requests-certifi-strict-licence",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125514-requests-certifi-strict-licence",
       "expected": "Reject",
       "expected_signal": "licence-violation",
       "from": "2024.7.4",
@@ -874,7 +869,7 @@
       "package": "certifi",
       "regressions": 0,
       "repo": "benchmark/repos/psf__requests",
-      "seconds": 219.84,
+      "seconds": 221.12,
       "signal_detected": true,
       "to": "2024.8.30",
       "verdict_correct": true
@@ -891,7 +886,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133145-httpx-idna-minor-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125756-httpx-idna-minor-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "3.7",
@@ -899,7 +894,7 @@
       "package": "idna",
       "regressions": 0,
       "repo": "benchmark/repos/encode__httpx",
-      "seconds": 51.34,
+      "seconds": 35.1,
       "signal_detected": true,
       "to": "3.10",
       "verdict_correct": true
@@ -916,15 +911,15 @@
       "codes": [
         "new-vulnerability"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133224-httpx-cryptography-new-advisories",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125831-httpx-cryptography-new-advisories",
       "expected": "Reject",
       "expected_signal": "vulnerability",
       "from": "42.0.8",
       "id": "httpx-cryptography-new-advisories",
       "package": "cryptography",
-      "regressions": 856,
+      "regressions": 0,
       "repo": "benchmark/repos/encode__httpx",
-      "seconds": 446.87,
+      "seconds": 31.56,
       "signal_detected": true,
       "to": "46.0.0",
       "verdict_correct": true
@@ -941,15 +936,15 @@
       "codes": [
         "upgrade-dependency-conflict"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133236-httpx-h11-httpcore-conflict",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125834-httpx-h11-httpcore-conflict",
       "expected": "Reject",
       "expected_signal": "dependency-conflict",
       "from": "0.14.0",
       "id": "httpx-h11-httpcore-conflict",
       "package": "h11",
-      "regressions": 856,
+      "regressions": 0,
       "repo": "benchmark/repos/encode__httpx",
-      "seconds": 21.54,
+      "seconds": 434.4,
       "signal_detected": true,
       "to": "0.16.0",
       "verdict_correct": true
@@ -966,7 +961,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133241-starlette-jinja2-patch-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125855-starlette-jinja2-patch-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "3.1.4",
@@ -974,7 +969,7 @@
       "package": "jinja2",
       "regressions": 0,
       "repo": "benchmark/repos/encode__starlette",
-      "seconds": 29.74,
+      "seconds": 24.77,
       "signal_detected": true,
       "to": "3.1.6",
       "verdict_correct": true
@@ -991,7 +986,7 @@
       "codes": [
         "test-regression"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133258-starlette-httpx-028-regression",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125903-starlette-httpx-028-regression",
       "expected": "Reject",
       "expected_signal": "test-regression",
       "from": "0.27.0",
@@ -999,7 +994,7 @@
       "package": "httpx",
       "regressions": 6,
       "repo": "benchmark/repos/encode__starlette",
-      "seconds": 28.61,
+      "seconds": 24.14,
       "signal_detected": true,
       "to": "0.28.1",
       "verdict_correct": true
@@ -1016,7 +1011,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133311-attrs-cloudpickle-minor-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125920-attrs-cloudpickle-minor-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "3.0.0",
@@ -1024,7 +1019,7 @@
       "package": "cloudpickle",
       "regressions": 0,
       "repo": "benchmark/repos/python-attrs__attrs",
-      "seconds": 45.47,
+      "seconds": 45.48,
       "signal_detected": true,
       "to": "3.1.2",
       "verdict_correct": true
@@ -1041,7 +1036,7 @@
       "codes": [
         "upgrade-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133327-attrs-zope-missing",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125927-attrs-zope-missing",
       "expected": "Reject",
       "expected_signal": "build-failure",
       "from": "6.4.post2",
@@ -1049,7 +1044,7 @@
       "package": "zope.interface",
       "regressions": 1318,
       "repo": "benchmark/repos/python-attrs__attrs",
-      "seconds": 23.65,
+      "seconds": 24.54,
       "signal_detected": true,
       "to": "99.0.0",
       "verdict_correct": true
@@ -1066,7 +1061,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133350-rich-attrs-major-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-125952-rich-attrs-major-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "23.2.0",
@@ -1074,7 +1069,7 @@
       "package": "attrs",
       "regressions": 0,
       "repo": "benchmark/repos/Textualize__rich",
-      "seconds": 21.36,
+      "seconds": 21.41,
       "signal_detected": true,
       "to": "24.2.0",
       "verdict_correct": true
@@ -1091,7 +1086,7 @@
       "codes": [
         "upgrade-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133356-rich-mdurl-missing",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130006-rich-mdurl-missing",
       "expected": "Reject",
       "expected_signal": "build-failure",
       "from": "0.1.2",
@@ -1099,7 +1094,7 @@
       "package": "mdurl",
       "regressions": 775,
       "repo": "benchmark/repos/Textualize__rich",
-      "seconds": 13.13,
+      "seconds": 12.48,
       "signal_detected": true,
       "to": "99.0.0",
       "verdict_correct": true
@@ -1116,7 +1111,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133409-structlog-freezegun-patch-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130013-structlog-freezegun-patch-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "1.5.1",
@@ -1124,7 +1119,7 @@
       "package": "freezegun",
       "regressions": 0,
       "repo": "benchmark/repos/hynek__structlog",
-      "seconds": 20.77,
+      "seconds": 19.5,
       "signal_detected": true,
       "to": "1.5.5",
       "verdict_correct": true
@@ -1141,7 +1136,7 @@
       "codes": [
         "upgrade-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133412-structlog-simplejson-missing",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130018-structlog-simplejson-missing",
       "expected": "Reject",
       "expected_signal": "build-failure",
       "from": "3.19.2",
@@ -1149,7 +1144,7 @@
       "package": "simplejson",
       "regressions": 793,
       "repo": "benchmark/repos/hynek__structlog",
-      "seconds": 12.5,
+      "seconds": 11.6,
       "signal_detected": true,
       "to": "99.0.0",
       "verdict_correct": true
@@ -1166,7 +1161,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133424-anyio-psutil-minor-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130030-anyio-psutil-minor-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "6.0.0",
@@ -1174,7 +1169,7 @@
       "package": "psutil",
       "regressions": 0,
       "repo": "benchmark/repos/agronholm__anyio",
-      "seconds": 65.66,
+      "seconds": 65.51,
       "signal_detected": true,
       "to": "6.1.1",
       "verdict_correct": true
@@ -1191,7 +1186,7 @@
       "codes": [
         "new-vulnerability"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133430-anyio-cryptography-new-advisories",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130033-anyio-cryptography-new-advisories",
       "expected": "Reject",
       "expected_signal": "vulnerability",
       "from": "42.0.8",
@@ -1199,7 +1194,7 @@
       "package": "cryptography",
       "regressions": 0,
       "repo": "benchmark/repos/agronholm__anyio",
-      "seconds": 64.09,
+      "seconds": 62.61,
       "signal_detected": true,
       "to": "46.0.0",
       "verdict_correct": true
@@ -1216,7 +1211,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133530-tomli-six-minor-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130135-tomli-six-minor-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "1.16.0",
@@ -1224,7 +1219,7 @@
       "package": "six",
       "regressions": 0,
       "repo": "benchmark/repos/hukkin__tomli",
-      "seconds": 11.26,
+      "seconds": 10.96,
       "signal_detected": true,
       "to": "1.17.0",
       "verdict_correct": true
@@ -1241,7 +1236,7 @@
       "codes": [
         "baseline-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133534-tomli-baseline-missing",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130135-tomli-baseline-missing",
       "expected": "Insufficient Evidence",
       "expected_signal": "build-failure",
       "from": "99.0.0",
@@ -1249,7 +1244,7 @@
       "package": "python-dateutil",
       "regressions": 0,
       "repo": "benchmark/repos/hukkin__tomli",
-      "seconds": 4.38,
+      "seconds": 4.52,
       "signal_detected": true,
       "to": "100.0.0",
       "verdict_correct": true
@@ -1266,7 +1261,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133539-tabulate-wcwidth-patch-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130140-tabulate-wcwidth-patch-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "0.2.13",
@@ -1274,7 +1269,7 @@
       "package": "wcwidth",
       "regressions": 0,
       "repo": "benchmark/repos/astanin__python-tabulate",
-      "seconds": 13.6,
+      "seconds": 14.17,
       "signal_detected": true,
       "to": "0.2.14",
       "verdict_correct": true
@@ -1291,7 +1286,7 @@
       "codes": [
         "upgrade-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133541-tabulate-wcwidth-missing",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130146-tabulate-wcwidth-missing",
       "expected": "Reject",
       "expected_signal": "build-failure",
       "from": "0.2.13",
@@ -1299,7 +1294,7 @@
       "package": "wcwidth",
       "regressions": 267,
       "repo": "benchmark/repos/astanin__python-tabulate",
-      "seconds": 8.44,
+      "seconds": 8.65,
       "signal_detected": true,
       "to": "99.0.0",
       "verdict_correct": true
@@ -1316,7 +1311,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133550-cachetools-pytest-minor-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130154-cachetools-pytest-minor-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "8.2.2",
@@ -1324,7 +1319,7 @@
       "package": "pytest",
       "regressions": 0,
       "repo": "benchmark/repos/tkem__cachetools",
-      "seconds": 10.82,
+      "seconds": 11.46,
       "signal_detected": true,
       "to": "8.3.5",
       "verdict_correct": true
@@ -1341,7 +1336,7 @@
       "codes": [
         "upgrade-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133552-cachetools-pytest-missing",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130155-cachetools-pytest-missing",
       "expected": "Reject",
       "expected_signal": "build-failure",
       "from": "8.2.2",
@@ -1349,7 +1344,7 @@
       "package": "pytest",
       "regressions": 214,
       "repo": "benchmark/repos/tkem__cachetools",
-      "seconds": 7.05,
+      "seconds": 7.35,
       "signal_detected": true,
       "to": "99.0.0",
       "verdict_correct": true
@@ -1366,7 +1361,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133559-humanize-freezegun-patch-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130202-humanize-freezegun-patch-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "1.5.1",
@@ -1374,7 +1369,7 @@
       "package": "freezegun",
       "regressions": 0,
       "repo": "benchmark/repos/python-humanize__humanize",
-      "seconds": 14.15,
+      "seconds": 15.13,
       "signal_detected": true,
       "to": "1.5.5",
       "verdict_correct": true
@@ -1391,7 +1386,7 @@
       "codes": [
         "upgrade-build-failed"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133600-humanize-dateutil-missing",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130205-humanize-dateutil-missing",
       "expected": "Reject",
       "expected_signal": "build-failure",
       "from": "2.9.0.post0",
@@ -1399,7 +1394,7 @@
       "package": "python-dateutil",
       "regressions": 527,
       "repo": "benchmark/repos/python-humanize__humanize",
-      "seconds": 9.24,
+      "seconds": 8.91,
       "signal_detected": true,
       "to": "99.0.0",
       "verdict_correct": true
@@ -1416,7 +1411,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133610-moreitertools-pytest-minor-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130214-moreitertools-pytest-minor-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "8.2.2",
@@ -1424,7 +1419,7 @@
       "package": "pytest",
       "regressions": 0,
       "repo": "benchmark/repos/more-itertools__more-itertools",
-      "seconds": 12.62,
+      "seconds": 12.66,
       "signal_detected": true,
       "to": "8.3.5",
       "verdict_correct": true
@@ -1441,7 +1436,7 @@
       "codes": [
         "tests-did-not-run"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133613-moreitertools-no-tests-collected",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130217-moreitertools-no-tests-collected",
       "expected": "Insufficient Evidence",
       "expected_signal": "no-tests",
       "from": "8.2.2",
@@ -1449,7 +1444,7 @@
       "package": "pytest",
       "regressions": 0,
       "repo": "benchmark/repos/more-itertools__more-itertools",
-      "seconds": 8.85,
+      "seconds": 9.3,
       "signal_detected": true,
       "to": "8.3.5",
       "verdict_correct": true
@@ -1466,7 +1461,7 @@
       "codes": [
         "no-blocking-evidence"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133622-blinker-pytest-minor-safe",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130227-blinker-pytest-minor-safe",
       "expected": "Accept",
       "expected_signal": "none",
       "from": "8.2.2",
@@ -1474,7 +1469,7 @@
       "package": "pytest",
       "regressions": 0,
       "repo": "benchmark/repos/pallets-eco__blinker",
-      "seconds": 10.07,
+      "seconds": 10.18,
       "signal_detected": true,
       "to": "8.3.5",
       "verdict_correct": true
@@ -1491,7 +1486,7 @@
       "codes": [
         "upgrade-dependency-conflict"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133622-blinker-pytest9-asyncio-conflict",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130227-blinker-pytest9-asyncio-conflict",
       "expected": "Reject",
       "expected_signal": "dependency-conflict",
       "from": "8.2.2",
@@ -1499,7 +1494,7 @@
       "package": "pytest",
       "regressions": 25,
       "repo": "benchmark/repos/pallets-eco__blinker",
-      "seconds": 7.12,
+      "seconds": 7.16,
       "signal_detected": true,
       "to": "9.1.1",
       "verdict_correct": true
@@ -1517,7 +1512,7 @@
         "licence-policy-violation",
         "new-vulnerability"
       ],
-      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261024-133629-legacy-requests-rollback-adds-lgpl",
+      "evidence_dir": "/Users/lagmator22/Documents/Sem5Present/sweProject/evidence/20261025-130234-legacy-requests-rollback-adds-lgpl",
       "expected": "Reject",
       "expected_signal": "licence-violation",
       "from": "2.28.2",
@@ -1525,7 +1520,7 @@
       "package": "requests",
       "regressions": 0,
       "repo": "examples/legacy_repo",
-      "seconds": 10.67,
+      "seconds": 10.37,
       "signal_detected": true,
       "to": "2.25.1",
       "verdict_correct": true
@@ -1567,17 +1562,17 @@
     "cases": 59,
     "false_approvals": 0,
     "false_rejections": 0,
-    "mean_seconds": 36.65,
+    "mean_seconds": 36.44,
     "reject_precision": 1.0,
     "reject_recall": 1.0,
     "signal_detection": 1.0,
-    "total_seconds": 2162.64,
+    "total_seconds": 2150.21,
     "verdict_accuracy": 1.0
   },
   "timing": {
-    "max_seconds": 446.87,
-    "mean_seconds": 36.65,
-    "median_seconds": 13.82,
-    "total_seconds": 2162.64
+    "max_seconds": 434.4,
+    "mean_seconds": 36.44,
+    "median_seconds": 14.88,
+    "total_seconds": 2150.21
   }
 }

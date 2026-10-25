@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Explanation{% endblock %}
+{% block content %}
+<section class="panel">
+  <p class="eyebrow">Generated explanation. It does not change the verdict.</p>
+  <h1>{{ record.graph.summary }}</h1>
+  <p class="note">{{ record.source|capitalize }}.</p>
+  <div class="row">
+    <a class="button primary" href="{{ url_for('explanation_markdown', run_id=run_id) }}">Download as Markdown</a>
+    <a class="button ghost" href="{{ url_for('show_run', run_id=run_id) }}">Back to the result</a>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Change diagram</h2>
+  <div class="diagram">{{ diagram|safe }}</div>
+  <ul class="legend">
+    <li><span class="swatch added"></span>+ added</li><li><span class="swatch modified"></span>~ modified</li>
+    <li><span class="swatch removed"></span>- removed</li><li><span class="swatch unchanged"></span>unchanged</li><li><span class="swatch failed"></span>! failed</li>
+  </ul>
+  <p class="note">Dashed arrows are inferred, not observed. A failure sits on the test node and does not say which package caused it.</p>
+</section>
+
+{% if record.graph.findings %}
+<section class="panel">
+  <h2>Findings</h2>
+  <ul class="reasons">
+    {% for item in record.graph.findings %}<li class="warning"><p>{{ item.text }}</p><code>{{ item.evidence_ids|join(', ') }}</code></li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section class="panel">
+  <h2>Limits</h2>
+  <ul class="reasons">
+    {% for text in record.graph.limitations + record.extra_limitations %}<li><p>{{ text }}</p></li>{% endfor %}
+    <li><p>This is a generated explanation of recorded evidence, not an audit of the project.</p></li>
+  </ul>
+</section>
+
+<section class="panel">
+  <h2>Evidence used</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Id</th><th>What</th></tr></thead>
+    <tbody>{% for item in record.evidence %}<tr><td><code>{{ item.id }}</code></td><td>{{ item.text or '' }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endblock %}

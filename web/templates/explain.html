@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Explain the changes{% endblock %}
+{% block content %}
+<section class="panel">
+  <p class="eyebrow">Explain the changes</p>
+  <h1>{{ bundle.spec.package }} {{ bundle.spec.from_version }} to {{ bundle.spec.to_version }}</h1>
+  <p class="lede">An explanation turns the finished report into a short summary and a change diagram. It never changes the verdict. Nothing is sent anywhere until you confirm on this page.</p>
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <form method="get" action="{{ url_for('explain_run', run_id=run_id) }}">
+    <fieldset>
+      <legend>What to include</legend>
+      <label class="check"><input type="radio" name="mode" value="report" {% if mode != 'code' %}checked{% endif %}> Report only</label>
+      <label class="check"><input type="radio" name="mode" value="code" {% if mode == 'code' %}checked{% endif %}> Report plus selected project files</label>
+      {% if candidates %}
+      <div class="files">
+        {% for name in candidates %}<label class="check"><input type="checkbox" name="file" value="{{ name }}" {% if name in chosen %}checked{% endif %}> {{ name }}</label>{% endfor %}
+        <p class="note">Files that import {{ bundle.spec.package }}. At most three are used, each cut to 12 KB, with secret-looking text removed.</p>
+      </div>
+      {% else %}
+      <p class="note">No project files that import {{ bundle.spec.package }} are available to select.</p>
+      {% endif %}
+    </fieldset>
+    <button type="submit">Update the preview</button>
+  </form>
+</section>
+
+{% if preview %}
+<section class="panel">
+  <h2>What would be shared</h2>
+  {% if destination %}
+  <p>Sent to: <strong>{{ destination }}</strong></p>
+  {% else %}
+  <p><strong>No model is set up here.</strong> A diagram is built from the report on this server. Nothing leaves it.</p>
+  {% endif %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Item</th><th>Kind</th><th class="num">Bytes</th></tr></thead>
+    <tbody>{% for item in preview['items'] %}<tr><td><code>{{ item.id }}</code></td><td>{{ item.kind }}</td><td class="num">{{ item.bytes }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% for path, text in preview.file_texts.items() %}
+  <details><summary>Exact text of {{ path }} after secrets were removed</summary><pre>{{ text }}</pre></details>
+  {% endfor %}
+  <p class="note">{{ preview.total_bytes }} bytes in total. Repository text is treated as data, never as instructions to the model.</p>
+  <form method="post" action="{{ url_for('explain_run', run_id=run_id) }}">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <input type="hidden" name="confirm" value="1">
+    <input type="hidden" name="mode" value="{{ mode }}">
+    {% for name in chosen %}<input type="hidden" name="file" value="{{ name }}">{% endfor %}
+    <button class="primary" type="submit">{% if destination %}Send this and explain{% else %}Build the diagram{% endif %}</button>
+    <a class="button ghost" href="{{ url_for('show_run', run_id=run_id) }}">Back to the result</a>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

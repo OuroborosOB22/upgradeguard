@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0.0",
+  "status": "MODEL_UNAVAILABLE",
+  "model_version": null,
+  "feature_schema_version": "0.1.0",
+  "risk_score": null,
+  "calibrated_probability": null,
+  "supported_scope": "maven only",
+  "explanations": [],
+  "timing_ms": {"inference": 0}
+}

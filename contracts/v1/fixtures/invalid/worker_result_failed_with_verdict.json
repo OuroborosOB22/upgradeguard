@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "run-jinja2-demo",
+  "operation": "REHEARSE_UPGRADE",
+  "job_state": "FAILED",
+  "verdict": "REJECT",
+  "evidence_path": "run-jinja2-demo/evidence.json",
+  "error": null,
+  "started_at": "2026-10-24T10:00:00Z",
+  "finished_at": "2026-10-24T10:01:00Z"
+}

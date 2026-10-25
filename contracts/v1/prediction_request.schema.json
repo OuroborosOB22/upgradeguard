@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.upgradeguard.invalid/v1/prediction_request.schema.json",
+  "title": "Prediction request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "task", "ecosystem", "project_id", "package",
+    "from_version", "to_version", "feature_schema_version", "features", "missing_features"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "task": {"const": "maven_upgrade_build_failure"},
+    "ecosystem": {"const": "MAVEN"},
+    "project_id": {"$ref": "request.schema.json#/$defs/id"},
+    "package": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+$"},
+    "from_version": {"$ref": "request.schema.json#/$defs/version"},
+    "to_version": {"$ref": "request.schema.json#/$defs/version"},
+    "feature_schema_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "features": {
+      "type": "object",
+      "propertyNames": {"pattern": "^[a-z][a-z0-9_]{0,63}$"},
+      "additionalProperties": {"type": ["number", "string", "boolean", "null"]}
+    },
+    "missing_features": {"type": "array", "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,63}$"}}
+  }
+}

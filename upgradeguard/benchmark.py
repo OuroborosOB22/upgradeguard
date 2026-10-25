@@ -1,16 +1,21 @@
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor
 
+from .baselines import BASELINE_NAMES, baseline_verdicts
+from .metrics import all_methods, build_metrics, signal_metrics, time_metrics
+from .report_benchmark import write_results_markdown
 from .runner import run_upgrade_check
 from .spec import UpgradeSpec, load_policy
 from .util import read_json, write_json
 
 SIGNAL_CODES = {
-    "test-regression": {"test-regression"},
-    "dependency-conflict": {"new-dependency-conflict"},
+    "test-regression": {"test-regression", "tests-could-not-start"},
+    "dependency-conflict": {"new-dependency-conflict", "upgrade-dependency-conflict"},
     "vulnerability": {"new-vulnerability"},
     "licence-violation": {"licence-policy-violation", "licence-policy-precondition"},
     "build-failure": {"upgrade-build-failed", "baseline-build-failed"},
+    "no-tests": {"tests-did-not-run"},
     "none": set(),
 }
 
@@ -26,9 +31,12 @@ def run_case(case, args, base_dir):
         package=case["package"],
         from_version=case["from"],
         to_version=case["to"],
-        python_bin=args.python_bin,
+        python_bin=case.get("python", args.python_bin),
         policy_path=case.get("policy", ""),
         requirements_file=case.get("requirements", "requirements.txt"),
+        install_project=case.get("install_project", False),
+        pytest_args=case.get("pytest_args", []),
+        build_env=case.get("env", {}),
         run_id="%s-%s" % (time.strftime("%Y%m%d-%H%M%S"), case["id"]),
         label=case["id"],
     )
@@ -40,6 +48,7 @@ def run_case(case, args, base_dir):
         evidence_root=args.evidence,
         work_root=args.work,
         allow_network=not args.offline,
+        test_timeout=args.test_timeout,
         strict_licences=case.get("strict_licences", False),
     )
 
@@ -71,6 +80,9 @@ def score_case(case, bundle):
         "seconds": bundle["total_seconds"],
         "evidence_dir": bundle["evidence_dir"],
         "regressions": len(bundle["diff"]["tests"]["regressions"]),
+        "before_built": bundle["before"]["build"]["ok"],
+        "after_built": bundle["after"]["build"]["ok"],
+        "baselines": baseline_verdicts(bundle),
     }
 
 
@@ -99,40 +111,77 @@ def summarise(rows):
     }
 
 
+def execute_case(case, args, base_dir):
+    try:
+        return score_case(case, run_case(case, args, base_dir))
+    except Exception as failure:
+        return {
+            "id": case["id"],
+            "repo": case.get("repo", ""),
+            "package": case.get("package", ""),
+            "from": case.get("from", ""),
+            "to": case.get("to", ""),
+            "expected": case.get("expected", ""),
+            "actual": "Run Error",
+            "verdict_correct": False,
+            "expected_signal": case.get("expected_signal", "none"),
+            "signal_detected": False,
+            "codes": [],
+            "seconds": 0.0,
+            "evidence_dir": "",
+            "regressions": 0,
+            "error": str(failure),
+        }
+
+
+def scorable(rows):
+    return [row for row in rows if "baselines" in row]
+
+
 def command_benchmark(args):
     base_dir = os.path.dirname(os.path.abspath(args.cases))
     base_dir = os.path.dirname(base_dir) if os.path.basename(base_dir) == "benchmark" else base_dir
     version, cases = load_cases(args.cases)
+    if args.only:
+        cases = [case for case in cases if case["id"] in set(args.only)]
     rows = []
-    for index, case in enumerate(cases, start=1):
-        print("[%d/%d] %s" % (index, len(cases), case["id"]))
-        try:
-            bundle = run_case(case, args, base_dir)
-            rows.append(score_case(case, bundle))
-        except Exception as failure:
-            rows.append({
-                "id": case["id"],
-                "repo": case.get("repo", ""),
-                "package": case.get("package", ""),
-                "from": case.get("from", ""),
-                "to": case.get("to", ""),
-                "expected": case.get("expected", ""),
-                "actual": "Run Error",
-                "verdict_correct": False,
-                "expected_signal": case.get("expected_signal", "none"),
-                "signal_detected": False,
-                "codes": [],
-                "seconds": 0.0,
-                "evidence_dir": "",
-                "regressions": 0,
-                "error": str(failure),
-            })
-        print("      expected %s, got %s" % (rows[-1]["expected"], rows[-1]["actual"]))
+    with ThreadPoolExecutor(max_workers=max(1, args.jobs)) as pool:
+        futures = [pool.submit(execute_case, case, args, base_dir) for case in cases]
+        for index, (case, future) in enumerate(zip(cases, futures), start=1):
+            rows.append(future.result())
+            print("[%d/%d] %s: expected %s, got %s" % (index, len(cases), case["id"], rows[-1]["expected"], rows[-1]["actual"]))
 
-    report = {"benchmark_version": version, "summary": summarise(rows), "results": rows}
+    report = build_report(version, rows, {"jobs": str(args.jobs), "test_timeout": str(args.test_timeout)})
     write_json(args.output, report)
+    write_results_markdown(report, os.path.splitext(args.output)[0] + ".md")
     print_table(report)
     return 0 if report["summary"]["false_approvals"] == 0 else 1
+
+
+def build_report(version, rows, provenance=None):
+    return {
+        "benchmark_version": version,
+        "provenance": provenance or {},
+        "summary": summarise(rows),
+        "methods": all_methods(scorable(rows), BASELINE_NAMES),
+        "signals": signal_metrics(scorable(rows)),
+        "builds": build_metrics(scorable(rows)),
+        "timing": time_metrics(scorable(rows)),
+        "results": rows,
+    }
+
+
+def command_rescore(args):
+    old = read_json(args.input)
+    provenance = dict(old.get("provenance", {}))
+    for item in args.note or []:
+        key, _, value = item.partition("=")
+        provenance[key] = value
+    report = build_report(old["benchmark_version"], old["results"], provenance)
+    write_json(args.output, report)
+    write_results_markdown(report, os.path.splitext(args.output)[0] + ".md")
+    print_table(report)
+    return 0
 
 
 def print_table(report):

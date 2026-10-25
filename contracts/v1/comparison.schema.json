@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.upgradeguard.invalid/v1/comparison.schema.json",
+  "title": "Comparison",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "operation", "project_id", "old_snapshot_id", "new_snapshot_id", "changes", "warnings", "created_at"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "operation": {"const": "COMPARE"},
+    "project_id": {"$ref": "request.schema.json#/$defs/id"},
+    "old_snapshot_id": {"$ref": "request.schema.json#/$defs/id"},
+    "new_snapshot_id": {"$ref": "request.schema.json#/$defs/id"},
+    "changes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "runtime", "dependencies", "tests"],
+      "properties": {
+        "code": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["added", "removed", "changed"],
+          "properties": {
+            "added": {"type": "array", "items": {"type": "string"}},
+            "removed": {"type": "array", "items": {"type": "string"}},
+            "changed": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "runtime": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["field", "from", "to"],
+            "properties": {
+              "field": {"type": "string"},
+              "from": {"type": ["string", "null"]},
+              "to": {"type": ["string", "null"]}
+            }
+          }
+        },
+        "dependencies": {"$ref": "evidence.schema.json#/$defs/diff/properties/dependencies"},
+        "tests": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["newly_failing", "newly_skipped", "missing", "fixed", "added"],
+          "properties": {
+            "newly_failing": {"type": "array", "items": {"type": "string"}},
+            "newly_skipped": {"type": "array", "items": {"type": "string"}},
+            "missing": {"type": "array", "items": {"type": "string"}},
+            "fixed": {"type": "array", "items": {"type": "string"}},
+            "added": {"type": "array", "items": {"type": "string"}}
+          }
+        }
+      }
+    },
+    "warnings": {"type": "array", "items": {"type": "string", "maxLength": 500}},
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

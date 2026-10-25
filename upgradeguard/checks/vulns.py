@@ -58,9 +58,10 @@ def safe_parse(text):
     if start < 0:
         return None
     try:
-        return json.loads(stripped[start:])
+        value, _ = json.JSONDecoder().raw_decode(stripped[start:])
     except ValueError:
         return None
+    return value if isinstance(value, dict) else None
 
 
 def normalise_pip_audit(payload):

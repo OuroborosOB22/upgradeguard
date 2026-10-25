@@ -3,6 +3,13 @@ REJECT = "Reject"
 INSUFFICIENT = "Insufficient Evidence"
 
 
+CONFLICT_MARKERS = ("ResolutionImpossible", "conflicting dependencies")
+
+
+def install_conflict(build):
+    return any(marker in build.get("failure_output", "") for marker in CONFLICT_MARKERS)
+
+
 def reason(code, message, evidence, severity="blocking"):
     return {"code": code, "message": message, "evidence": evidence, "severity": severity}
 
@@ -25,20 +32,18 @@ def decide(bundle):
         return finalise(INSUFFICIENT, reasons, notes, bundle)
 
     if not after_build["ok"]:
+        conflict = install_conflict(after_build)
         reasons.append(reason(
-            "upgrade-build-failed",
-            "The environment for the proposed version could not be built. Stage that failed: %s." % after_build["failure_stage"],
+            "upgrade-dependency-conflict" if conflict else "upgrade-build-failed",
+            "pip could not install the proposed versions together because their requirements conflict." if conflict
+            else "The environment for the proposed version could not be built. Stage that failed: %s." % after_build["failure_stage"],
             ["after/install.log", "after/requirements.used.txt"],
         ))
         return finalise(REJECT, reasons, notes, bundle)
 
-    if not before_tests["ran"] or not after_tests["ran"]:
-        reasons.append(reason(
-            "tests-did-not-run",
-            "The test suite could not be collected in at least one environment, so a regression cannot be proved either way.",
-            ["before/pytest.log", "after/pytest.log"],
-        ))
-        return finalise(INSUFFICIENT, reasons, notes, bundle)
+    mismatch = version_mismatch(bundle)
+    if mismatch:
+        return finalise(INSUFFICIENT, [mismatch], notes, bundle)
 
     conflicts = bundle["diff"]["conflicts"]["introduced"]
     if conflicts:
@@ -80,16 +85,17 @@ def decide(bundle):
             notes.append(reason("licence-policy-precondition", message + " The upgrade did not cause this, so it does not block the verdict.",
                                 ["after/licenses.json", "policy.json"], severity="warning"))
 
-    regressions = bundle["diff"]["tests"]["regressions"]
+    comparable = before_tests["ran"] and after_tests["ran"]
+    regressions = bundle["diff"]["tests"]["regressions"] if comparable else []
     if regressions:
         listed = ", ".join(item["test"] for item in regressions[:3])
         reasons.append(reason(
             "test-regression",
-            "%d test(s) passed before the upgrade and fail after it: %s" % (len(regressions), listed),
+            "%d test(s) passed before the upgrade and fail, error, are skipped or are missing after it: %s" % (len(regressions), listed),
             ["before/junit.xml", "after/junit.xml", "after/pytest.log"],
         ))
 
-    new_failing = bundle["diff"]["tests"]["new_failing_tests"]
+    new_failing = bundle["diff"]["tests"]["new_failing_tests"] if comparable else []
     if new_failing:
         notes.append(reason(
             "new-failing-tests",
@@ -126,6 +132,22 @@ def decide(bundle):
             severity="warning",
         ))
 
+    scanner = scanner_problem(bundle)
+    if scanner:
+        if reasons:
+            notes.append(dict(scanner, severity="warning"))
+        else:
+            return finalise(INSUFFICIENT, [scanner], notes, bundle)
+
+    problem = test_run_problem(before_tests, after_tests)
+    if problem and problem["blocking"]:
+        reasons.append(problem["reason"])
+    elif problem:
+        if reasons:
+            notes.append(dict(problem["reason"], severity="warning"))
+        else:
+            return finalise(INSUFFICIENT, [problem["reason"]], notes, bundle)
+
     if reasons:
         return finalise(REJECT, reasons, notes, bundle)
 
@@ -136,6 +158,59 @@ def decide(bundle):
         severity="info",
     ))
     return finalise(ACCEPT, reasons, notes, bundle)
+
+
+def scanner_problem(bundle):
+    if not bundle.get("policy", {}).get("require_online_vulnerability_scan"):
+        return None
+    if all(bundle[side]["vulnerabilities"].get("available") for side in ("before", "after")):
+        return None
+    return reason(
+        "required-scanner-unavailable",
+        "The policy requires the online vulnerability scan, but it could not run, so the vulnerability position of this upgrade is unknown.",
+        ["before/audit.json", "after/audit.json"])
+
+
+def same_version(left, right):
+    try:
+        from packaging.version import Version
+        return Version(left) == Version(right)
+    except Exception:
+        return left == right
+
+
+def version_mismatch(bundle):
+    resolved = bundle.get("resolved")
+    if not resolved:
+        return None
+    spec = bundle["spec"]
+    for side, wanted, code, text in (
+        ("before", spec["from_version"], "baseline-version-mismatch", "The current environment resolved %s %s, not the %s you said is in use, so the comparison would be about something else."),
+        ("after", spec["to_version"], "target-version-not-resolved", "The upgraded environment resolved %s %s, not the %s you asked to try, so the experiment did not test the proposed change."),
+    ):
+        found = resolved.get(side)
+        if not found or not same_version(found, wanted):
+            return reason(code, text % (spec["package"], found or "(not installed)", wanted), ["%s/freeze.txt" % side])
+    return None
+
+
+def test_run_problem(before_tests, after_tests):
+    if not before_tests["ran"]:
+        code = "tests-timed-out" if before_tests.get("timed_out") else "tests-did-not-run"
+        return {"blocking": False, "reason": reason(
+            code, "The test suite of the current version could not be collected or finished, so there is no baseline to compare tests against.",
+            ["before/pytest.log"], severity="warning")}
+    if after_tests["ran"]:
+        return None
+    if after_tests.get("startup_error"):
+        return {"blocking": True, "reason": reason(
+            "tests-could-not-start",
+            "The test suite ran before the upgrade but cannot even start after it because of an import error.",
+            ["after/pytest.log"])}
+    code = "tests-timed-out" if after_tests.get("timed_out") else "tests-did-not-run"
+    return {"blocking": False, "reason": reason(
+        code, "The test suite could not be collected or finished after the upgrade, so a regression cannot be proved either way.",
+        ["after/pytest.log"], severity="warning")}
 
 
 def finalise(decision, reasons, notes, bundle):

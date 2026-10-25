@@ -1,19 +1,50 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}UpgradeGuard{% endblock %}</title>
+<link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='logo-64.png') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </head>
 <body>
-<nav>
-  <a class="brand" href="{{ url_for('index') }}">UpgradeGuard</a>
-  <span class="tag">evidence based upgrade checks</span>
-</nav>
+<header class="bar">
+  <a class="brand" href="{{ url_for('landing') }}"><img class="logo" src="{{ url_for('static', filename='logo-128.png') }}" alt="" width="44" height="44"><pre class="figlet figbrand" aria-hidden="true">██    ██ ██████   ██████  ██████   █████  ██████  ███████  ██████  ██    ██  █████  ██████  ██████
+██    ██ ██   ██ ██       ██   ██ ██   ██ ██   ██ ██      ██       ██    ██ ██   ██ ██   ██ ██   ██
+██    ██ ██████  ██   ███ ██████  ███████ ██   ██ █████   ██   ███ ██    ██ ███████ ██████  ██   ██
+██    ██ ██      ██    ██ ██   ██ ██   ██ ██   ██ ██      ██    ██ ██    ██ ██   ██ ██   ██ ██   ██
+ ██████  ██       ██████  ██   ██ ██   ██ ██████  ███████  ██████   ██████  ██   ██ ██   ██ ██████</pre><span class="plain">UpgradeGuard</span></a>
+  <nav aria-label="Pages">
+    <a href="{{ url_for('landing') }}"><pre class="figlet figlink" aria-hidden="true">██   ██  ██████  ███    ███ ███████
+██   ██ ██    ██ ████  ████ ██
+███████ ██    ██ ██ ████ ██ █████
+██   ██ ██    ██ ██  ██  ██ ██
+██   ██  ██████  ██      ██ ███████</pre><span class="plain">Home</span></a>
+    <a href="{{ url_for('app_page') }}" {% if request.endpoint in ('app_page', 'create_run', 'show_run', 'health_check', 'show_health') %}aria-current="page"{% endif %}><pre class="figlet figlink" aria-hidden="true"> ██████ ██   ██ ███████  ██████ ██   ██
+██      ██   ██ ██      ██      ██  ██
+██      ███████ █████   ██      █████
+██      ██   ██ ██      ██      ██  ██
+ ██████ ██   ██ ███████  ██████ ██   ██</pre><span class="plain">Check</span></a>
+    <a href="{{ url_for('history_page') }}" {% if request.endpoint == 'history_page' %}aria-current="page"{% endif %}><pre class="figlet figlink" aria-hidden="true">██   ██ ██ ███████ ████████  ██████  ██████  ██    ██
+██   ██ ██ ██         ██    ██    ██ ██   ██  ██  ██
+███████ ██ ███████    ██    ██    ██ ██████    ████
+██   ██ ██      ██    ██    ██    ██ ██   ██    ██
+██   ██ ██ ███████    ██     ██████  ██   ██    ██</pre><span class="plain">History</span></a>
+    <a href="{{ url_for('settings_page') }}" {% if request.endpoint == 'settings_page' %}aria-current="page"{% endif %}><pre class="figlet figlink" aria-hidden="true">███████ ███████ ████████ ████████ ██ ███    ██  ██████  ███████
+██      ██         ██       ██    ██ ████   ██ ██       ██
+███████ █████      ██       ██    ██ ██ ██  ██ ██   ███ ███████
+     ██ ██         ██       ██    ██ ██  ██ ██ ██    ██      ██
+███████ ███████    ██       ██    ██ ██   ████  ██████  ███████</pre><span class="plain">Settings</span></a>
+  </nav>
+  <button id="theme" class="icon" type="button" aria-label="Switch between dark and light">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+</header>
 <main>
 {% block content %}{% endblock %}
 </main>
-<footer>A university software engineering project by Gurman Singh, Madhur Tuteja and Paryag.</footer>
+<footer>A test passing is not proof an upgrade is safe in production. A university software engineering project by Gurman Singh, Madhur Tuteja and Paryag.</footer>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

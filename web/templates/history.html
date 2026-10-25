@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+<h1>History</h1>
+<p class="lede">Every completed analysis is kept here, including after a restart.</p>
+<section class="panel">
+  {% if rows %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>When</th><th>Kind</th><th>What</th><th>Result</th></tr></thead>
+    <tbody>
+    {% for row in rows %}
+      <tr>
+        <td>{{ row.created_at }}</td>
+        <td>{{ 'Dependency health' if row.kind == 'health' else 'Upgrade check' }}</td>
+        <td>{% if row.kind == 'health' %}<a href="{{ url_for('show_health', record_id=row.id) }}">{{ row.title }}</a>
+            {% elif row.run_id %}<a href="{{ url_for('show_run', run_id=row.run_id) }}">{{ row.title }}</a>
+            {% else %}{{ row.title }}{% endif %}</td>
+        <td><span class="badge {{ row.result.split(' ')[0]|lower if row.kind == 'upgrade' else '' }}">{{ row.result }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p class="note">Nothing has been analysed yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

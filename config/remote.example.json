@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "azure-demo": {
+      "host": "your-vm.example.com",
+      "user": "azureuser",
+      "port": 22,
+      "identity_file": "/Users/you/.ssh/upgradeguard_key",
+      "known_hosts_file": "/Users/you/.ssh/upgradeguard_known_hosts",
+      "worker_dir": "/home/azureuser/upgradeguard",
+      "jobs_dir": "/home/azureuser/ug-jobs",
+      "python": "/home/azureuser/upgradeguard/venv/bin/python",
+      "timeout_seconds": 3600
+    }
+  }
+}

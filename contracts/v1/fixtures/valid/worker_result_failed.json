@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": null,
+  "operation": null,
+  "job_state": "FAILED",
+  "verdict": null,
+  "evidence_path": null,
+  "error": "the request was not valid",
+  "started_at": "2026-10-24T10:00:00Z",
+  "finished_at": "2026-10-24T10:00:01Z"
+}

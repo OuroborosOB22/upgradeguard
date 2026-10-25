@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.upgradeguard.invalid/v1/snapshot.schema.json",
+  "title": "Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "snapshot_id", "project_id", "source", "environment", "resolved_dependencies", "tests", "profile_id", "eligibility", "artifacts", "created_at"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "snapshot_id": {"$ref": "request.schema.json#/$defs/id"},
+    "project_id": {"$ref": "request.schema.json#/$defs/id"},
+    "source": {"$ref": "request.schema.json#/$defs/source"},
+    "environment": {"$ref": "request.schema.json#/$defs/environment"},
+    "resolved_dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "version"],
+        "properties": {
+          "name": {"type": "string", "maxLength": 200},
+          "version": {"$ref": "request.schema.json#/$defs/version"}
+        }
+      }
+    },
+    "tests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verified", "ran", "results"],
+      "properties": {
+        "verified": {"type": "boolean"},
+        "ran": {"type": "boolean"},
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "outcome"],
+            "properties": {
+              "id": {"type": "string", "maxLength": 500},
+              "outcome": {"enum": ["PASS", "FAIL", "ERROR", "SKIP", "MISSING"]}
+            }
+          }
+        }
+      }
+    },
+    "profile_id": {"$ref": "request.schema.json#/$defs/id"},
+    "eligibility": {"enum": ["PASSING", "STARTING_ONLY", "INCONCLUSIVE"]},
+    "artifacts": {"type": "array", "items": {"$ref": "evidence.schema.json#/$defs/artifact"}},
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

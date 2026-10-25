@@ -1,0 +1,102 @@
+{
+  "Textualize/rich": {
+    "commit": "7f580bdcf07a3b269a0e786b6a3aa9c804f393cf",
+    "ref": "v13.7.1"
+  },
+  "agronholm/anyio": {
+    "commit": "053e8f0a0f7b0f4a47a012eb5c6b1d9d84344e6a",
+    "ref": "4.4.0"
+  },
+  "astanin/python-tabulate": {
+    "commit": "bf58e37e6b35e3cc9a0bd740f752abfd32b6e6f8",
+    "ref": "v0.9.0"
+  },
+  "dateutil/dateutil": {
+    "commit": "db9d018944c41ddc740015cf5f64717c2ba64a5c",
+    "ref": "2.9.0"
+  },
+  "encode/httpx": {
+    "commit": "326b9431c761e1ef1e00b9f760d1f654c8db48c6",
+    "ref": "0.27.0"
+  },
+  "encode/starlette": {
+    "commit": "554f368809e0d891a699667faf0cfbb20057eeb2",
+    "ref": "0.37.2"
+  },
+  "hukkin/tomli": {
+    "commit": "36ef51d6a5a55e0eca077b58695390d041061bd4",
+    "ref": "2.0.1"
+  },
+  "hynek/structlog": {
+    "commit": "78729a8ad6226eb2a2da2251b4feaf43c3eccdc9",
+    "ref": "24.2.0"
+  },
+  "jd/tenacity": {
+    "commit": "31fe2d0cf2505bffd0cf1ffda8c7e30450ce709f",
+    "ref": "8.5.0"
+  },
+  "kennethreitz/records": {
+    "commit": "80ad70f07dd7a1ed35c08d60270d4c2abb95a4a6",
+    "ref": "v0.5.3"
+  },
+  "marshmallow-code/marshmallow": {
+    "commit": "b9646e326c511c11fc07aef4aa0004c14a5d454c",
+    "ref": "3.21.3"
+  },
+  "more-itertools/more-itertools": {
+    "commit": "7e46c39ea5d73b80f36ef2faf266e10108029b02",
+    "ref": "v10.3.0"
+  },
+  "pallets-eco/blinker": {
+    "commit": "0a6be69aaaf72917bbedf41643f83128c8623075",
+    "ref": "1.8.2"
+  },
+  "pallets/click": {
+    "commit": "874ca2bc1c30d93a4ac6e36a15ed685eafe89097",
+    "ref": "8.1.7"
+  },
+  "pallets/flask": {
+    "commit": "41d4f62909bb426c84e9d057151f7d734695320a",
+    "ref": "2.2.3"
+  },
+  "pallets/itsdangerous": {
+    "commit": "49d263f60b6f78df8924be51262eeb5216ab1468",
+    "ref": "2.1.2"
+  },
+  "pallets/jinja": {
+    "commit": "cf215390d4a4d6f0a4de27e2687eed176878f13d",
+    "ref": "2.11.3"
+  },
+  "pallets/markupsafe": {
+    "commit": "fbba4acd0312826cec9cfe18371c7df07962cb65",
+    "ref": "2.1.5"
+  },
+  "platformdirs/platformdirs": {
+    "commit": "5ec69d86917fb1ac23207893ccd598f8af805ba5",
+    "ref": "4.2.2"
+  },
+  "psf/requests": {
+    "commit": "0e322af87745eff34caffe4df68456ebc20d9068",
+    "ref": "v2.32.3"
+  },
+  "python-attrs/attrs": {
+    "commit": "9e443b18527dc96b194e92805fa751cbf8434ba9",
+    "ref": "23.2.0"
+  },
+  "python-humanize/humanize": {
+    "commit": "35e2d21b4b3030c03f106344cbdb851a2dbbbbb3",
+    "ref": "4.9.0"
+  },
+  "theskumar/python-dotenv": {
+    "commit": "d6c0b9638349a7dd605d60ee555ff60421c1a594",
+    "ref": "v1.0.1"
+  },
+  "tkem/cachetools": {
+    "commit": "1fcadea96ce67d499965b085f0b0b2253b78bb80",
+    "ref": "v5.3.3"
+  },
+  "tox-dev/filelock": {
+    "commit": "9a979dfe68fab75517c0612952ea401a232055a0",
+    "ref": "3.15.4"
+  }
+}

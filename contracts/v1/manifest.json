@@ -1,0 +1,14 @@
+{
+  "contract_version": "1.0.0",
+  "status": "draft",
+  "files": {
+    "request.schema.json": "064008c57bf6878b0f58cfa79aa4ea091f5b66d8ca752b9f8f85ef87151a066c",
+    "evidence.schema.json": "4b35da393b4ecefc6bb3c41fd39d7e0603c8fdb224178daca2a26090bd30a96e",
+    "prediction_request.schema.json": "a933c97de9858060f0c699877674a9fbae3481dbd5ce57e011f9e4e140c4eb73",
+    "prediction_response.schema.json": "f43929d6633332eda303a74257141e0873552412493f0e213301debec0c536c9",
+    "snapshot.schema.json": "b99a2ccafd0f0b43737674c537e15f35acbbb0e9aab7d2ee82561cdc1624d761",
+    "comparison.schema.json": "75655a19546b0e26081357a5193c9ee15948b5c819344505f637f75c4d613d14",
+    "worker_result.schema.json": "7fb560c19136e782e4656b528bca6acfcd8ac1e33e419d442010a0038adf0383",
+    "explanation_graph.schema.json": "2946897057f1539ec4dc456d86e070fc752c38904fcab51b1640d1ad7b1e3323"
+  }
+}

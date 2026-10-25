@@ -2,33 +2,37 @@
 {% block title %}{{ run_id }}{% endblock %}
 {% block content %}
 {% if pending %}
-<section class="card">
-  <h1>Working on it</h1>
-  <p class="sub">{{ pending.package }} {{ pending.from_version }} to {{ pending.to_version }}</p>
-  <p class="status" id="status">{{ pending.message }}</p>
-  {% if pending.error %}<pre>{{ pending.error }}</pre>{% endif %}
-  <div class="bar"><span></span></div>
+<section class="panel">
+  <p class="eyebrow">{{ pending.location if pending.location != 'local' else 'This computer' }}</p>
+  <h1>{{ pending.package }} {{ pending.from_version }} to {{ pending.to_version }}</h1>
+  <p class="status" id="status" data-state-url="{{ url_for('run_state', run_id=run_id) }}">{{ pending.message }}</p>
+  {% if pending.error %}<p class="error">{{ pending.error }}</p>{% endif %}
+  <ol class="log" id="log">{% for line in pending.log %}<li>{{ line }}</li>{% endfor %}</ol>
+  <div class="row">
+    {% if pending.location != 'local' and pending.state in ('queued', 'running') %}
+    <form method="post" action="{{ url_for('cancel_run', run_id=run_id) }}">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button type="submit">Cancel the check</button>
+    </form>
+    {% endif %}
+    <a class="button ghost" href="{{ url_for('app_page') }}">Back</a>
+  </div>
+  <p class="note">This page updates by itself. {% if pending.location == 'local' %}A check on this computer cannot be cancelled once it starts.{% endif %}</p>
 </section>
-<script>
-const poll = setInterval(async () => {
-  const response = await fetch("{{ url_for('run_state', run_id=run_id) }}");
-  const data = await response.json();
-  document.getElementById("status").textContent = data.message || data.state;
-  if (data.state === "finished") { clearInterval(poll); location.reload(); }
-}, 1500);
-</script>
+<script src="{{ url_for('static', filename='poll.js') }}"></script>
 {% else %}
-<section class="card">
+<section class="panel">
   <span class="badge {{ bundle.verdict.decision.split(' ')[0]|lower }}">{{ bundle.verdict.decision }}</span>
   <h1>{{ bundle.spec.package }} {{ bundle.spec.from_version }} to {{ bundle.spec.to_version }}</h1>
-  <p class="sub">{{ bundle.run_id }} | finished in {{ bundle.total_seconds }}s</p>
-  <div class="actions">
-    <a class="button" href="{{ url_for('run_report', run_id=run_id) }}">Open full report</a>
+  <p class="note">{{ bundle.run_id }}. Finished in {{ bundle.total_seconds }} s.</p>
+  <div class="row">
+    <a class="button primary" href="{{ url_for('run_report', run_id=run_id) }}">Open full report</a>
     <a class="button ghost" href="{{ url_for('run_evidence', run_id=run_id) }}">Download evidence</a>
+    <a class="button ghost" href="{{ url_for('explain_run', run_id=run_id) }}">Explain changes</a>
   </div>
 </section>
 
-<section class="card">
+<section class="panel">
   <h2>Why</h2>
   <ul class="reasons">
     {% for item in bundle.verdict.reasons + bundle.verdict.notes %}
@@ -37,16 +41,17 @@ const poll = setInterval(async () => {
   </ul>
 </section>
 
-<section class="card">
+<section class="panel">
   <h2>At a glance</h2>
   <div class="stats">
-    <div><strong>{{ bundle.diff.tests.regressions|length }}</strong><span>test regressions</span></div>
-    <div><strong>{{ bundle.diff.graph.changed|length }}</strong><span>version changes</span></div>
-    <div><strong>{{ bundle.diff.graph.added|length }}</strong><span>packages added</span></div>
-    <div><strong>{{ bundle.diff.graph.removed|length }}</strong><span>packages removed</span></div>
-    <div><strong>{{ bundle.diff.vulnerabilities.introduced|length }}</strong><span>new advisories</span></div>
-    <div><strong>{{ bundle.diff.licenses.introduced|length }}</strong><span>new licence issues</span></div>
+    <div class="stat"><b>{{ bundle.diff.tests.regressions|length }}</b><span>test regressions</span></div>
+    <div class="stat"><b>{{ bundle.diff.graph.changed|length }}</b><span>version changes</span></div>
+    <div class="stat"><b>{{ bundle.diff.graph.added|length }}</b><span>packages added</span></div>
+    <div class="stat"><b>{{ bundle.diff.graph.removed|length }}</b><span>packages removed</span></div>
+    <div class="stat"><b>{{ bundle.diff.vulnerabilities.introduced|length }}</b><span>new advisories</span></div>
+    <div class="stat"><b>{{ bundle.diff.licenses.introduced|length }}</b><span>new licence issues</span></div>
   </div>
+  <p class="note">The verdict comes from the dependency, policy and test results only. A passing test run is not proof the upgrade is safe in production.</p>
 </section>
 {% endif %}
 {% endblock %}

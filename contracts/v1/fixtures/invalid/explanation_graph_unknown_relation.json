@@ -1,0 +1,7 @@
+{
+  "summary": "x",
+  "nodes": [{"id": "a", "label": "a", "kind": "component", "change": "unchanged", "evidence_ids": [], "inferred": false}],
+  "edges": [{"source": "a", "target": "a", "relation": "<script>alert(1)</script>", "evidence_ids": [], "inferred": false}],
+  "findings": [],
+  "limitations": []
+}

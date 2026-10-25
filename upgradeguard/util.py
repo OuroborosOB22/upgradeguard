@@ -23,7 +23,7 @@ def run_command(args, cwd=None, log_path=None, timeout=1800, env=None):
         timed_out = False
     except subprocess.TimeoutExpired as expired:
         code = -1
-        output = (expired.stdout or "") + (expired.stderr or "")
+        output = as_text(expired.stdout) + as_text(expired.stderr)
         output += "\nCOMMAND TIMED OUT AFTER %s SECONDS\n" % timeout
         timed_out = True
     except FileNotFoundError as missing:
@@ -46,6 +46,12 @@ def run_command(args, cwd=None, log_path=None, timeout=1800, env=None):
         "timed_out": timed_out,
         "log_path": log_path,
     }
+
+
+def as_text(value):
+    if value is None:
+        return ""
+    return value.decode(errors="replace") if isinstance(value, bytes) else value
 
 
 def ensure_parent(path):

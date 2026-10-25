@@ -4,8 +4,13 @@ import xml.etree.ElementTree as ElementTree
 from .venvs import interpreter_path
 from .util import run_command
 
+# runs pytest in the sandbox + parses the machine-readable junit XML output + diffs the test results to detect test regressions
 
-def run_test_suite(env_dir, repo_path, output_dir, timeout=900):
+STATUS_RANK = {"passed": 0, "skipped": 1, "failed": 2, "error": 2}
+STARTUP_MARKERS = ("ImportError", "ModuleNotFoundError", "ConftestImportFailure")
+
+
+def run_test_suite(env_dir, repo_path, output_dir, timeout=900, extra_args=None):
     junit_path = os.path.join(output_dir, "junit.xml")
     log_path = os.path.join(output_dir, "pytest.log")
     result = run_command(
@@ -13,18 +18,21 @@ def run_test_suite(env_dir, repo_path, output_dir, timeout=900):
             interpreter_path(env_dir), "-m", "pytest",
             "--junitxml", junit_path,
             "-q", "-p", "no:cacheprovider",
-            "--continue-on-collection-errors",
+            "--continue-on-collection-errors", # -flag forces pytest to continue running the rest of the test suite
+            # if one test file has a broken import pytest aborts tests and skips all other test files
             "--rootdir", repo_path,
-        ],
+        ] + list(extra_args or []),
         cwd=repo_path,
         log_path=log_path,
         timeout=timeout,
+        env=environment_for(env_dir),
     )
 
-    parsed = parse_junit(junit_path)
-    collected = parsed is not None
+    parsed = parse_junit(junit_path, {repo_path: "<repo>", env_dir: "<env>"})
+    collected = bool(parsed)
     return {
         "ran": collected,
+        "startup_error": not collected and result["returncode"] in (2, 3, 4) and any(mark in result["output"] for mark in STARTUP_MARKERS),
         "returncode": result["returncode"],
         "timed_out": result["timed_out"],
         "duration": result["duration"],
@@ -36,7 +44,12 @@ def run_test_suite(env_dir, repo_path, output_dir, timeout=900):
     }
 
 
-def parse_junit(path):
+def environment_for(env_dir):
+    scripts = os.path.dirname(interpreter_path(env_dir))
+    return {"VIRTUAL_ENV": env_dir, "PATH": scripts + os.pathsep + os.environ.get("PATH", ""), "UPGRADEGUARD_ACTIVE": "1"}
+
+
+def parse_junit(path, path_aliases=None): # usual junit tagging recog
     if not os.path.isfile(path):
         return None
     try:
@@ -46,7 +59,7 @@ def parse_junit(path):
 
     results = {}
     for case in tree.getroot().iter("testcase"):
-        identifier = build_identifier(case)
+        identifier = stable_identifier(build_identifier(case), path_aliases or {})
         status = "passed"
         message = ""
         for child in case:
@@ -61,8 +74,17 @@ def parse_junit(path):
                 continue
             message = (child.get("message") or "").strip().split("\n")[0][:300]
             break
-        results[identifier] = {"status": status, "message": message, "time": case.get("time", "0")}
+        previous = results.get(identifier)
+        if previous is None or STATUS_RANK[status] > STATUS_RANK[previous["status"]]:
+            results[identifier] = {"status": status, "message": message, "time": case.get("time", "0")}
     return results
+
+
+def stable_identifier(identifier, path_aliases):
+    for prefix, alias in sorted(path_aliases.items(), key=lambda item: -len(item[0])):
+        if prefix:
+            identifier = identifier.replace(prefix, alias)
+    return identifier
 
 
 def build_identifier(case):
@@ -86,11 +108,16 @@ def tail_lines(text, limit=30):
     lines = [line for line in text.splitlines() if line.strip()]
     return "\n".join(lines[-limit:])
 
+# RDA(regression detection algo)
+# test is a regression if it passed in the before environment but failed or error in the after environment
+# if a test was already failing before the upgrade (previous["status"] in broken), it is not a regression & upgrade did not break it
+# if a test passed before but is missing after results (because the test file failed to import or was deleted) it is counted as a regression ("not collected")
+# if a test failed before and passes after then it is recorded under fixed
 
 def diff_test_runs(before, after):
     before_results = before.get("results", {})
     after_results = after.get("results", {})
-    broken = {"failed", "error"}
+    broken = {"failed", "error"} # or "skipped"
 
     regressions = []
     fixed = []
@@ -107,7 +134,7 @@ def diff_test_runs(before, after):
             })
             continue
         previous = before_results[identifier]
-        if previous["status"] == "passed" and current["status"] in broken:
+        if previous["status"] == "passed" and (current["status"] in broken or current["status"] == "skipped"):
             regressions.append({
                 "test": identifier,
                 "before": previous["status"],

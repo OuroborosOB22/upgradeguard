@@ -108,7 +108,8 @@ section h2.hl{margin:0 0 12px;font-size:var(--h2,80px);line-height:1}
 .sub{margin:0 0 56px;max-width:700px;font-size:22px;line-height:1.45;color:var(--mute)}
 
 /* framed boxes: a block-character frame is drawn by landing.js */
-.pxb{position:relative;--fi:0px;border-radius:0;border:3px solid #000;outline:none}
+.pxb{position:relative;--fi:-3px;border-radius:0;border:3px solid #000;outline:none}
+.guard.pxb{border-radius:0}
 .pxb.ac{--fc:#04121f;--fs:#ffffff;outline:none}
 .fbx{position:absolute;inset:var(--fi,0);overflow:hidden;pointer-events:none;z-index:2;font:600 10px/1 var(--mono);white-space:pre}
 .fbx .fl{position:absolute;inset:0}

@@ -51,7 +51,7 @@ The site only accepts projects under `examples/`, checks every input, uses CSRF 
 - **Explain changes**: an optional plain-language summary of a finished result. You see exactly what would be shared and confirm it first. It needs a model endpoint that you provide and it never changes the verdict.
 - **Your own server**: a check can run on a Linux server over SSH. Servers are set up in a file on the machine that runs the site (`UPGRADEGUARD_REMOTE_PROFILES`, example in `config/remote.example.json`), never from the browser.
 - **Docker runner**: `--runner container` runs the whole check in a locked-down container.
-- **CI**: `.github/workflows/upgradeguard.yml` runs a check and fails the job when the upgrade is rejected.
+- **CI**: `.github/workflows/upgradeguard.yml` runs a check and fails the job when the upgrade is rejected. `.github/workflows/tests.yml` runs the tool's tests and scans our own requirements for known vulnerabilities on every push and pull request.
 
 ## How well does it work
 
@@ -64,11 +64,12 @@ We wrote the expected answer for 59 upgrade cases from 25 open source projects b
 | `pip-audit` only | 56% | 23 | 0 |
 | a static file check | 68% | 11 | 5 |
 
-These are the stored results of the last run (`benchmark/results.md`). Three cases were meant to end as Insufficient Evidence and did. The benchmark was not re-run after the health report and the newer licence rules were added. To run it again: `upgradeguard fetch-repos`, then `upgradeguard benchmark`.
+These are the results of the latest full run, made on 25 October 2026 with the current code (including the health report, the newer licence rules and the server runner): `benchmark/results.md`. The earlier runs are kept beside it (`results.run1`, `run2`, `run3`). Three cases were meant to end as Insufficient Evidence and did. To run it again: `upgradeguard fetch-repos`, then `upgradeguard benchmark`.
 
 ## Tests
 
 ```
+./.venv/bin/python -m pip install pytest
 ./.venv/bin/python -m pytest tests          # a few seconds
 ./.venv/bin/python -m pytest tests --slow   # also builds real environments and uses Docker
 ```
@@ -77,8 +78,8 @@ These are the stored results of the last run (`benchmark/results.md`). Three cas
 
 - A passing test suite does not prove an upgrade is safe in production.
 - The SSH runner has only been tested against a stand-in server, and the explanation feature only against a fake model endpoint.
-- The site has not been deployed anywhere public.
-- The container runner protects your machine from the project's code, but it cannot make the result of a hostile project trustworthy.
+- The site has not been deployed anywhere public. Before it is, the checklist is: turn on `UPGRADEGUARD_ACCESS_TOKEN`, put it behind HTTPS, and run only approved sample projects.
+- The container runner protects your machine from the project's code, but it cannot make the result of a hostile project trustworthy. The container keeps network access while it runs, because installing the packages needs it, so tests run with the network on too.
 - Python projects with `requirements.txt` and `pytest` only.
 
 ## Team

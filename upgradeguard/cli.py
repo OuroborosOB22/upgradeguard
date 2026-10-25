@@ -183,11 +183,13 @@ def progress_line(message):
 
 
 def print_summary(bundle):
+    from .banner import headline, print_banner
     verdict = bundle["verdict"]
     diff = bundle["diff"]
+    print_banner()
     print("")
-    print(verdict["headline"])
-    print("-" * len(verdict["headline"]))
+    print(headline(verdict["headline"]))
+    print("")
     for item in verdict["reasons"]:
         print("  [%s] %s" % (item["code"], item["message"]))
     for item in verdict["notes"]:

@@ -106,6 +106,19 @@ def test_other_interpreters_are_refused(name):
         validate_python_name(name)
 
 
+def test_existing_absolute_python_executable_path_is_allowed(tmp_path):
+    executable = tmp_path / "python.exe"
+    executable.write_text("placeholder")
+    assert validate_python_name(str(executable)) == str(executable)
+
+
+def test_non_python_absolute_executable_path_is_refused(tmp_path):
+    executable = tmp_path / "other.exe"
+    executable.write_text("placeholder")
+    with pytest.raises(ValueError):
+        validate_python_name(str(executable))
+
+
 def test_the_runner_refuses_a_hostile_spec_before_doing_anything(tmp_path):
     from upgradeguard.runner import run_upgrade_check
     (tmp_path / "requirements.txt").write_text("requests==1\n")

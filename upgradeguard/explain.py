@@ -31,7 +31,10 @@ LINE_SECRETS = [
 ID_SAFE = re.compile(r"[^A-Za-z0-9_./:-]")
 LABEL_SAFE = re.compile(r"[^A-Za-z0-9 .,:_/+()-]")
 SYSTEM_PROMPT = (
-    "You explain the result of a Python dependency upgrade check. Reply with one JSON object only, no prose, with the keys "
+    "You explain the result of a Python dependency upgrade check, especially why a verdict is Reject or Insufficient Evidence. "
+    "Start the summary with the recorded verdict and the strongest evidence-backed reasons. Distinguish test regressions, dependency conflicts, "
+    "vulnerability changes, and licence-policy findings. Do not claim the upgrade caused a failure unless the before/after evidence supports it, "
+    "and never recommend changing the verdict logic to hide a regression. Reply with one JSON object only, no prose, with the keys "
     "summary, nodes, edges, findings, limitations. Node kinds: component, package, config, test. Node change: added, modified, removed, unchanged. "
     "Edge relations: depends_on, imports, configures, tests. Every node and edge needs evidence_ids chosen only from the ids you are given, and inferred true "
     "when the link is your own guess. Put a failure (failed true) only on test nodes. Use at most 12 nodes. State limits in limitations. "
@@ -313,9 +316,11 @@ class OpenAICompatible:
 
 
 def provider_from_environment(environ=os.environ):
-    url, model = environ.get("UPGRADEGUARD_EXPLAIN_URL", ""), environ.get("UPGRADEGUARD_EXPLAIN_MODEL", "")
-    if not url or not model:
-        return None
+    # Prefer a local Ollama server by default. Ollama exposes an OpenAI-compatible
+    # endpoint at /v1/chat/completions; if it is unavailable, explain() falls back
+    # to the deterministic report-based diagram and records the reason.
+    url = environ.get("UPGRADEGUARD_EXPLAIN_URL", "http://127.0.0.1:11434/v1")
+    model = environ.get("UPGRADEGUARD_EXPLAIN_MODEL", "llama3.2:3b")
     if not (url.startswith("https://") or url.startswith("http://127.0.0.1") or url.startswith("http://localhost")):
         raise ValueError("the explanation endpoint must use https")
     return OpenAICompatible(url, model, environ.get("UPGRADEGUARD_EXPLAIN_KEY_ENV", "UPGRADEGUARD_EXPLAIN_KEY"),

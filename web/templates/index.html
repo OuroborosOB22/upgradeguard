@@ -41,8 +41,9 @@
       <label>Licence policy
         <select name="policy">{% for name in policies %}<option value="{{ name }}">{{ name }}</option>{% endfor %}</select>
       </label>
-      <label>Python
-        <select name="python">{% for name in pythons %}<option value="{{ name }}">{{ name }}</option>{% endfor %}</select>
+      <label>Python executable path or command
+        <input name="python" type="text" value="{{ python_default }}" placeholder="C:\Path\To\Python\python.exe" required autocomplete="off" spellcheck="false">
+        <span class="note">Defaults to the Python running UpgradeGuard. You can paste another Python executable path. For remote servers, enter a command such as python3.12.</span>
       </label>
     </div>
     <label class="check"><input type="checkbox" name="strict"> Strict licence mode</label>

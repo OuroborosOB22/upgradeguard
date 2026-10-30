@@ -28,7 +28,7 @@
   <div class="row">
     <a class="button primary" href="{{ url_for('run_report', run_id=run_id) }}">Open full report</a>
     <a class="button ghost" href="{{ url_for('run_evidence', run_id=run_id) }}">Download evidence</a>
-    <a class="button ghost" href="{{ url_for('explain_run', run_id=run_id) }}">Explain changes</a>
+    <a class="button ghost" href="{{ url_for('explain_run', run_id=run_id) }}">{% if bundle.verdict.decision == 'Reject' %}Explain why rejected{% else %}Explain verdict{% endif %}</a>
   </div>
 </section>
 

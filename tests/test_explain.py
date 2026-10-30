@@ -238,8 +238,13 @@ def test_an_oversized_model_answer_is_refused():
         provider.complete("s", "u")
 
 
+def test_local_ollama_is_the_default_explanation_provider():
+    provider = explain.provider_from_environment({})
+    assert provider.model == "llama3.2:3b"
+    assert provider.base_url == "http://127.0.0.1:11434/v1"
+
+
 def test_the_endpoint_comes_from_the_operator_and_must_be_https():
-    assert explain.provider_from_environment({}) is None
     with pytest.raises(ValueError):
         explain.provider_from_environment({"UPGRADEGUARD_EXPLAIN_URL": "http://models.example/v1", "UPGRADEGUARD_EXPLAIN_MODEL": "m"})
     assert explain.provider_from_environment({"UPGRADEGUARD_EXPLAIN_URL": "https://models.example/v1", "UPGRADEGUARD_EXPLAIN_MODEL": "m"}).model == "m"

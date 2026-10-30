@@ -25,7 +25,7 @@ from upgradeguard.util import read_json, write_json
 
 RUN_ID_PATTERN = re.compile(r"[A-Za-z0-9._-]+")
 TEXT_SUFFIXES = (".json", ".txt", ".log", ".html", ".xml", ".md")
-PYTHON_CHOICES = ["python3"]
+PYTHON_CHOICES = ["python3", "python3.13"]
 SERVER_MESSAGES = {
     "connection": "The server could not be reached. Check its address, the key and the known hosts entry.",
     "preflight": "The server answered but is not suitable (it needs a recent Python and enough free disk).",
@@ -239,7 +239,7 @@ def create_app(settings=None):
 
     def index_page(status=200, **values):
         runs = merged_runs() if authenticated() else []
-        return page("index.html", status, runs=runs, policies=policy_choices(), pythons=PYTHON_CHOICES, locations=sorted(profiles),
+        return page("index.html", status, runs=runs, policies=policy_choices(), pythons=PYTHON_CHOICES, python_default=sys.executable, locations=sorted(profiles),
                     login_needed=not authenticated(), **values)
 
     @app.before_request
@@ -290,12 +290,14 @@ def create_app(settings=None):
         package = request.form.get("package", "").strip()
         from_version = request.form.get("from_version", "").strip()
         to_version = request.form.get("to_version", "").strip()
-        python_name = request.form.get("python", "python3").strip()
+        python_name = request.form.get("python", sys.executable).strip()
         policy_name = os.path.basename(request.form.get("policy", "default.json"))
         strict = request.form.get("strict") == "on"
         location = request.form.get("location", "local")
         if location != "local" and location not in profiles:
             return index_page(400, error="That server is not set up here.")
+        if location != "local" and os.path.isabs(python_name):
+            return index_page(400, error="For a remote server, enter its Python command (for example python3.12), not a path on this computer.")
 
         if not repo or not package or not from_version or not to_version:
             return index_page(400, error="Fill in the repository, the package and both versions.")

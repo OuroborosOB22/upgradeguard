@@ -7,7 +7,7 @@ from .util import read_json
 
 PACKAGE_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,99}")
 VERSION_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._+!-]{0,63}")
-PYTHON_PATTERN = re.compile(r"python3(\.[0-9]{1,2})?")
+PYTHON_PATTERN = re.compile(r"python3(\.[0-9]{1,2})?", re.IGNORECASE)
 
 REQUIREMENT_LINE = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)\s*(\[[^\]]*\])?\s*(.*)$")
 
@@ -62,9 +62,17 @@ def validate_spec(spec):
 
 
 def validate_python_name(name):
-    if not PYTHON_PATTERN.fullmatch(name or ""):
-        raise ValueError("the interpreter must be python3 or python3.<minor>")
-    return name
+    """Accept a conventional Python command or an existing absolute Python executable path."""
+    name = (name or "").strip()
+    if PYTHON_PATTERN.fullmatch(name):
+        return name
+    # Paths are useful for local Windows installs where `python3` may resolve to
+    # the Microsoft Store alias. Do not accept arbitrary executable paths.
+    if os.path.isabs(name) and os.path.isfile(name):
+        executable = os.path.basename(name).lower()
+        if executable in ("python", "python.exe") or re.fullmatch(r"python(?:3(?:\.[0-9]{1,2})?)?\.exe", executable):
+            return name
+    raise ValueError("enter python3, python3.<minor>, or an existing absolute path to python.exe/python")
 
 
 def new_run_id(spec):

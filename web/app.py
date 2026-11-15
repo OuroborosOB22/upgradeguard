@@ -368,10 +368,13 @@ def create_app(settings=None):
         if not directory or not os.path.isdir(directory):
             abort(404)
         buffer = io.BytesIO()
+        base = os.path.realpath(directory)
         with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
             for root, _, files in os.walk(directory):
                 for name in files:
                     full = os.path.join(root, name)
+                    if os.path.islink(full) or os.path.commonpath([base, os.path.realpath(full)]) != base:
+                        continue
                     archive.writestr(os.path.join(run_id, os.path.relpath(full, directory)),
                                      without_host_paths(full, settings.project_root))
         buffer.seek(0)

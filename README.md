@@ -46,7 +46,7 @@ The site only accepts projects under `examples/`, checks every input, uses CSRF 
 
 ## More things it can do
 
-- **Health report**: reads a requirements file without installing anything and scores it (invalid lines, duplicates, version conflicts, denied licences).
+- **Health report**: `upgradeguard health --requirements requirements.txt` reads a requirements file without installing anything and scores it (invalid lines, duplicates, version conflicts, denied licences; add `--offline` or `--json`).
 - **Snapshots**: `snapshot-run`, `compare` and `recover` remember when a project last passed and show what changed since.
 - **Explain changes**: an optional plain-language summary of a finished result. You see exactly what would be shared and confirm it first. It needs a model endpoint that you provide and it never changes the verdict.
 - **Your own server**: a check can run on a Linux server over SSH. Servers are set up in a file on the machine that runs the site (`UPGRADEGUARD_REMOTE_PROFILES`, example in `config/remote.example.json`), never from the browser.
@@ -77,9 +77,9 @@ These are the results of the latest full run, made on 25 October 2026 with the c
 ## Honest limits
 
 - A passing test suite does not prove an upgrade is safe in production.
-- The SSH runner has only been tested against a stand-in server, and the explanation feature only against a fake model endpoint.
-- The site has not been deployed anywhere public. Before it is, the checklist is: turn on `UPGRADEGUARD_ACCESS_TOKEN`, put it behind HTTPS, and run only approved sample projects.
-- The container runner protects your machine from the project's code, but it cannot make the result of a hostile project trustworthy. The container keeps network access while it runs, because installing the packages needs it, so tests run with the network on too.
+- Remote SSH runs and optional model explanations have been tested end to end against one test server and one model endpoint, not at scale across providers. A model never changes a verdict.
+- The site is not deployed publicly. Before public hosting: turn on `UPGRADEGUARD_ACCESS_TOKEN`, put it behind HTTPS, and run only approved sample projects.
+- The container runner isolates checks from your machine; `--offline` drops container networking (`--network none`), while online package installs keep network on during the run.
 - Python projects with `requirements.txt` and `pytest` only.
 
 ## Team

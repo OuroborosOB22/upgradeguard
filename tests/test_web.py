@@ -552,3 +552,32 @@ def test_landing_assets_are_served(world):
     client = make_app(world).test_client()
     for name in ("landing.css", "landing.js", "scene.png", "logo-64.png", "logo-128.png"):
         assert client.get("/static/" + name).status_code == 200
+
+
+def test_settings_title_is_clean_and_health_page_has_print_button(world):
+    client = make_app(world, lookup_metadata=fake_lookup).test_client()
+    settings_html = client.get("/settings").get_data(as_text=True)
+    assert "<title>Settings</title>" in settings_html
+    assert settings_html.count("<h2>Explanations</h2>") == 1
+    token = csrf_pair(client)
+    location = client.post("/health", data={"csrf": token, "text": "flask==3.0.0\n"}).headers["Location"]
+    assert "data-print" in client.get(location).get_data(as_text=True)
+
+
+def test_evidence_zip_skips_symlinks(world, tmp_path):
+    import io
+    import zipfile
+    outside = tmp_path / "secret.txt"
+    outside.write_text("TOP_SECRET")
+    run_id = "20261025-symlink-check"
+    evidence_dir = world / "evidence" / run_id
+    evidence_dir.mkdir(parents=True)
+    (evidence_dir / "note.txt").write_text("ok")
+    os.symlink(str(outside), str(evidence_dir / "leak.txt"))
+    client = make_app(world).test_client()
+    response = client.get("/runs/%s/evidence.zip" % run_id)
+    assert response.status_code == 200
+    with zipfile.ZipFile(io.BytesIO(response.data)) as archive:
+        names = archive.namelist()
+    assert run_id + "/note.txt" in names
+    assert all("leak.txt" not in name for name in names)

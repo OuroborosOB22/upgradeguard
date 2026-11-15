@@ -136,6 +136,12 @@ def build_parser():
     fetch.add_argument("--requirements-dir", dest="requirements_dir", default="benchmark/requirements")
     fetch.add_argument("--only", nargs="*")
     fetch.add_argument("--reclone", action="store_true")
+
+    hcheck = sub.add_parser("health", help="score a requirements.txt file for syntax, duplicates, conflicts and licences")
+    hcheck.add_argument("--requirements", default="requirements.txt")
+    hcheck.add_argument("--policy", default="")
+    hcheck.add_argument("--offline", action="store_true")
+    hcheck.add_argument("--json", action="store_true")
     return parser
 
 
@@ -168,6 +174,9 @@ def main(argv=None):
     if args.command == "fetch-repos":
         from .repos import command_fetch_repos
         return command_fetch_repos(args)
+    if args.command == "health":
+        from .commands import command_health
+        return command_health(args)
     parser.print_help()
     return 2
 

@@ -2,7 +2,7 @@ import json
 import os
 import sys
 
-from . import remote, schemas
+from . import health, remote, schemas
 from .container import DEFAULT_IMAGE, run_in_container
 from .contract import utc_now
 from .runner import run_upgrade_check
@@ -181,3 +181,34 @@ def command_remote(args):
         return FAILURE_EXIT
     print("server %s: python %s, %d MB free, worker version %s" % (args.server, caps["python"], caps["disk_free_mb"], caps["worker_version"]))
     return 0
+
+
+def print_health(report):
+    print("%d/100 %s (%d unique, %d specs)" % (report["score"], report["status"], report["unique_packages"], report["total_specifications"]))
+    for key in ("invalid", "duplicates", "conflicts"):
+        if report[key]:
+            print("  %s: %d" % (key, len(report[key])))
+    denied = [item["package"] for item in report["packages"] if item.get("licence_status") == "denied"]
+    if denied:
+        print("  denied licences: %s" % ", ".join(denied))
+
+
+def command_health(args):
+    if not os.path.isfile(args.requirements):
+        print("missing requirements file: %s" % args.requirements, file=sys.stderr)
+        return FAILURE_EXIT
+    try:
+        with open(args.requirements, encoding="utf8") as handle:
+            text = handle.read(health.MAX_BYTES + 1)
+        policy = load_policy(args.policy)
+        lookup = (lambda _name: {"status": "unavailable", "reason": "offline mode"}) if args.offline else health.fetch_pypi
+        report = health.analyse(text, policy, lookup)
+    except (OSError, ValueError) as problem:
+        print(str(problem), file=sys.stderr)
+        return FAILURE_EXIT
+    if args.json:
+        emit_json(report)
+    else:
+        print_health(report)
+    has_denied = any(item.get("licence_status") == "denied" for item in report["packages"])
+    return 1 if (report["invalid"] or report["conflicts"] or has_denied) else 0

@@ -18,4 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
   });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-print]"), function (button) {
+    button.addEventListener("click", function () { window.print(); });
+  });
 });

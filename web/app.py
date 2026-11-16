@@ -55,7 +55,8 @@ class Settings:
     secret: str = os.environ.get("UPGRADEGUARD_SECRET", "") or secrets.token_hex(32)
     secure_cookies: bool = os.environ.get("UPGRADEGUARD_HTTPS") == "1"
     max_active_runs: int = 2
-    runs_per_hour: int = 6
+    runs_per_window: int = 50
+    run_window_seconds: int = 60
     requests_per_minute: int = 120
     logins_per_minute: int = 8
     run_check: object = run_upgrade_check
@@ -63,7 +64,8 @@ class Settings:
     history_path: str = os.path.join(PROJECT_ROOT, "data", "history.db")
     remote_profiles_path: str = os.environ.get("UPGRADEGUARD_REMOTE_PROFILES", "")
     lookup_metadata: object = health.fetch_pypi
-    checks_per_hour: int = 20
+    checks_per_window: int = 50
+    check_window_seconds: int = 60
     explain_provider: object = None
     explanations_per_hour: int = 10
 
@@ -86,13 +88,13 @@ def create_app(settings=None):
     gate = security.AccessGate(settings.access_token, settings.secret)
     page_limiter = security.RateLimiter(settings.requests_per_minute, 60)
     login_limiter = security.RateLimiter(settings.logins_per_minute, 60)
-    run_limiter = security.RateLimiter(settings.runs_per_hour, 3600)
+    run_limiter = security.RateLimiter(settings.runs_per_window, settings.run_window_seconds)
     active_runs = {}
     runs_lock = threading.Lock()
     audit = build_audit_log(settings.log_path)
     history = History(settings.history_path)
     profiles = remote.load_profiles(settings.remote_profiles_path)
-    health_limiter = security.RateLimiter(settings.checks_per_hour, 3600)
+    health_limiter = security.RateLimiter(settings.checks_per_window, settings.check_window_seconds)
     cancel_flags = {}
     connection_tests = {}
     explain_limiter = security.RateLimiter(settings.explanations_per_hour, 3600)
@@ -317,7 +319,7 @@ def create_app(settings=None):
             return index_page(429, error="The site is busy with other checks. Try again in a few minutes.")
         if not run_limiter.allow(client()):
             audit.warning("%s run quota used up", client())
-            return index_page(429, error="That is the limit of checks per hour. Try again later.")
+            return index_page(429, error="Too many checks in one minute. Wait a minute and try again.")
 
         spec.run_id = new_run_id(spec)
         policy = load_policy(spec.policy_path if os.path.isfile(spec.policy_path) else "")
@@ -384,7 +386,7 @@ def create_app(settings=None):
     def health_check():
         if not health_limiter.allow(client()):
             audit.warning("%s health quota used up", client())
-            return index_page(429, error="That is the limit of dependency checks per hour. Try again later.", tab="health")
+            return index_page(429, error="Too many dependency checks in one minute. Wait a minute and try again.", tab="health")
         upload = request.files.get("file")
         text = request.form.get("text", "")
         if upload and upload.filename:

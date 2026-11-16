@@ -227,10 +227,14 @@ def test_large_bodies_are_refused(world):
 
 
 def test_run_quota_per_client(world):
-    client = make_app(world, runs_per_hour=1).test_client()
+    settings = Settings()
+    assert settings.runs_per_window == 50 and settings.run_window_seconds == 60
+    assert settings.checks_per_window == 50 and settings.check_window_seconds == 60
+    client = make_app(world, runs_per_window=1, run_window_seconds=60).test_client()
     token = csrf_pair(client)
     assert client.post("/runs", data=good_form(token)).status_code == 302
-    assert client.post("/runs", data=good_form(token)).status_code == 429
+    blocked = client.post("/runs", data=good_form(token))
+    assert blocked.status_code == 429 and "Wait a minute" in blocked.get_data(as_text=True)
 
 
 def test_the_site_refuses_new_runs_when_busy(world):

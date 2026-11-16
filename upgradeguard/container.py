@@ -7,7 +7,6 @@ import tempfile
 from . import schemas
 from .contract import file_sha256, request_from_parts
 from .source import describe_source
-from .spec import canonical_name
 from .spec import canonical_name, validate_python_name
 from .util import run_command, read_json
 
@@ -38,6 +37,10 @@ def docker_command(image, repo_path, request_dir, out_dir, digest, user, offline
         "--tmpfs", "/work:rw,exec,nosuid,size=%s" % WORK_SIZE, "--tmpfs", "/tmp:rw,nosuid,size=512m",
         "-v", "%s:/input/repo:ro" % repo_path, "-v", "%s:/input/request:ro" % request_dir, "-v", "%s:/output:rw" % out_dir,
         "-e", "HOME=/work/home", "-e", "UPGRADEGUARD_IMAGE_DIGEST=%s" % digest,
+    ]
+    if offline:
+        command += ["--network", "none"]
+    command += [
         image, "worker", "--request", "/input/request/request.json", "--source", "/input/repo", "--out", "/work/out", "--publish", "/output", "--work", "/work/jobs",
     ]
     if offline:

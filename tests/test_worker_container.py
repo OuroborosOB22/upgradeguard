@@ -251,3 +251,11 @@ def test_bundle_must_agree_with_the_verified_evidence_and_the_request(tmp_path):
         container.check_bundle_matches(bundle_for(request, to_version="9.9"), evidence, request)
     with pytest.raises(container.UntrustedOutput, match="different change"):
         container.check_bundle_matches(bundle_for(request, package="other"), evidence, request)
+
+
+def test_offline_container_command_disables_docker_network():
+    command = docker_args(offline=True)
+    image_pos = command.index("upgradeguard-runner:local")
+    net_pos = command.index("--network")
+    assert net_pos < image_pos and command[net_pos + 1] == "none"
+    assert "--offline" in command[image_pos:]

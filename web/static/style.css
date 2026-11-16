@@ -140,3 +140,8 @@ nav a{display:inline-flex;align-items:center;padding:8px 12px}
   .plain{position:static;width:auto;height:auto;clip-path:none;font:600 16px var(--font)}
   .brand .plain{font:800 18px var(--font);font-style:italic}
 }
+@media print{
+  body{background:#fff;color:#000}
+  header.bar,.row,form,footer{display:none !important}
+  .panel,.stat,pre.out{border-color:#000;background:#fff;color:#000}
+}

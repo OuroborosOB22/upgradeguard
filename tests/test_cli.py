@@ -31,3 +31,19 @@ def test_benchmark_and_fetch_commands_exist():
 def test_no_command_prints_help_and_exits_2(capsys):
     assert cli.main([]) == 2
     assert "usage" in capsys.readouterr().out.lower()
+
+
+def test_health_command_scores_files_and_flags_conflicts(tmp_path, capsys):
+    import json
+    clean = tmp_path / "good.txt"
+    clean.write_text("flask==3.0.0\nrequests>=2.31\n")
+    assert cli.main(["health", "--requirements", str(clean), "--offline", "--json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["score"] == 100 and payload["unique_packages"] == 2
+
+    broken = tmp_path / "bad.txt"
+    broken.write_text("numpy < 1.25\nnumpy >= 1.26\n")
+    assert cli.main(["health", "--requirements", str(broken), "--offline"]) == 1
+    assert "conflicts: 1" in capsys.readouterr().out
+
+    assert cli.main(["health", "--requirements", str(tmp_path / "missing.txt"), "--offline"]) == 3
